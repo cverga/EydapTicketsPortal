@@ -1,0 +1,271 @@
+﻿@using EydapTickets.Helpers
+
+@using MenuItem = EydapTickets.Models.MenuItem
+
+@{
+    var area = Html.ViewContext.RouteData.Values.GetSafeValue(d => d["area"] as string, string.Empty);
+    var controller = Html.ViewContext.RouteData.Values.GetSafeValue(d => d["controller"] as string, string.Empty);
+    var action = Html.ViewContext.RouteData.Values.GetSafeValue(d => d["action"] as string, string.Empty);
+}
+
+@Html.DevExpress().Menu(settings =>
+{
+    settings.Name = "Menu";
+    settings.Width = Unit.Percentage(100);
+    settings.ControlStyle.HorizontalAlign = HorizontalAlign.Left;
+    settings.AllowSelectItem = true;
+    settings.AppearAfter = 0;
+    settings.DisappearAfter = 0;
+    settings.EnableAnimation = false;
+    settings.EnableHotTrack = true;
+    settings.EnableAdaptivity = true;
+    settings.EnableClientSideAPI = true;
+    settings.ClientSideEvents.ItemClick = "function(s, e) { var item = Menu.GetSelectedItem(); if (item.name=='manual') {window.open('http://portal-ddy:2000/DownLoad'); Menu.SetSelectedItem(null); } }";
+    //settings.ClientSideEvents.ItemClick = "function(s, e) { MenuTwo.SetSelectedItem(null); }";
+
+    settings.Items.Add(m => {
+        m.Name = "incidents_group";
+        m.Text = "ΒΛΑΒΕΣ";
+        m.ItemStyle.Font.Size = FontUnit.Small;
+
+        var menuItems = new List<MenuItem>
+        {
+            new MenuItem("incidents_open", "ΒΛΑΒΕΣ ΑΝΟΙΧΤΕΣ", "Index", "Incidents"),
+            new MenuItem("incidents_closed", "ΒΛΑΒΕΣ ΚΛΕΙΣΤΕΣ (72 ΩΡΕΣ)", "ClosedSeventyTwoHours", "Incidents"),
+            new MenuItem("incidents_pending", "ΒΛΑΒΕΣ ΚΛΕΙΣΤΕΣ ΜΕ ΕΚΚΡΕΜΟΤΗΤΕΣ", "ClosedWithPendingTasks", "Incidents"),
+            new MenuItem("incidents_corellated", "ΣΧΕΤΙΖΟΜΕΝΑ", "Correlated", "Incidents"),
+            new MenuItem("incidents_search", "ΑΝΑΖΗΤΗΣΗ", "Search", "Incidents"),
+            new MenuItem("incidents_migration", "ΑΝΑΖΗΤΗΣΗ ΠΑΛΑΙΩΝ ΣΗΜΑΤΩΝ", "Index", "Migration"),
+            new MenuItem("tasks_open", "ΑΝΟΙΧΤΕΣ ΕΡΓΑΣΙΕΣ", "Index", "OpenTasks")
+        };
+
+        foreach (var menuItem in menuItems)
+        {
+            var item = menuItem;
+
+            if (item.Controller == controller && item.Action == action && item.Area == area)
+            {
+                item.Selected = true;
+                m.Selected = true;
+                m.ItemStyle.CssClass += "dxm-selected";
+            }
+
+            m.Items.Add(c =>
+            {
+                c.Name = item.Name;
+                c.Text = item.Text;
+                c.NavigateUrl = Url.Action(item.Action, item.Controller, new { area = item.Area });
+                c.AdaptivePriority = 1;
+                c.ItemStyle.Font.Size = FontUnit.Small;
+                c.Selected = item.Selected;
+                if (item.Selected)
+                {
+                    c.ItemStyle.CssClass += "dxm-selected";
+                }
+            });
+        }
+    });
+
+    settings.Items.Add(i =>
+    {
+        i.Name = "tasks_scheduled";
+        i.Text = "ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ ΕΡΓΑΣΙΩΝ";
+        i.NavigateUrl = Url.Action("Index", "NewScheduledTasks", new { area = "" });
+        i.ItemStyle.Font.Size = FontUnit.Small;
+        //i.Selected = ViewBag.IsScheduledTasksView;
+    });
+
+    settings.Items.Add(i =>
+    {
+        i.Name = "provisions";
+        i.Text = "ΝΕΑ ΠΑΡΟΧΗ";
+        i.NavigateUrl = Url.Action("Index", "Provisions", new { area = "" });
+        i.ItemStyle.Font.Size = FontUnit.Small;
+        //i.Selected = ViewBag.IsProvisionsView;
+    });
+
+    // 12.05.2017, Andreas Kasapleris, if user has access to Investigations
+    // show this menu option
+    if (ViewBag.AccessToInvestigations)
+    {
+        settings.Items.Add(i =>
+        {
+            i.Name = "Investigations";
+            i.Text = "ΠΡΑΓΜΑΤΟΓΝΩΜΟΣΥΝΕΣ";
+            i.NavigateUrl = Url.Action("Index", "Investigations", new { area = "" });
+            i.ItemStyle.Font.Size = FontUnit.Small;
+            //i.Selected = ViewBag.IsInvestigationsView;
+        });
+    }
+
+    //settings.Items.Add(i =>
+    //{
+    //    i.Name = "Reports";
+    //    i.Text = "ΕΚΤΥΠΩΣΕΙΣ";
+
+    //    //
+    //    // Reports για τα Τμήματα Ερευνών-Κατασκευών
+    //    // Αθήνας - Πειραιά - Ηρακλείου
+    //    //
+
+    //    if (ViewBag.DepartmentId == 1031 ||
+    //        ViewBag.DepartmentId == 1038 ||
+    //        ViewBag.DepartmentId == 1042)
+    //    {
+    //        i.Items.Add(o =>
+    //        {
+    //            o.Name = "Report0100";
+    //            o.Text = "Συγκεντρωτική Κατάσταση Αναθέσεων";
+    //            o.NavigateUrl = "~/Reports/Report0100"; // runs Report100Controller
+    //            o.ItemStyle.Font.Size = System.Web.UI.WebControls.FontUnit.Small;
+
+    //            // o.Selected = true;
+    //            o.Enabled = true;
+    //            //i.ItemStyle.SelectedStyle.CssClass = "selectedMenu";
+    //            o.ItemStyle.SelectedStyle.BackColor = System.Drawing.Color.LightYellow;
+    //        });
+
+    //        i.Items.Add(p =>
+    //        {
+    //            p.Name = "Report1000";
+    //            p.Text = "Καρτέλες Ανάδρασης Βλαβών από BackEnd";
+    //            p.NavigateUrl = "~/Reports/Report1000"; // runs Reports/Report1000Controller
+    //            p.ItemStyle.Font.Size = System.Web.UI.WebControls.FontUnit.Small;
+
+    //            // o.Selected = true;
+    //            p.Enabled = true;
+    //            //i.ItemStyle.SelectedStyle.CssClass = "selectedMenu";
+    //            p.ItemStyle.SelectedStyle.BackColor = System.Drawing.Color.LightYellow;
+    //        });
+
+    //        // 19.04.2018, Andreas Kasapleris
+    //        i.Items.Add(q =>
+    //        {
+    //            q.Name = "Report1100";
+    //            q.Text = "Καρτέλες Ανάδρασης Εργασιών";
+    //            q.NavigateUrl = "~/Reports/Report1100"; // runs Reports/Report1100Controller
+    //            q.ItemStyle.Font.Size = System.Web.UI.WebControls.FontUnit.Small;
+
+    //            // q.Selected = true;
+    //            q.Enabled = true;
+    //            //i.ItemStyle.SelectedStyle.CssClass = "selectedMenu";
+    //            q.ItemStyle.SelectedStyle.BackColor = System.Drawing.Color.LightYellow;
+    //        });
+
+    //    } // end if για τα Τμήματα Ερευνών-Κατασκευών
+    //    //
+    //    // 18.10.2018
+    //    // Reports για τα Τμήματα Συντήρησης-Βλαβών
+    //    // Αθήνας - Πειραιά - Ηρακλείου
+    //    //
+
+    //    if (ViewBag.DepartmentId == 1033 ||
+    //        ViewBag.DepartmentId == 1039 ||
+    //        ViewBag.DepartmentId == 1043)
+    //    {
+    //        i.Items.Add(o =>
+    //        {
+    //            o.Name = "TaskStock";
+    //            o.Text = "Στόκ Εργασιών";
+    //            o.NavigateUrl = "~/SSRS/TaskStockReport"; // runs SSRSController, Action TaskStockReport
+    //            o.ItemStyle.Font.Size = System.Web.UI.WebControls.FontUnit.Small;
+
+    //            // o.Selected = true;
+    //            o.Enabled = true;
+    //            //i.ItemStyle.SelectedStyle.CssClass = "selectedMenu";
+    //            o.ItemStyle.SelectedStyle.BackColor = System.Drawing.Color.LightYellow;
+    //        });
+    //    }
+    //    else if (ViewBag.DepartmentId == 1109) // 09.05.2018, Andreas Kasapleris
+    //    {
+    //        i.Items.Add(o =>
+    //        {
+    //            o.Name = "Report0700";
+    //            o.Text = "Κατάσταση Αναθέσεων Ελέγχου Ποιότητας Ύδατος";
+    //            o.NavigateUrl = "~/Reports/Report0700"; // runs Report700Controller
+    //            o.ItemStyle.Font.Size = System.Web.UI.WebControls.FontUnit.Small;
+
+    //            // o.Selected = true;
+    //            o.Enabled = true;
+    //            //i.ItemStyle.SelectedStyle.CssClass = "selectedMenu";
+    //            o.ItemStyle.SelectedStyle.BackColor = System.Drawing.Color.LightYellow;
+    //        });
+    //    } // else if για το Τμήμα Ελέγχου Ποιότητας 'Υδατος (Χημείο)
+    //    else if (ViewBag.DepartmentId == 1105) // 27.11.2018, Andreas Kasapleris
+    //    {
+    //        i.Items.Add(o =>
+    //        {
+    //            o.Name = "AfanonDiaroonKpi1";
+    //            o.Text = "Εκτυπωση Αφανων Διαρροων";
+    //            o.NavigateUrl = "~/SSRS/AfanonDiaroonKpi1Report"; // runs SSRSController, Action AfanonDiaroonKpi1Report
+    //            o.ItemStyle.Font.Size = System.Web.UI.WebControls.FontUnit.Small;
+
+    //            // o.Selected = true;
+    //            o.Enabled = true;
+    //            //i.ItemStyle.SelectedStyle.CssClass = "selectedMenu";
+    //            o.ItemStyle.SelectedStyle.BackColor = System.Drawing.Color.LightYellow;
+    //        });
+    //    } // else if για το Τμήμα Αφανων Διαρροων
+
+
+    //    //
+    //    // 14.11.2018, Andreas Kasapleris
+    //    // Καρτέλα (Ιστορικό) Συμβάντος
+    //    //
+
+    //    i.Items.Add(incidentdetails =>
+    //    {
+    //        incidentdetails.Name = "IncidentDetails";
+    //        incidentdetails.Text = "Καρτέλα (Ιστορικό) Συμβάντος";
+    //        incidentdetails.NavigateUrl = "~/SSRS/IncidentDetailsReport"; // runs SSRSController, Action IncidentDetailsReport
+    //        incidentdetails.ItemStyle.Font.Size = System.Web.UI.WebControls.FontUnit.Small;
+
+    //        // incidentdetails.Selected = true;
+    //        incidentdetails.Enabled = true;
+    //        //i.ItemStyle.SelectedStyle.CssClass = "selectedMenu";
+    //        incidentdetails.ItemStyle.SelectedStyle.BackColor = System.Drawing.Color.LightYellow;
+    //    });
+
+    //});
+
+    settings.Items.Add(i =>
+    {
+        i.Name = "PrintoutReporting";
+        i.Text = "ΕΚΤΥΠΩΤΙΚΑ";
+        i.NavigateUrl = Url.Action("Index", "Printout", new { area = "Reporting" });
+        i.ItemStyle.Font.Size = FontUnit.Small;
+    });
+
+    settings.Items.Add(i =>
+    {
+        i.Name = "StatisticalReporting";
+        i.Text = "ΣΤΑΤΙΣΤΙΚΑ";
+        i.NavigateUrl = Url.Action("Index", "Statistical", new { area = "Reporting" });
+        i.ItemStyle.Font.Size = FontUnit.Small;
+    });
+
+    if (ViewBag.IsAdmin == true)
+    {
+        settings.Items.Add(i =>
+        {
+            i.Name = "admin";
+            i.Text = "ΔΙΑΧΕΙΡΙΣΗ ΣΥΣΤΗΜΑΤΟΣ";
+            i.NavigateUrl = Url.Action("Index", "Admin", new { area = "Admin" });
+            i.AdaptivePriority = 1;
+            i.ItemStyle.Font.Size = FontUnit.Small;
+            i.Selected = ViewBag.IsOnAdminMenu;
+        });
+    }
+
+    settings.Items.Add(i =>
+    {
+        i.Name = "manual";
+        i.Text = "ΕΓΧΕΙΡΙΔΙΟ ΧΡΗΣΗΣ";
+        //i.NavigateUrl = "javascript:Menu.SetSelectedItem(Menu.GetItemByName('ActiveIncidentsMenu')); window.open('http://dda-portal02:9001/DownLoad');";
+        //i.NavigateUrl = "javascript:window.open('http://portal-ddy:2000/DownLoad');";
+        i.AdaptivePriority = 1;
+        i.ItemStyle.Font.Size = FontUnit.Small;
+        i.Selected = false;
+    });
+
+}).GetHtml()

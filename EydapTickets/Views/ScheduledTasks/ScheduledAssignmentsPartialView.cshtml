@@ -1,0 +1,176 @@
+﻿@using EydapTickets.Models
+
+@model IEnumerable<Assignment>
+
+@(Html.DevExpress().GridView<Assignment>(settings =>
+{
+    settings.Name = "ScheduledAssignmentsGridView_" + ViewData["TaskGuid"].ToString().Replace("-", "");
+    //settings.SettingsDetail.MasterGridName = "TasksGridView_" + ViewData["TaskGuid"].ToString().Replace("-", "");
+    settings.SettingsDetail.MasterGridName = "ScheduledTasksGrid";
+    settings.CallbackRouteValues = new { Controller = "ScheduledTasks", Action = "ScheduledAssignmentsPartialView", aTaskGuid = ViewData["TaskGuid"] };
+    settings.Width = Unit.Percentage(100);
+    settings.Settings.ShowFilterRow = false;
+    settings.SettingsBehavior.ColumnResizeMode = ColumnResizeMode.NextColumn;
+    settings.KeyFieldName = "AssignmentId";
+    settings.SettingsDetail.ShowDetailRow = false;
+    //settings.SettingsDetail.AllowOnlyOneMasterRowExpanded = true;
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "ScheduledTasks", Action = "AddNewAssignmentPartial", aTaskGuid = ViewData["TaskGuid"] };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "ScheduledTasks", Action = "UpdateAssignmentPartial", aTaskGuid = ViewData["TaskGuid"] };
+
+    settings.CommandColumn.Visible = true;
+    settings.CommandColumn.ShowNewButton = false;
+    settings.CommandColumn.ShowEditButton = true;
+
+    settings.SettingsCommandButton.EditButton.Text = "Επεξ/σία";
+    settings.SettingsCommandButton.CancelButton.Text = "Ακύρωση";
+    settings.SettingsCommandButton.UpdateButton.Text = "Αποθήκευση";
+    settings.SettingsCookies.StoreColumnsWidth = true;
+    settings.SettingsCommandButton.EditButton.ButtonType = GridCommandButtonRenderMode.Button;
+
+    settings.SettingsBehavior.AllowGroup = true;
+    settings.SettingsBehavior.AllowSort = true;
+    settings.Settings.ShowGroupPanel = true;
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "AssignmentId";
+        column.Visible = false;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "DateOfAssignment";
+        column.Caption = "Ημερομηνία Ανάθεσης";
+        column.ColumnType = MVCxGridViewColumnType.DateEdit;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "DateOfCompletion";
+        column.ColumnType = MVCxGridViewColumnType.DateEdit;
+        column.Caption = "Ημερομηνία Ολοκλήρωσης";
+
+        DateEditProperties propertiesDateEdit = column.PropertiesEdit as DateEditProperties;
+
+        //
+        // 20.11.2017, Andreas Kasapleris
+        // following settings can be used in the case where field is generally a
+        // required field; in this case, DateOfCompletion is a 'contitionally'required field;
+        // it is required only when the Assignment is closing;
+        //
+        // propertiesDateEdit.ValidationSettings.RequiredField.IsRequired = true;
+        // propertiesDateEdit.ValidationSettings.RequiredField.ErrorText = "Το πεδίο ... είναι υποχρεωτικό."; // 20.11.2017, Andreas Kasapleris
+        //
+
+        //
+        // 20.11.2017, Andreas Kasapleris
+        // these are the right validation settings when a field is conditionally 'required';
+        // see below the JavaScript for ClientSide validation; and immediately below the error
+        // message settings which will be used
+        //
+        propertiesDateEdit.ValidationSettings.ErrorText = "Πρέπει να καταχωρήσετε την Ημερομηνία Ολοκλήρωσης."; // 20.11.2017, Andreas Kasapleris
+        propertiesDateEdit.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithText;
+        propertiesDateEdit.ValidationSettings.ErrorTextPosition = ErrorTextPosition.Right;
+
+        //
+        // 20.11.2017, Andreas Kasapleris
+        // following lines are a 'bug' fix; Assignment could be closed allowing an empty closing date
+        // fixed by adding the following three lines of code; ClientSide validation using some
+        // JavaScript code
+        //
+        (column.PropertiesEdit as DateEditProperties).TimeSectionProperties.Visible = true;
+        //(column.PropertiesEdit as DateEditProperties).DisplayFormatString = "g";
+        (column.PropertiesEdit as DateEditProperties).DisplayFormatString = "dd/MM/yyyy HH:mm";
+        (column.PropertiesEdit as DateEditProperties).ClientSideEvents.Validation = "function(s,e) { var grid = " + settings.Name + "; if (grid.GetEditor(5).GetText() == 'Ολοκληρωμένη' && grid.GetEditor(3).GetText() == '') { grid.GetEditor(3).SetIsValid(false); e.isValid = false;} }";
+
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "Comments";
+        column.Caption = "Σχόλια";
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "Status";
+        column.Caption = "Κατάσταση";
+
+        column.ColumnType = MVCxGridViewColumnType.ComboBox;
+        ComboBoxProperties propertiesComboBox = column.PropertiesEdit as ComboBoxProperties;
+
+        List<string> mStates = new List<string>();
+        mStates.Add("Ανοιχτή");
+        mStates.Add("Ολοκληρωμένη");
+
+        propertiesComboBox.DataSource = mStates;
+
+        propertiesComboBox.EnableSynchronization = DefaultBoolean.False;
+        propertiesComboBox.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        //List<string> mStates = new List<string>();
+        column.ColumnType = MVCxGridViewColumnType.ButtonEdit;
+        column.Name = "btn";
+        column.Caption = "Φόρμα Ανάθεσης";
+        column.EditFormSettings.Visible = DefaultBoolean.False;
+
+        column.SetDataItemTemplateContent(c =>
+        {
+            Html.DevExpress().Button(settingsBtn =>
+            {
+                settingsBtn.Name = "btn" + c.KeyValue;
+                settingsBtn.Text = "Επεξ/σία Φόρμας";
+
+                string keyvalue = c.KeyValue.ToString();
+
+                string mUrl = System.Configuration.ConfigurationManager.AppSettings.Get("FormsLink");
+                string functionstring = String.Format("window.open('" + mUrl + "Edit/{0}');", keyvalue);
+
+                settingsBtn.ClientSideEvents.Click = "function(s, e) { " + functionstring +" }";
+
+            }).Render();
+
+
+            Html.DevExpress().Button(settingsBtn =>
+            {
+                settingsBtn.Name = "btnprint" + c.KeyValue;
+                settingsBtn.Text = "Εκτύπωση Φόρμας";
+
+                string keyvalue = c.KeyValue.ToString();
+
+                string mUrl = System.Configuration.ConfigurationManager.AppSettings.Get("FormsLink");
+                string functionstring = String.Format("window.open('" + mUrl + "Details/{0}');", keyvalue);
+
+                settingsBtn.ClientSideEvents.Click = "function(s, e) { " + functionstring + " }";
+
+            }).Render();
+        });
+    });
+
+    settings.HtmlDataCellPrepared = (s, e) =>
+    {
+        if (e.DataColumn.FieldName == "Status")
+        {
+            var gv = s as MVCxGridView;
+            string text = gv.GetRowValues(e.VisibleIndex, "Status").ToString();
+            switch (text)
+            {
+                case "Ανοιχτή":
+                    e.Cell.BackColor = System.Drawing.Color.LightSkyBlue;
+                    break;
+                case "Ολοκληρωμένη":
+                    e.Cell.BackColor = System.Drawing.Color.LightSlateGray;
+                    break;
+            }
+        }
+    };
+
+    settings.InitNewRow = (s, e) =>
+    {
+        e.NewValues["Status"] = "Ανοιχτή";
+    };
+
+}).Bind(Model).GetHtml())

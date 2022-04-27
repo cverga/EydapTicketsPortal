@@ -1,0 +1,59 @@
+﻿@using System.Collections.Generic;
+@using EydapTickets.Models;
+
+@model List<EydapTickets.Models.IncidentComments>
+
+
+
+<script type="text/javascript">
+    function SetMaxLength(memo, maxLength) {
+        if (!memo)
+            return;
+        if (typeof (maxLength) != "undefined" && maxLength >= 0) {
+            memo.maxLength = maxLength;
+            memo.maxLengthTimerToken = window.setInterval(function () {
+                var text = memo.GetText();
+                if (text && text.length > memo.maxLength)
+                    memo.SetText(text.substr(0, memo.maxLength));
+            }, 10);
+        } else if (memo.maxLengthTimerToken) {
+            window.clearInterval(memo.maxLengthTimerToken);
+            delete memo.maxLengthTimerToken;
+            delete memo.maxLength;
+        }
+    }
+    function MaxLengthChange(s, e) {
+        var maxLength = 300; //here you can define the text length
+        SetMaxLength(NewCommentMemo, maxLength);
+    }
+</script>
+
+
+
+@foreach (EydapTickets.Models.IncidentComments IC in Model)
+{
+    @Html.DevExpress().Memo(settings1 =>
+        {
+            settings1.Name = "depcheckbox_";
+            settings1.Text = IC.Comment;
+            settings1.Width = System.Web.UI.WebControls.Unit.Pixel(400);
+            settings1.Height = System.Web.UI.WebControls.Unit.Pixel(100);
+            settings1.ReadOnly = true;
+        }).GetHtml()
+}
+
+
+@Html.DevExpress().Memo(settings1 =>
+{
+    settings1.Name = "NewCommentMemo";
+    settings1.Properties.ClientInstanceName = "NewCommentMemo";
+    settings1.Properties.ClientSideEvents.KeyPress = "MaxLengthChange";
+
+    settings1.Text = "Εισάγετε εδώ το νέο σχόλιο...";
+    settings1.Width = System.Web.UI.WebControls.Unit.Pixel(400);
+    settings1.Height = System.Web.UI.WebControls.Unit.Pixel(100);
+    settings1.PreRender = (sender, e) =>
+    {
+
+    };
+}).GetHtml()

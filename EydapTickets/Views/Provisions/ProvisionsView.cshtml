@@ -1,0 +1,294 @@
+﻿@using EydapTickets.Models
+
+@model ProvisionDetails
+
+@{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+}
+
+<script type = "text/javascript">
+
+    // s = sender, in other words the object
+    // e = event
+    function NeaParoxiDateValidation(s, e) {
+        var userEnteredDate = s.GetDate();
+        var dateNow = new Date($.now());
+        if ( userEnteredDate == null){
+            return;
+        } else {
+            if (userEnteredDate > dateNow) {
+                e.isValid = false;
+            }
+        }
+    }
+
+</script>
+
+<div>
+
+    @*@Html.DevExpress().DateEdit(settings =>
+    {
+        settings.Name = "EpanaforaAsphatosDate";
+        settings.Properties.DisplayFormatString = "D";
+        settings.Width = Unit.Percentage(50);
+
+        settings.ShowModelErrors = true;
+        settings.Properties.ValidationSettings.ValidateOnLeave = true;
+        settings.Properties.ValidationSettings.EnableCustomValidation = true;
+        settings.Properties.ClientSideEvents.Validation = "NeaParoxiDateValidation";
+        settings.Properties.ValidationSettings.ErrorText = "Client side validation message here.";
+    }).GetHtml()*@
+
+    @using (Html.BeginForm("ProvisionUpdate", "Provisions"))
+    {
+        @Html.HiddenFor(m => m.RAMID)
+
+        @Html.DevExpress().FormLayout(settings =>
+            {
+                settings.Name = "flOverview";
+                settings.AlignItemCaptionsInAllGroups = true;
+
+
+                settings.Items.AddGroupItem(groupSettings =>
+                {
+                    groupSettings.Caption = "Νεα Παροχη";
+
+                    // does not bind to model when hidden.. DevExpress issue ?
+                    //groupSettings.Items.Add(m => m.RAMID, s => {
+                    //    s.Visible = false;
+                    //    });
+                    groupSettings.Items.Add(m => m.ProvisionDate);
+                    //groupSettings.Items.Add(m => m.Asphaltos);
+
+                    groupSettings.Items.Add(m => m.Asphaltos, itemSettings =>
+                    {
+                        itemSettings.NestedExtensionType =
+                        FormLayoutNestedExtensionItemType.CheckBox;
+                    });
+
+                    groupSettings.Items.Add(m => m.Mpeton, itemSettings =>
+                    {
+                        itemSettings.NestedExtensionType = FormLayoutNestedExtensionItemType.CheckBox;
+
+                        CheckBoxSettings cs = itemSettings.NestedExtensionSettings as CheckBoxSettings;
+                        cs.Properties.AllowGrayed = false;
+                        cs.ShowModelErrors = true;
+                        cs.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithText;
+                        cs.Init += (sender, args) =>
+                        {
+                            cs.Checked = false;
+                        };
+
+                    });
+
+                    groupSettings.Items.Add(m => m.Plakes, itemSettings =>
+                    {
+                        itemSettings.NestedExtensionType =
+                        FormLayoutNestedExtensionItemType.CheckBox;
+                    });
+
+                    groupSettings.Items.Add(m => m.Kraspedorithro, itemSettings =>
+                    {
+                        itemSettings.NestedExtensionType =
+                        FormLayoutNestedExtensionItemType.CheckBox;
+                    });
+
+                    //groupSettings.Items.Add(m => m.Xoma);
+
+                    groupSettings.Items.Add(m => m.Xoma, itemSettings =>
+                    {
+                        itemSettings.NestedExtensionType =
+                        FormLayoutNestedExtensionItemType.CheckBox;
+                    });
+
+                    groupSettings.Items.Add(m => m.EpanaforaAsphatosDate, itemSettings =>
+                    {
+                        itemSettings.NestedExtensionType =
+                        FormLayoutNestedExtensionItemType.DateEdit;
+
+                        //
+                        // 05.10.2017, Andreas Kasapleris
+                        // define date field edit settings
+                        //
+                        DateEditSettings ds = itemSettings.NestedExtensionSettings as DateEditSettings;
+                        //    itemSettings.SetNestedContent(() =>
+                        //    {
+                        //        @Html.DevExpress().DateEdit( settings1 =>
+                        //    {
+                        //        settings1.Name = "EpanaforaAsphatosDate";
+                        //        settings1.Width = Unit.Percentage(100);
+
+                        //        settings1.Properties.ValidationSettings.ValidateOnLeave = true;
+                        //        settings1.Properties.ValidationSettings.EnableCustomValidation = true;
+                        //        settings1.Properties.ClientSideEvents.Validation = "NeaParoxiDateValidation";
+                        //        settings1.Properties.ValidationSettings.ErrorText = "Client side validation message here.";
+                        //        settings1.ShowModelErrors = true;
+
+                        // Client-side validation
+                        // Perform the editor's validation fully by yourself without using any of the predefined validation capabilities.
+                        // In these cases, set the ValidationSettings.EnableCustomValidation property to true to force the editor to render
+                        // the error frame to the client side.
+                        // ds.ClientEnabled = true;
+
+                        // enable Client Side API
+                        // ds.Properties.EnableClientSideAPI = true;
+                        // set the Client Instance Name of the date field
+                        // ds.Properties.ClientInstanceName = "EpanaforaAsfaltouDate";
+
+                        // ds.Properties.ValidationSettings.ValidateOnLeave = true;
+                        // ds.Properties.ValidationSettings.EnableCustomValidation = true;
+                        // ds.Properties.ClientSideEvents.Validation = "NeaParoxiDateValidation";
+                        // ds.Properties.ValidationSettings.ErrorText = "Client side validation message here.";
+
+                        // ds.Properties.ClientSideEvents.DateChanged = "function NeaParoxiDateValidation(s, e) { window.alert('Entering a Validation in JavaScript!'); } ";
+                        // or equally
+                        // ds.Properties.ClientSideEvents.DateChanged = "NeaParoxiDateValidation";
+
+                        // how should the error message displays; common for both server and client
+                        // side validations
+                        ds.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithText;
+
+                        //
+                        // all initializations for the Control
+                        // can go here
+                        //
+                        //ds.Init += (sender, args) =>
+                        //{
+                        //};
+
+                        //ds.ClientEnabled = true;
+                        //ds.Properties.EnableClientSideAPI = true;
+                        //ds.Properties.ClientInstanceName = "EpanaforaAsfaltouDate";
+                        ds.ShowModelErrors = true;
+                        //ds.Properties.ValidationSettings.ValidationGroup = "Jerry";
+                        //ds.Properties.ValidationSettings.ValidateOnLeave = true;
+                        //ds.Properties.ValidationSettings.EnableCustomValidation = true;
+                        //ds.Properties.ClientSideEvents.Validation = "function (s, e) { alert('left'); var userEnteredDate = s.GetDate();  var dateNow = new Date($.now()); if ( userEnteredDate == null){return;}else{if (userEnteredDate > dateNow) {e.isValid = false; s.SetIsValid(false);}}return;}";
+                        //ds.Properties.ValidationSettings.ErrorText = "Client side validation message here.";
+                        ds.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.Text;
+                        //ds.Properties.ValidationSettings.Display = Display.Dynamic;
+                    });
+
+
+                    groupSettings.Items.Add(m => m.EpanaforaPezodromiouDate, itemSettings =>
+                    {
+
+                        itemSettings.NestedExtensionType =
+                        FormLayoutNestedExtensionItemType.DateEdit;
+
+                        //
+                        // 05.10.2017, Andreas Kasapleris
+                        // define date field edit settings
+                        //
+
+                        DateEditSettings ds = itemSettings.NestedExtensionSettings as DateEditSettings;
+
+                        DateEditSettings ds1 = itemSettings.NestedExtensionSettings as DateEditSettings;
+
+                        ds1.ShowModelErrors = true;
+                        //ds1.Properties.ValidationSettings.ValidationGroup = "Jerry";
+                        //ds1.Properties.ValidationSettings.ValidateOnLeave = true;
+                        //ds1.Properties.ValidationSettings.EnableCustomValidation = true;
+                        //ds1.Properties.ClientSideEvents.Validation = "function (s, e) { alert('left'); var userEnteredDate = s.GetDate();  var dateNow = new Date($.now()); if ( userEnteredDate == null){return;}else{if (userEnteredDate > dateNow) {e.isValid = false; s.SetIsValid(false);}}return;}";
+                        //ds1.Properties.ValidationSettings.ErrorText = "Client side validation message here.";
+                        ds1.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.Text;
+
+                    });
+
+                    groupSettings.Items.Add(m => m.ApokomidiBazaDate, itemSettings =>
+                    {
+
+                        itemSettings.NestedExtensionType =
+                        FormLayoutNestedExtensionItemType.DateEdit;
+
+                        //
+                        // 05.10.2017, Andreas Kasapleris
+                        // define date field edit settings
+                        //
+
+                        DateEditSettings ds = itemSettings.NestedExtensionSettings as DateEditSettings;
+
+                        DateEditSettings ds2 = itemSettings.NestedExtensionSettings as DateEditSettings;
+
+                        ds2.ShowModelErrors = true;
+                        //ds2.Properties.ValidationSettings.ValidationGroup = "Jerry";
+                        //ds2.Properties.ValidationSettings.ValidateOnLeave = true;
+                        //ds2.Properties.ValidationSettings.EnableCustomValidation = true;
+                        //ds2.Properties.ClientSideEvents.Validation = "function (s, e) { alert('left'); var userEnteredDate = s.GetDate();  var dateNow = new Date($.now()); if ( userEnteredDate == null){return;}else{if (userEnteredDate > dateNow) {e.isValid = false; s.SetIsValid(false);}}return;}";
+                        //ds2.Properties.ValidationSettings.ErrorText = "Client side validation message here.";
+                        ds2.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.Text;
+
+                });
+
+                groupSettings.Items.Add(i =>
+                {
+                    i.ShowCaption = DefaultBoolean.False;
+                    i.HorizontalAlign = FormLayoutHorizontalAlign.Right;
+                    i.Width = 150;
+                    i.NestedExtension().Button(s =>
+                    {
+                        s.Name = "UpdateButton";
+                        s.Text = "Ενημερωση";
+                        s.UseSubmitBehavior = true;
+                    });
+                });
+
+            });
+
+        }).GetHtml()
+
+        @*<table cellpadding="300" cellspacing="300" class="SearchTable">
+            <tr>
+                <td>
+                    @Html.LabelFor(model => model.ProvisionDate, htmlAttributes: new { @class = "control-label col-md-2" })
+                </td>
+                <td>
+                    @Html.EditorFor(model => model.ProvisionDate, new { htmlAttributes = new { @class = "form-control" } })
+                </td>
+                <td>
+                    @Html.LabelFor(model => model.Municipality, htmlAttributes: new { @class = "control-label col-md-2" })
+                </td>
+                <td>
+                    @Html.CheckBoxFor(model => model.Asphaltos  new { @class = "form-control" })
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    @Html.LabelFor(model => model.From, htmlAttributes: new { @class = "control-label col-md-2" })
+                </td>
+                <td>
+                    @Html.EditorFor(model => model.From, new { htmlAttributes = new { @class = "form-control" } })
+                </td>
+                <td>
+                    @Html.LabelFor(model => model.StreetName, htmlAttributes: new { @class = "control-label col-md-2" })
+                </td>
+                <td>
+                    @Html.Partial("Streetnames", Model)
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    @Html.LabelFor(model => model.To, htmlAttributes: new { @class = "control-label col-md-2" })
+                </td>
+                <td>
+                    @Html.EditorFor(model => model.To, new { htmlAttributes = new { @class = "form-control" } })
+                </td>
+                <td>
+                    @Html.LabelFor(model => model.StreetNumber, htmlAttributes: new { @class = "control-label col-md-2" })
+                </td>
+                <td>
+                    @Html.EditorFor(model => model.StreetNumber, new { htmlAttributes = new { @class = "form-control" } })
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <input type="submit" value="Αναζήτηση" name="Search" class="btn btn-default" />
+                </td>
+            </tr>
+        </table>*@
+    }
+
+</div>

@@ -1,0 +1,76 @@
+﻿@model DM.App.Library.Models.Tasks
+@using DM.App.Library.Core
+
+@{
+    ViewBag.PageTitle = "Edit Task";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">@ViewBag.PageTitle</h1>
+    </div>
+    <!-- /.col-lg-12 -->
+</div>
+
+<form id="form-task" method="post">
+    @*@using (Html.BeginForm(null, null, null, FormMethod.Post, new Dictionary<string, object>() { { "id", "form-request" } }))*@
+    @{
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+
+        Model.FormState = Enums.FormStates.Edit;
+        if (UILibSelector.GetUILibrary(this.Request).Library == UILibSelector.UILibs.Bootstrap)
+        {
+            @Html.Partial("~/Views/TasksGen/_EntityBtSp.cshtml", Model)
+        }
+        else
+        {
+            @Html.Partial("~/Views/TasksGen/_Entity.cshtml", Model)
+        }
+    }
+    <input type="hidden" name="UserCommand" id="UserCommand" value="" />
+</form>
+
+
+<div style="margin-top: 20px;">
+    @*@Html.ActionLink("Back to List", "Index")*@
+</div>
+
+@HtmlTagsHelper.CreateJSValidationContent(Html, Model.FormState, Model.FieldsConfiguration)
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        if (app != undefined) {
+            app.Log("Task view Edit", "App");
+
+            app.FormState = "Edit";
+            // Postpone calling these functions due to timing issues with MetroUI.js
+            app.SubscribeDefaultCallbacksForControllersInEdit();
+
+            app.ConfirmPageExit();
+        }
+        @HtmlTagsHelper.CreateJSDocumentReadyContent(Html, Model.FormState, Model.FieldsConfiguration)
+    });
+    $("input[type='submit']").click(function () {
+        // validate form
+        var formSelector = "#form-task";
+
+        var isPartialValid = true;
+        try {
+            isPartialValid = app.ExecuteDefaultValidations(this, formSelector, true, isPartialValid);
+        } catch (ex) {
+            isPartialValid = false;
+            if (app != undefined && app != null) {
+                app.HandleError("", "", ex);
+            }
+        }
+        return isPartialValid;
+    });
+
+</script>
+
+@section Scripts {
+    @Scripts.Render("~/Bundles/jqueryval")
+}

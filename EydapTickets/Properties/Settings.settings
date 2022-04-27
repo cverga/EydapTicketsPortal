@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="EydapTickets.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="EydapTicketsPortal_gr_eydap_dominosrv2_TTUpdateService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://dominosrv2.eydap.gr:80/EYDAP/TicketTrace/TicketTrace.nsf/G-TT-Update?OpenWebService</Value>
+    </Setting>
+    <Setting Name="EydapTicketsPortal_gr_eydap_dominosrv21_TTCreationService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://dominosrv2.eydap.gr:80/EYDAP/TicketTrace/TicketTrace.nsf/G-TT-Initiation?OpenWebService</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

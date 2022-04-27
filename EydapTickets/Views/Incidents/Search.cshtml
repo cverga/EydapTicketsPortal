@@ -1,0 +1,45 @@
+﻿@using EydapTickets.Models
+@using Newtonsoft.Json
+
+@model IncidentSearchCriteria
+
+@using (Html.BeginForm())
+{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    @Html.AntiForgeryToken()
+
+    Html.RenderPartial("PopUpsPartialView");
+
+    Html.RenderPartial("_CriteriaRoundPanelPartial", Model);
+
+    Html.RenderAction("GridViewPartial", "Incidents", new { Area = "", ViewMode = IncidentGridViewMode.Search });
+}
+
+@Html.DevExpress().LoadingPanel(settings =>
+{
+    settings.Name = "LoadingPanel";
+    settings.Text = "Αναζήτηση ...";
+    settings.ContainerElementID = "IncidentGridView";
+    settings.Modal = true;
+}).GetHtml()
+
+@section HeadScripts {
+    @{
+        var appContext = new
+        {
+            ViewBag.IsAdmin,
+            ViewBag.DepartmentId,
+            ViewBag.PrintIncidentUrl,
+            ViewBag.LocateIncidentUrl
+        };
+    }
+    <script type="text/javascript">
+        AppContext = JSON.parse('@Html.Raw(JsonConvert.SerializeObject(appContext))');
+    </script>
+    @Scripts.Render(
+        "~/Bundles/IncidentGridView.Bundle",
+        "~/Bundles/TaskGridView.Bundle",
+        "~/Bundles/AssignmentGridView.Bundle")
+}

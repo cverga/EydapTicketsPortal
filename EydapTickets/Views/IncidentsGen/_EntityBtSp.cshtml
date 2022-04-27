@@ -1,0 +1,119 @@
+﻿@model DM.App.Library.Models.Incidents
+@using DM.App.Library.Core
+@{
+    int counter = 0;
+    int cells = 2;
+    int groupId = 0;
+}
+
+<div class="page-content">
+    <div class="form-container" data-text="">
+        @*<fieldset>
+            <legend>Incident</legend>*@
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12 pull-left">
+                @foreach (var field in Model.FieldsConfiguration)
+                {
+                    int overrideCells = cells;
+                    int fieldState = HtmlTagsHelper.MapFieldStateToFormState(Model.FormState, field.FieldStateInNewForm, field.FieldStateInEditForm, field.FieldStateInViewForm, -1);
+
+                    if (fieldState == (int)Enums.FieldStates.Unavailable)
+                    {
+                        continue;
+                    }
+                    string fieldControl = HtmlTagsHelper.MapFieldControlToFormState(Model.FormState, field.ControlTypeInNewForm, field.ControlTypeInEditForm, field.ControlTypeInViewForm, null);
+                    bool isVisible = (fieldState != (int)Enums.FieldStates.Hidden && fieldState != (int)Enums.FieldStates.Unavailable);
+
+                    if (isVisible)
+                    {
+                        bool showInFullRow = HtmlTagsHelper.ShowFieldInFullRow(field);
+                        if (showInFullRow && counter % cells != 0)
+                        {
+                            counter++;
+                        }
+                        // Show field in next row
+                        if (counter % cells == 0)
+                        {
+                            // Show field in full row
+                            if (showInFullRow)
+                            {
+                                overrideCells = 1;
+                                counter++;
+                            }
+                            if (groupId > 0 && field.LayoutGroupId != groupId)
+                            {
+                                @Html.Raw("<!-- Group end -->" + Environment.NewLine + "</div></div>" + Environment.NewLine);
+                                                                                                                            groupId = 0;
+                            }
+
+                            @Html.Raw("<!-- Row start -->" + Environment.NewLine + "<div class=\"clearfix visible-sm-block visible-md-block visible-lg-block\"></div>" + Environment.NewLine);
+
+                            if (field.LayoutGroupId > 0 && field.LayoutGroupId != groupId)
+                            {
+                                @Html.Raw("<!-- Group start -->" + Environment.NewLine + "<div id=\"divGroup" + field.LayoutGroupId.ToString() + "\" class=\"panel panel-default\" style=\"margin-left: 15px; margin-right: 15px;\"><div class=\"panel-heading\"><h3 class=\"panel-title\">" + (!string.IsNullOrEmpty(field.NameLocale9) ? field.NameLocale9 : field.LayoutGroupId.ToString()) + "</h3></div><div class=\"panel-body\">" + Environment.NewLine);
+                                groupId = field.LayoutGroupId;
+                            }
+                        }
+                    }
+
+                    if (!isVisible) //(fieldState == (int)Enums.FieldStates.Hidden)
+                    {
+                        // Do nothing here
+                    }
+                    else
+                    {
+                        @Html.Raw("<!-- CreateControlForField S -->" + Environment.NewLine)
+                        @Html.Raw(HtmlTagsHelper.CreateOpenDivCell(overrideCells) + Environment.NewLine)
+                        @HtmlTagsHelper.CreateControlForField(Html, field.InternalName, null, field.GetTitle(), fieldControl, (Enums.FieldStates)fieldState, Model.FormState, field);
+                        @Html.Raw(HtmlTagsHelper.CreateCloseDiv() + "<!-- CreateControlForField E -->" + Environment.NewLine)
+                        counter++;
+
+                        // Show field in row and add empty cell
+                        if (HtmlTagsHelper.ShowFieldInRowWithEmptyCell(field))
+                        {
+                            @Html.Raw("<!-- ShowFieldInRowWithEmptyCell S -->" + Environment.NewLine)
+                            @Html.Raw(HtmlTagsHelper.CreateOpenDivCell(cells))
+                            @Html.Raw(HtmlTagsHelper.CreateCloseDiv() + Environment.NewLine)
+                            @Html.Raw("<!-- ShowFieldInRowWithEmptyCell E -->" + Environment.NewLine)
+                            counter++;
+                        }
+                    }
+                    if (counter % cells == 0)
+                    {
+                        if (isVisible)
+                        {
+                            // Do nothing
+                        }
+                    }
+                }
+                @if (groupId > 0)
+                {
+                    @Html.Raw("<!-- Group end -->" + Environment.NewLine + "</div></div>" + Environment.NewLine);
+                }
+
+
+                @foreach (var field in Model.FieldsConfiguration)
+                {
+                    int fieldState = HtmlTagsHelper.MapFieldStateToFormState(Model.FormState, field.FieldStateInNewForm, field.FieldStateInEditForm, field.FieldStateInViewForm, -1);
+                    if (fieldState == (int)Enums.FieldStates.Hidden)
+                    {
+                        @Html.Hidden(field.InternalName)
+                        @Html.Raw(Environment.NewLine)
+                    }
+                }
+            </div>
+            @if (Model.ShowActionButtons)
+            {
+            <div class="clearfix visible-xs-block visible-sm-block visible-md-block visible-lg-block "></div>
+            <div class="col-xs-12 col-sm-12 col-md-12">
+                <div class="form-group">
+                    @*<input name="btnSubmit" id="btnSubmit" type="submit" value="Save" class="btn btn-primary" />*@
+                    <input name="btnCancel" id="btnCancel" type="submit" value="Cancel" class="btn" />
+                </div>
+            </div>
+            }
+        </div> <!-- row -->
+        @*</fieldset>*@
+    </div> <!-- form-container -->
+
+</div> <!-- page-content -->

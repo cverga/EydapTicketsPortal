@@ -1,0 +1,56 @@
+﻿
+@{
+    ViewBag.Title = "index";
+}
+
+<script type="text/javascript">
+    (function ( $ ) {
+        'use strict';
+
+        window.ProvisionsSplitter_Init = function (s, e) {
+            var splitter = s;
+            $(window).resize($.throttle(100, function() {
+                ProvisionsSplitter_AdjustSize(splitter);
+            }));
+            ProvisionsSplitter_AdjustSize(splitter);
+        }
+
+        window.ProvisionsSplitter_AdjustSize = function(splitter) {
+
+            // Start with the client height
+            var targetHeight = document.documentElement.clientHeight;
+
+            // Account for header pane
+            var headerPane = window.HeaderPane;
+            if (typeof(headerPane) !== 'undefined') {
+                targetHeight -= headerPane.GetHeight();
+            }
+
+            // Update height if changed
+            var originalHeight = splitter.GetHeight();
+            if  (originalHeight !== targetHeight) {
+                splitter.SetHeight(-1); // Use this to force the update
+                splitter.SetHeight(targetHeight);
+            }
+        }
+
+    }( jQuery ));
+</script>
+
+@Html.DevExpress().Splitter(settings =>
+{
+    settings.Name = "ProvisionsSplitter";
+    settings.Width = Unit.Percentage(100);
+    settings.Orientation = Orientation.Vertical;
+    settings.Style.Add("border", "0");
+
+    settings.Panes.Add(pane =>
+    {
+        pane.ContentUrl = "http://portal-ddy:9876/login.aspx?username=" + ViewBag.UserName;
+        pane.ScrollBars = ScrollBars.Auto;
+        pane.PaneStyle.Border.BorderStyle = BorderStyle.None;
+    });
+
+    settings.ClientSideEvents.Init = "ProvisionsSplitter_Init";
+
+}).GetHtml()

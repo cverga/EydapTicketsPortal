@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:intf="urn:TTInitiation" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:impl="urn:TTInitiation" xmlns="http://schemas.xmlsoap.org/wsdl/" targetNamespace="urn:TTInitiation" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:TTInitiation">
+      <xsd:import namespace="http://schemas.xmlsoap.org/soap/encoding/" />
+      <xsd:complexType name="RESPONSE">
+        <xsd:sequence>
+          <xsd:element name="SUCCESS" type="xsd:boolean" />
+          <xsd:element name="REASON" type="xsd:string" />
+          <xsd:element name="ERRORTYPE" type="xsd:string" />
+          <xsd:element name="ERRORCODE" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="CREATETTResponse">
+    <wsdl:part name="CREATETTReturn" type="impl:RESPONSE" />
+  </wsdl:message>
+  <wsdl:message name="CREATETTRequest">
+    <wsdl:part name="TTID1022" type="xsd:string" />
+    <wsdl:part name="CODE1022" type="xsd:string" />
+    <wsdl:part name="REGISTERNUMBER" type="xsd:string" />
+    <wsdl:part name="MANAGEMENTTYPE" type="xsd:string" />
+    <wsdl:part name="DHMOS" type="xsd:string" />
+    <wsdl:part name="ADDRESS" type="xsd:string" />
+    <wsdl:part name="ADDRESSNUMBER" type="xsd:string" />
+    <wsdl:part name="ZIPCODE" type="xsd:string" />
+    <wsdl:part name="BUILDINGNUMBER" type="xsd:string" />
+    <wsdl:part name="COUNTERNUMBER" type="xsd:string" />
+    <wsdl:part name="CREATORDISPLAY" type="xsd:string" />
+    <wsdl:part name="CRITICALNESS" type="xsd:string" />
+    <wsdl:part name="STATUS" type="xsd:string" />
+    <wsdl:part name="COMMENTS" type="xsd:string" />
+    <wsdl:part name="SOURCE" type="xsd:string" />
+    <wsdl:part name="TICKETTYPE" type="xsd:string" />
+    <wsdl:part name="TECHACTIONCODE" type="xsd:string" />
+    <wsdl:part name="YDPORTALCODE" type="xsd:string" />
+  </wsdl:message>
+  <wsdl:portType name="TTCreation">
+    <wsdl:operation name="CREATETT" parameterOrder="TTID1022 CODE1022 REGISTERNUMBER MANAGEMENTTYPE DHMOS ADDRESS ADDRESSNUMBER ZIPCODE BUILDINGNUMBER COUNTERNUMBER CREATORDISPLAY CRITICALNESS STATUS COMMENTS SOURCE TICKETTYPE TECHACTIONCODE YDPORTALCODE">
+      <wsdl:input name="CREATETTRequest" message="impl:CREATETTRequest" />
+      <wsdl:output name="CREATETTResponse" message="impl:CREATETTResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="DominoSoapBinding" type="impl:TTCreation">
+    <wsdlsoap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc" />
+    <wsdl:operation name="CREATETT">
+      <wsdlsoap:operation soapAction="" />
+      <wsdl:input name="CREATETTRequest">
+        <wsdlsoap:body use="encoded" namespace="urn:TTInitiation" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:input>
+      <wsdl:output name="CREATETTResponse">
+        <wsdlsoap:body use="encoded" namespace="urn:TTInitiation" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="TTCreationService">
+    <wsdl:port name="Domino" binding="impl:DominoSoapBinding">
+      <wsdlsoap:address location="http://dominosrv2.eydap.gr:80/EYDAP/TicketTrace/TicketTrace.nsf/G-TT-Initiation?OpenWebService" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

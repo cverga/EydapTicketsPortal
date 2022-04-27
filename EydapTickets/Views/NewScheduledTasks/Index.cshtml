@@ -1,0 +1,11 @@
+﻿
+@model IEnumerable<EydapTickets.Models.NewScheduledTask>
+
+@{
+    ViewBag.Title = "Προγραμματισμός Εργασιών";
+
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+}
+
+@Html.Partial("NewScheduledTasksPartialView", Model)

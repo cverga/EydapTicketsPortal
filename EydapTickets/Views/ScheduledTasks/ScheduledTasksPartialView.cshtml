@@ -1,0 +1,239 @@
+﻿@using EydapTickets.Helpers;
+@using EydapTickets.Models;
+
+@model IEnumerable<Task>
+
+@(Html.DevExpress().GridView<Task>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "ScheduledTasksGrid";
+    settings.SettingsText.Title = "Προγραμματισμένες Εργασίες";
+
+    settings.CallbackRouteValues = new { Controller = "ScheduledTasks", Action = "ScheduledTasksPartialView" };
+    settings.Width = Unit.Percentage(100);
+    settings.Settings.ShowFilterRow = false;
+    settings.SettingsBehavior.ColumnResizeMode = ColumnResizeMode.NextColumn;
+    settings.KeyFieldName = "TaskId";
+    settings.SettingsDetail.ShowDetailRow = true;
+    settings.SettingsDetail.AllowOnlyOneMasterRowExpanded = true;
+    settings.Styles.FocusedRow.BackColor = System.Drawing.Color.YellowGreen;
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "ScheduledTasks", Action = "AddNewTask" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "ScheduledTasks", Action = "UpdateTask" };
+
+    settings.SettingsBehavior.AllowGroup = true;
+    settings.SettingsBehavior.AllowSort = true;
+    settings.Settings.ShowGroupPanel = true;
+
+    settings.SetDetailRowTemplateContent(c =>
+    {
+        Html.DevExpress().RoundPanel(settingsRoundPanel =>
+        {
+            settingsRoundPanel.Name = "roundPanel" + Guid.NewGuid().ToString();
+            settingsRoundPanel.AllowCollapsingByHeaderClick = true;
+            settingsRoundPanel.ShowCollapseButton = true;
+            settingsRoundPanel.ShowHeader = true;
+            settingsRoundPanel.View = DevExpress.Web.View.Standard;
+            settingsRoundPanel.EnableAnimation = true;
+
+            settingsRoundPanel.Width = Unit.Percentage(100);
+            settingsRoundPanel.Styles.Header.Font.Size = System.Web.UI.WebControls.FontUnit.Large;
+            settingsRoundPanel.Styles.Header.BackColor = System.Drawing.Color.Beige;
+            settingsRoundPanel.HeaderText = "Αναθέσεις";
+            settingsRoundPanel.SetContent(() =>
+            {
+                Html.RenderAction("ScheduledAssignmentsPartialView", new { aTaskGuid = DataBinder.Eval(c.DataItem, "TaskId") });
+                ViewData["TaskGuid"] = DataBinder.Eval(c.DataItem, "TaskId");
+                ViewData["Enabled"] = ViewBag.DepartmentId == (int)DataBinder.Eval(c.DataItem, "DepartmentId") || ViewBag.IsAdmin;
+                Html.RenderPartial("NewAssignmentPartialView", ViewData);
+            });
+        }).GetHtml();
+    });
+    settings.CommandColumn.Visible = true;
+    settings.CommandColumn.ShowNewButton = false;
+    settings.CommandColumn.ShowEditButton = true;
+
+    settings.SettingsCommandButton.CancelButton.Text = "Ακύρωση";
+    settings.SettingsCommandButton.UpdateButton.Text = "Αποθήκευση";
+
+    settings.SettingsCommandButton.EditButton.ButtonType = GridCommandButtonRenderMode.Button;
+    settings.SettingsCommandButton.EditButton.Text = "Επεξ/σία Εργασίας";
+
+    settings.Images.DetailCollapsedButton.Url = "~/Content/Images/1.png";
+    settings.Images.DetailExpandedButton.Url = "~/Content/Images/2.png";
+    //settings.SettingsBehavior.AllowFocusedRow = true;
+    //settings.SettingsBehavior.AllowSelectByRowClick = true;
+    //settings.SettingsBehavior.AllowSelectSingleRowOnly = true;
+    //settings.SettingsBehavior.EnableRowHotTrack = true;
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "TaskId";
+        column.Visible = false;
+    });
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "IncidentId";
+        column.Visible = false;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "TaskTypeId";
+        column.Caption = "Περιγραφη Εργασίας";
+
+        column.ColumnType = MVCxGridViewColumnType.ComboBox;
+        ComboBoxProperties propertiesComboBox = column.PropertiesEdit as ComboBoxProperties;
+
+        //List<string> mStates = new List<string>();
+        propertiesComboBox.DataSource = TaskTypeProvider.GetAllTaskTypesForUser(ViewBag.User);
+        propertiesComboBox.TextField = "Description";
+        propertiesComboBox.ValueField = "Id";
+        propertiesComboBox.ValueType = typeof(int);
+
+        propertiesComboBox.EnableSynchronization = DefaultBoolean.False;
+        propertiesComboBox.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+    });
+
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "Comments";
+        column.Caption = "Σχόλια";
+        //List<string> mStates = new List<string>();
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+        //TextBoxProperties propertiesTextboBox = column.PropertiesEdit as TextBoxProperties;
+        //propertiesTextboBox.R
+        column.ReadOnly = false;
+
+    });
+
+    settings.CustomUnboundColumnData = (sender, e) =>
+    {
+        if (e.Column.Name == "AllComments")
+        {
+            //decimal price = (decimal)e.GetListSourceFieldValue("UnitPrice");
+            //int quantity = Convert.ToInt32(e.GetListSourceFieldValue("Quantity"));
+            //e.Value = price * quantity;
+            e.Value = "Όλα τα σχόλια";
+        }
+    };
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "State";
+        column.Caption = "Κατάσταση";
+
+        column.ColumnType = MVCxGridViewColumnType.ComboBox;
+        ComboBoxProperties propertiesComboBox = column.PropertiesEdit as ComboBoxProperties;
+
+        List<string> mStates = new List<string>();
+        mStates.Add("Ανοιχτή");
+        mStates.Add("Ολοκληρωμένη");
+
+        propertiesComboBox.DataSource = mStates;
+
+        propertiesComboBox.EnableSynchronization = DefaultBoolean.False;
+        propertiesComboBox.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+    });
+
+    settings.CommandButtonInitialize = (s, e) =>
+    {
+        if (e.ButtonType == ColumnCommandButtonType.Edit)
+        {
+            MVCxGridView g = s as MVCxGridView;
+            var value = (int)g.GetRowValues(e.VisibleIndex, "DepartmentId");
+            e.Enabled = ViewBag.DepartmentId == value || ViewBag.IsAdmin;
+        }
+    };
+
+    settings.Columns.Add(column =>
+    {
+        //List<string> mStates = new List<string>();
+        column.ColumnType = MVCxGridViewColumnType.ButtonEdit;
+        column.Name = "AllComments";
+        column.Caption = "Σχόλια Αναθέσεων";
+        column.EditFormSettings.Visible = DefaultBoolean.False;
+
+        column.SetDataItemTemplateContent(c =>
+        {
+            Html.DevExpress().Button(settingsBtn =>
+            {
+                settingsBtn.Name = "btn" + c.KeyValue;
+                settingsBtn.Text = "Προβολή σχολίων";
+                //settingsBtn.ClientSideEvents.Click = "function(s, e) {DisplayGroupAlarm();}"; //string.Format("function(s, e) {{ alert('{0}'); }}", c.KeyValue);
+                //settingsBtn.RouteValues = new { Controller = "Home", Action = "ButtonClickAction", rowKeyValue = c.KeyValue };
+                settingsBtn.ClientSideEvents.Click = "function(s, e) { formpopup.Show(); FormsAjaxCall('" + DataBinder.Eval(c.DataItem, "TaskId") + "');}";
+            }).Render();
+        });
+    });
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            //.AddNewRowCommand()
+            //.AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+    settings.InitNewRow = (s, e) =>
+    {
+        e.NewValues["State"] = "Ανοιχτή";
+    };
+
+    settings.CellEditorInitialize = (s, e) =>
+    {
+        MVCxGridView gv = s as MVCxGridView;
+        if (e.Column.FieldName == "Comments")
+        {
+            (e.Editor).Width = System.Web.UI.WebControls.Unit.Pixel(400);
+            //(e.Editor).Height = System.Web.UI.WebControls.Unit.Pixel(100);
+        }
+        if (e.Column.FieldName == "TaskTypeId")
+        {
+            //if (gv.Is
+            //(e.Editor as MVCxComboBox).DataSource =
+
+            if (e.Editor as ASPxComboBox != null)
+            {
+                (e.Editor as ASPxComboBox).Items.Clear();
+                (e.Editor as ASPxComboBox).DataSource = TaskTypeProvider.GetAllTaskTypesForUser(ViewBag.User);
+                (e.Editor as ASPxComboBox).DataBind();
+            }
+
+        }
+    };
+
+    settings.HtmlDataCellPrepared = (s, e) =>
+    {
+        if (e.DataColumn.FieldName == "State")
+        {
+            var gv = s as MVCxGridView;
+            string text = gv.GetRowValues(e.VisibleIndex, "State").ToString();
+            switch (text)
+            {
+                case "Ανοιχτή":
+                    e.Cell.BackColor = System.Drawing.Color.LightSkyBlue;
+                    break;
+                case "Ολοκληρωμένη":
+                    e.Cell.BackColor = System.Drawing.Color.LightSlateGray;
+                    break;
+            }
+        }
+    };
+
+    settings.ClientSideEvents.Init = @"
+        function(s,e) {
+            window.GlobalGridView_Init(s, e);
+            window.GlobalGridView_AdjustSize(s);
+        }";
+
+    settings.ClientSideEvents.EndCallback = "window.GlobalGridView_AdjustSize";
+
+}).Bind(Model).GetHtml())

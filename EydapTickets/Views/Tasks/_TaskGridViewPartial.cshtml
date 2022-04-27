@@ -1,0 +1,776 @@
+﻿@using System.Configuration
+@using EydapTickets.Helpers
+@using EydapTickets.Models
+
+@model IEnumerable<Task>
+
+@(Html.DevExpress().GridView<Task>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "TaskGridView_" + ViewBag.IncidentId.ToString().Replace("-", "");
+    settings.CallbackRouteValues = new { Area = "", Controller = "Tasks", Action = "GridViewPartial" };
+
+    // Text configuration
+    settings.SettingsText.Title = "Εργασίες";
+
+    // Settings configuration
+    settings.Settings.ShowFilterRow = false;
+    settings.Settings.ShowGroupPanel = false;
+
+    // Style configuration
+    settings.ControlStyle.CssClass = "height-auto";
+    //settings.Styles.TitlePanel.HorizontalAlign = HorizontalAlign.Left;
+    //settings.Styles.TitlePanel.Paddings.Padding = Unit.Pixel(8);
+
+    // Editing configuration
+    settings.SettingsEditing.AddNewRowRouteValues = new { Area = "", Controller = "Tasks", Action = "AddNewTaskPartial" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Area = "", Controller = "Tasks", Action = "UpdateTaskPartial" };
+    //settings.SettingsEditing.DeleteRowRouteValues = new { Area = "", Controller = "Tasks", Action = "DeleteTaskPartial" };
+
+    // 24.10.2018, Andreas Kasapleris
+    // In this case, you can use the EditFormLayoutProperties property to access and customize the edit form's settings.
+    // https://demos.devexpress.com/MVCxGridViewDemos/Editing/EditFormLayout
+    {
+        settings.EditFormLayoutProperties.ColCount = 2;
+
+        settings.EditFormLayoutProperties.Items.Add(m => m.CreationDate);
+        settings.EditFormLayoutProperties.Items.Add(m => m.ClosingDate);
+        settings.EditFormLayoutProperties.Items.Add(m => m.DepartmentId);
+        settings.EditFormLayoutProperties.Items.Add(m => m.TaskTypeId);
+        settings.EditFormLayoutProperties.Items.Add(m => m.Comments);
+        settings.EditFormLayoutProperties.Items.Add(m => m.State);
+
+        settings.EditFormLayoutProperties.Items.AddCommandItem(itemSettings =>
+        {
+            itemSettings.ColumnSpan = 2;
+            itemSettings.HorizontalAlign = FormLayoutHorizontalAlign.Right;
+        });
+
+        settings.EditFormLayoutProperties.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.SingleColumnWindowLimit;
+        settings.EditFormLayoutProperties.SettingsAdaptivity.SwitchToSingleColumnAtWindowInnerWidth = 700;
+    }
+
+    // Detail configuration
+    settings.SettingsDetail.MasterGridName = "IncidentGridView";
+    settings.SettingsDetail.AllowOnlyOneMasterRowExpanded = true;
+    settings.SettingsDetail.ShowDetailRow = true;
+
+    settings.SetDetailRowTemplateContent(c =>
+    {
+        ViewContext.Writer.Write("<div id=\"AssignmentGridViewContainer\" style=\"height:100%; width:100%\">");
+
+        var routeValues = new
+        {
+            Area = "",
+            TaskId = c.KeyValue,
+            IncidentId = DataBinder.Eval(c.DataItem, "IncidentId"),
+        };
+
+        Html.RenderAction("GridViewPartial", "Assignments", routeValues);
+
+        ViewContext.Writer.Write("</div>");
+    });
+
+    // 09.05.2017, Andreas Kasapleris
+    // if TaskTypeId is Ε301 - ΣΥΝΤΗΡΗΣΗ-ΕΠΙΣΚΕΥΗ ΒΛΑΒΗΣ ΔΙΚΤΥΟΥ,
+    // do not allow user to expand Task row and add Visit (Ανάθεση)
+    // this is trapped below in settings.Init
+    settings.Init = (s, e) =>
+    {
+        var gridView = (ASPxGridView)s;
+        gridView.DetailRowGetButtonVisibility += (sender, args) =>
+        {
+            var detailRowHandlerGrid = (ASPxGridView)sender;
+            var detailRowValues = new
+            {
+                TaskTypeId = detailRowHandlerGrid.GetRowValuesByKeyValue<int>(args.KeyValue, "TaskTypeId")
+            };
+
+            if (Constants.AutomatedTaskTypes.Contains(detailRowValues.TaskTypeId))
+            {
+                args.ButtonState = GridViewDetailRowButtonState.Hidden;
+            }
+        };
+    };
+
+    settings.KeyFieldName = "TaskId";
+
+    settings.Columns.Add(m => m.TaskId).Visible = false;
+    settings.Columns.Add(m => m.IncidentId).Visible = false;
+
+    // 09.10.2018, Andreas Kasapleris
+    // adding the Task Creation Date, column 'CreationDate'
+    // it is allowed to be altered by the user but it is
+    // checked against IncidentCreation date
+    settings.Columns.Add(m => m.CreationDate, column =>
+    {
+        column.Caption = "Ημερ.Δημιουργίας";
+        column.Name = column.FieldName;
+
+        column.EditorProperties().DateEdit(p =>
+        {
+            p.AllowUserInput = false;
+            p.CalendarProperties.ShowClearButton = false;
+            p.CalendarProperties.ShowTodayButton = false;
+            p.DisplayFormatString = "dd/MM/yyyy HH:mm";
+            p.EditFormat = EditFormat.Custom;
+            p.EditFormatString = "dd/MM/yyyy HH:mm";
+            p.TimeSectionProperties.Adaptive = true;
+            p.TimeSectionProperties.TimeEditProperties.EditFormat = EditFormat.Custom;
+            p.TimeSectionProperties.TimeEditProperties.EditFormatString = "HH:mm";
+            p.TimeSectionProperties.Visible = true;
+            p.UseMaskBehavior = false;
+            p.ValidationSettings.CausesValidation = true;
+            p.ValidationSettings.EnableCustomValidation = true;
+
+            p.ValidationSettings.RequiredField.ErrorText = "Το πεδίο Ημερ.Δημιουργίας είναι υποχρεωτικό.";
+            p.ValidationSettings.RequiredField.IsRequired = true;
+            p.ValidationSettings.ValidateOnLeave = true;
+
+            p.ClientSideEvents.Validation = @"
+                function (s, e) {
+                    var grid = " + settings.Name + @";
+                    var minDate = grid.GetEditor('CreationDate').GetMinDate();
+                    if (e.value < minDate) {
+                        e.isValid = false;
+                        e.errorText = 'Ημ/νια προγενέστερη σήματος.';
+                    }
+                }";
+        });
+    });
+
+    // 29.03.2017, Andreas Kasapleris
+    // Departments Combo box; based on the department
+    // selection, Task Types which only this department can execute
+    // will be shown in a different combo box
+    // (case of cascaded combo's)
+    settings.Columns.Add(m => m.DepartmentId, column =>
+    {
+        column.Caption = "Τμήμα";
+
+        column.EditFormSettings.Visible = DefaultBoolean.True;
+
+        column.EditorProperties().ComboBox(p =>
+        {
+            //p.AllowUserInput = false;
+            p.DropDownStyle = DropDownStyle.DropDown;
+
+            // 2018.11.30 This needs to be bound to all departments so that users with
+            // elevated permissions ie. administrator see the results properly
+            p.DataSource = DepartmentsDAL.GetAllDepartments();
+
+            p.TextField = "DepartmentName";
+            p.ValueField = "DepartmentId";
+            p.ValueType = typeof(int);
+
+            // props.DropDownWidth = 150;
+
+            p.ValidationSettings.RequiredField.IsRequired = true; // 29.03.2017, Andreas Kasapleris
+            p.ValidationSettings.RequiredField.ErrorText = "Το πεδίο Τμήμα είναι υποχρεωτικό."; // 31.03.2017, Andreas Kasapleris
+
+            p.EnableSynchronization = DefaultBoolean.False;
+            p.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+
+            //
+            // 29.03.2017, Andreas Kasapleris
+            // SelectedIndexChanged event handler is placed in Views\Shared\_mainLayout.cshtml
+            // when Department selection is changed by the user, then other Task Types should be loaded
+            // on the Task Types ComboBox
+            //p.ClientSideEvents.SelectedIndexChanged = "TasksPartialViewSelectedDepartment_SelectedIndexChanged";
+            p.ClientSideEvents.SelectedIndexChanged = @"
+                function (s, e) {
+                    var gridView = " + settings.Name + @";
+                    gridView.GetEditor('TaskTypeId').PerformCallback();
+                }";
+        });
+    });
+
+    // 29.03.2017, code block added by A Kasapleris
+    // https://demos.devexpress.com/MVCxDataEditorsDemos/Editors/ComboBox
+    settings.Columns.Add(m => m.TaskTypeId, column =>
+    {
+        column.Caption = "Εργασία";
+        column.EditorProperties().ComboBox(p =>
+        {
+            //p.AllowUserInput = false;
+            p.DropDownStyle = DropDownStyle.DropDown;
+
+            p.DataSource = TaskTypeProvider.GetAllTaskTypes();
+            p.TextField = "Description";
+            p.ValueField = "Id";
+            p.ValueType = typeof(int);
+
+            p.ValidationSettings.RequiredField.IsRequired = true;
+            p.ValidationSettings.RequiredField.ErrorText = "Το πεδίο Εργασία είναι υποχρεωτικό.";
+
+            p.CallbackRouteValues = new { Controller = "Home", Action = "GetDepartmentTaskTypes" };
+
+            p.ClientSideEvents.BeginCallback = @"
+                function (s, e) {
+                    var gridView = " + settings.Name + @";
+                    e.customArgs.DepartmentId = gridView.GetEditor('DepartmentId').GetValue();
+                }";
+
+            p.EnableSynchronization = DefaultBoolean.False;
+            p.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+        });
+
+        column.EditFormSettings.Visible = DefaultBoolean.True;
+    });
+
+    settings.Columns.Add(m => m.Comments, column =>
+    {
+        column.Caption = "Σχόλια";
+        column.EditorProperties().Memo(p =>
+        {
+            p.Height = Unit.Pixel(70);
+        });
+    });
+
+    settings.Columns.Add(m => m.ClosingDate, column =>
+    {
+        column.Caption = "Ημερ.Ολοκλήρωσης";
+        column.EditorProperties().DateEdit(p =>
+        {
+            p.AllowUserInput = false;
+            p.CalendarProperties.ShowClearButton = false;
+            p.CalendarProperties.ShowTodayButton = false;
+            p.DisplayFormatString = "dd/MM/yyyy HH:mm";
+            p.EditFormat = EditFormat.Custom;
+            p.EditFormatString = "dd/MM/yyyy HH:mm";
+            p.TimeSectionProperties.Adaptive = true;
+            p.TimeSectionProperties.TimeEditProperties.EditFormat = EditFormat.Custom;
+            p.TimeSectionProperties.TimeEditProperties.EditFormatString = "HH:mm";
+            p.TimeSectionProperties.Visible = true;
+            p.UseMaskBehavior = false;
+            p.ValidationSettings.RequiredField.IsRequired = false;
+            p.ValidationSettings.EnableCustomValidation = true;
+            p.ValidationSettings.ValidateOnLeave = true;
+            p.NullText = "(συμπληρώνετε κατα την ολοκλήρωση)";
+
+            //p.ShowOutOfRangeWarning = false;
+            p.ClientSideEvents.Validation = @"
+                function(s,e) {
+                    var grid =" + settings.Name + @";
+                    var stateEditor = grid.GetEditor('State');
+                    if (stateEditor) {
+                        var state = stateEditor.GetValue();
+                        if (state == 'Ανοιχτή') {
+                            // NOOP
+                        } else if (state =='Ολοκληρωμένη') {
+                            var creationDate = new Date(grid.GetEditor('CreationDate').GetValue());
+                            if (e.value == null) {
+                                e.isValid = false;
+                                e.errorText = 'Λάθος Ημερομηνία Ολοκλήρωσης! (Κενή!)';
+                            } else if (e.value < creationDate) {
+                                e.isValid = false;
+                                e.errorText = 'Λάθος Ημερομηνία Ολοκλήρωσης!';
+                            }
+                        }
+                    }
+                }";
+        });
+    });
+
+    //
+    // 04.04.2017
+    //
+    settings.Columns.Add(m => m.NrOfVisitsForTask, column =>
+    {
+        column.Caption = "Αριθμός Αναθέσεων";
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+        column.EditFormSettings.Visible = DefaultBoolean.False;
+        column.ReadOnly = true;
+    });
+
+    // 24/04/2017, modified code by Andreas Kasapleris
+    // this is a column (added in the GridView) which contains buttons
+    // (in its DataItemTemplate) for supporting various operations
+    // such us (1) προβολή σχολίων αναθέσεων (2) κουμπί εμφάνισης φόρμας BCC;
+    // το οποίο εμφανίζεται όταν πρόκειται για το Τμήμα Μετρητών και
+    // (3) button το οποίο όταν έχει δρομολογηθεί το Ticket/Βλάβη στο
+    // Τμήμα Συντήρησης-Βλαbών να καλεί τον σχετικό Controller στην
+    // εφαρμογή του BackEnd ο οποίος θα εμφανίζει την σχετική φόρμα του
+    // back end. (Ως τίτλος της στήλης έχει δοθεί ο 'Σχόλια Αναθέσεων')
+    settings.Columns.Add(column =>
+    {
+        column.ColumnType = MVCxGridViewColumnType.ButtonEdit;
+        column.Name = "AllComments";
+        column.Caption = "Σχόλια Αναθέσεων";
+        column.EditFormSettings.Visible = DefaultBoolean.False;
+
+        column.SetDataItemTemplateContent(c =>
+        {
+            Html.DevExpress().Button(b =>
+            {
+                b.Name = "btn" + c.KeyValue;
+                b.Text = "Προβολή σχολίων";
+
+                b.ClientSideEvents.Click = "function(s, e) { formpopup.Show(); FormsAjaxCall('" + DataBinder.Eval(c.DataItem, "TaskId") + "');}";
+
+                var task = new
+                {
+                    DepartmentId = (int)DataBinder.Eval(c.DataItem, "DepartmentId"),
+                    TaskTypeId = (int)DataBinder.Eval(c.DataItem, "TaskTypeId")
+                };
+
+                b.ClientVisible =
+                (
+
+                    // Do not show on automated task types
+                    !Constants.AutomatedTaskTypes.Contains(task.TaskTypeId)
+
+                    // Do not show on metering departments
+                    && !Constants.MeteringDepartments.Contains(task.DepartmentId)
+
+                );
+
+
+            }).Render();
+
+            //
+            // 19.06.2018, Andreas Kasapleris
+            // disabling the button BCC for departments of Μετρητών
+            // if in future you want to enable this button, put following code
+            // into action (uncomment)
+            //
+
+            //Html.DevExpress().Button(settingsBtn =>
+            //{
+            //    settingsBtn.Name = "btn1" + c.KeyValue;
+            //    settingsBtn.Text = "BCC";
+
+            //    int depid = (int)DataBinder.Eval(c.DataItem, "DepartmentId");
+
+            //    settingsBtn.ClientVisible = (depid == 1036 || depid == 1041 || depid == 1045);
+
+            //    //settingsBtn.ClientSideEvents.Click = "function(s, e) { window.open('http://172.17.1.15:7777/forms/frmservlet?config=rac_nowin&p_userID=" + ViewBag.BCC + "&form_pk=" +ViewBag.TEBCC  + "') }";
+            //    settingsBtn.ClientSideEvents.Click = "function(s, e) { window.open('http://172.16.1.65:7778/forms/frmservlet?config=rac_nowin&p_userid=" + ViewBag.BCC + "&form_pk=" + ViewBag.TEBCC + "') }";
+
+            //}).Render();
+
+            // 24/04/2017, added code by Andreas Kasapleris
+            // go to BackEnd application Url to show full form
+            // for Συντήρησης-Βλαβών
+            Html.DevExpress().Button(b =>
+            {
+                b.Name = "btn2" + c.KeyValue;
+                b.Text = "BackEnd";
+
+                var rowValues = new
+                {
+                    BackEndTabletId = (string)DataBinder.Eval(c.DataItem, "BackEndTabletId") ?? string.Empty,
+                    TaskTypeId = (int)DataBinder.Eval(c.DataItem, "TaskTypeId")
+                };
+
+                b.ClientVisible = Constants.AutomatedTaskTypes.Contains(rowValues.TaskTypeId);
+
+                // Url of BackEnd Controller
+                var targetUrl = ConfigurationManager.AppSettings.Get("IncidentWebUrl");
+
+                if (b.ClientVisible)
+                {
+                    if (!string.IsNullOrEmpty(rowValues.BackEndTabletId))
+                    {
+
+                        // open window with the BackEnd Url
+                        b.ClientSideEvents.Click = "function(s, e) { window.open('" + targetUrl + rowValues.BackEndTabletId + "') }";
+                    }
+                    else
+                    {
+                        var errorMessage = "Παρουσιάστηκε σφάλμα κατα την άνακτηση του συσχετισμού της εργασίας με το BackEnd!";
+                        b.ClientSideEvents.Click = "function(s, e) { window.alert('" + errorMessage + "') }";
+                        b.ControlStyle.CssClass = "dxbError";
+                    }
+                }
+
+            }).Render();
+
+            // 17/05/2017, added code by Andreas Kasapleris
+            // go to BackEnd application Url to show the Cut Down form
+            // for Ερευνών-Κατασκευών
+            //
+            // 11/07/2017, button for Ερευνών-Κατασκευών
+            // you have to decide which form to show for Ερευνών-Κατασκευών
+            // (a) the Edit_FullCutDown or (b) Edit_Full
+            Html.DevExpress().Button(b =>
+            {
+                b.Name = "btn3" + c.KeyValue;
+                b.Text = "BackEnd";
+
+                var task = new
+                {
+                    BackEndTabletId = (string)DataBinder.Eval(c.DataItem, "BackEndTabletId") ?? string.Empty,
+                    DepartmentId = (int)DataBinder.Eval(c.DataItem, "DepartmentId"),
+                    TypeId = (int)DataBinder.Eval(c.DataItem, "TaskTypeId"),
+                };
+
+                // 16/05/2017, added code by Andreas Kasapleris
+                // show the button only if the Ticket has a BackEndTabletId
+                // and Department is one of Ερευνών-Κατασκευών
+                b.ClientVisible =
+                (
+                   !string.IsNullOrEmpty(task.BackEndTabletId) &&
+                   Constants.ResearchAndConstructionDepartments.Contains(task.DepartmentId)
+                );
+
+                if (b.ClientVisible)
+                {
+                    // 1120 = ΕΡΓΑΣΙΑ ΑΝΤΙΜΕΤΩΠΙΣΗΣ ΒΛΑΒΗΣ ΑΠΟ ΤΟ ΕΡΕΥΝΩΝ
+
+                    var targetUrl = ConfigurationManager.AppSettings.Get(task.TypeId != 1120 ? "IncidentWebUrlForEreunon" : "IncidentWebUrl");
+
+                    // open window with the BackEnd Url
+                    b.ClientSideEvents.Click = "function(s, e) { window.open('" + targetUrl + task.BackEndTabletId + "') }";
+                }
+
+            }).Render();
+
+        }); // column containing buttons for various operations
+
+    });
+
+    settings.Columns.Add(m => m.State, column =>
+    {
+        column.Caption = "Κατάσταση";
+        column.Width = 120;
+        column.EditorProperties().ComboBox(p =>
+        {
+            p.AllowUserInput = false;
+            p.DropDownStyle = DropDownStyle.DropDown;
+
+            p.DataSource = Constants.TaskStates;
+            p.EnableCallbackMode = true;
+            p.EnableClientSideAPI = true;
+            p.EnableSynchronization = DefaultBoolean.False;
+            p.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+            p.ClientSideEvents.SelectedIndexChanged = @"
+                function(s, e) {
+                    var grid = " + settings.Name + @";
+                    var stateEditor = grid.GetEditor('State');
+                    if (stateEditor) {
+                        var state = stateEditor.GetValue();
+                        var closingDateEditor = grid.GetEditor('ClosingDate');
+                        if (state == 'Ολοκληρωμένη') {
+                            var nowDate = new Date();
+                            var creationDate = new Date(grid.GetEditor('CreationDate').GetValue());
+                            closingDateEditor.SetEnabled(true);
+                            closingDateEditor.SetMinDate(creationDate);
+                            closingDateEditor.SetValue(creationDate > nowDate ? creationDate : nowDate);
+                        } else {
+                            closingDateEditor.SetEnabled(false);
+                            closingDateEditor.SetValue(null);
+                        }
+                        closingDateEditor.Validate();
+                    }
+                }";
+        });
+    });
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            .AddCustomCommand(c =>
+            {
+                c.Name = "CmdAddNewTask";
+                c.Text = "Προσθήκη";
+                c.Image.IconID = IconID.ActionsAdditem16x16office2013;
+                c.Enabled = ViewBag.CanAddNewTasks;
+                c.ClientEnabled = false;
+            })
+            .AddCustomCommand(c =>
+            {
+                c.Name = "CmdEditTask";
+                c.Text = "Επεξεργασία";
+                c.Image.IconID = IconID.EditEdit16x16office2013;
+                c.Enabled = ViewBag.CanUpdateTasks;
+                c.ClientEnabled = false;
+            })
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand();
+        //.AddExportCommandGroup();
+    });
+
+    // 17.10.2018, Andreas Kasapleris, reference link
+    // https://documentation.devexpress.com/AspNet/17005/ASP-NET-MVC-Extensions/Grid-View/Concepts/Data-Editing-and-Validation/Initializing-New-Rows
+    settings.InitNewRow = (sender, e) =>
+    {
+        e.NewValues["State"] = "Ανοιχτή";
+
+        var nowDate = DateTime.Now;
+        var minDate = (DateTime)ViewBag.MinDateConstraint;
+
+        // Requirement: Use parent incident creation date if set in the future
+        e.NewValues["CreationDate"] = nowDate < minDate ? minDate : nowDate;
+    };
+
+    // 18.07.2018, Andreas Kasapleris, code modified
+    // due to business logic change
+    // 17.10.2018, Andreas Kasapleris, settings for the 'CreationDate'
+    // https://documentation.devexpress.com/AspNet/DevExpress.Web.Mvc.GridViewSettings.CellEditorInitialize.property
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+
+        var gridView = (ASPxGridView)sender;
+
+        if (gridView.IsEditing)
+        {
+            var taskModel = ViewBag.TaskModel as Task;
+
+            var rowValues = new
+            {
+                DepartmentId = taskModel.GetSafeValue(t => t.DepartmentId, gridView.GetRowValues<int>(e.VisibleIndex, "DepartmentId")),
+                TaskTypeId = taskModel.GetSafeValue(t => t.TaskTypeId, gridView.GetRowValues<int>(e.VisibleIndex, "TaskTypeId")),
+                State = taskModel.GetSafeValue(t => t.State, gridView.GetRowValues<string>(e.VisibleIndex, "State")),
+                CreationDate = taskModel.GetSafeValue(t => t.CreationDate, gridView.GetRowValues<DateTime>(e.VisibleIndex, "CreationDate")),
+            };
+
+            e.Editor.ReadOnly = false;
+
+            // Requirement: Filter departments on sector.
+            if (gridView.IsNewRowEditing)
+            {
+                switch (e.Column.FieldName)
+                {
+                    case "DepartmentId":
+
+                        // 29.03.2017, Andreas Kasapleris
+                        // User belongs to Sector; display the Departments of this Sector
+                        // based on username login; (ViewBag.User is already set in the parent Views; so known here)
+                        e.Editor.DataSource = DepartmentsDAL.GetUserDepartments(ViewBag.User);
+                        e.Editor.DataBind();
+
+                        break;
+
+                    case "TaskTypeId":
+
+                        // The task types data source is dependent upon the selected department
+                        var taskTypes = (rowValues.DepartmentId > 0)
+                            ? TaskTypeProvider.GetActiveTaskTypesForDepartment(rowValues.DepartmentId)
+                            : new List<TaskType>();
+
+                        e.Editor.DataSource = taskTypes;
+                        e.Editor.DataBind();
+
+                        break;
+
+                    case "CreationDate":
+
+                        // Requirement: Creation date cannot be set prior to the parent incident creation date.
+                        ((ASPxDateEdit)e.Editor).MinDate = (DateTime)ViewBag.MinDateConstraint;
+
+                        break;
+
+                    case "ClosingDate":
+
+                        // Requirement: Closing date cannot be set prior to the parent incident creation date.
+                        ((ASPxDateEdit)e.Editor).MinDate = (DateTime)ViewBag.MinDateConstraint;
+
+                        // Default: Closing date is disabled for open state
+                        e.Editor.ClientEnabled = false;
+
+                        break;
+                }
+            }
+            else
+            {
+                switch (e.Column.FieldName)
+                {
+                    case "CreationDate":
+
+                        // Requirement: Once created creation date can not be edited
+                        e.Editor.ClientEnabled = false;
+
+                        // Requirement: Creation date cannot be set prior to the parent incident creation date.
+                        ((ASPxDateEdit)e.Editor).MinDate = (DateTime)ViewBag.MinDateConstraint;
+
+                        break;
+
+                    case "ClosingDate":
+
+                        e.Editor.ClientEnabled =
+
+                            // Task is closed
+                            rowValues.State == "Ολοκληρωμένη"
+
+                            // Task is not automated
+                            && Constants.AutomatedTaskTypes.Contains(rowValues.TaskTypeId) == false
+                            && (
+
+                                // Admin can always change task closing date
+                                ViewBag.IsAdmin
+
+                                // Department routers can always change task closing date
+                                || (ViewBag.DepartmentId == rowValues.DepartmentId && ViewBag.User.RoleId == 2)
+
+                            // Department users do not have permission to change closing date once closed
+
+                            );
+
+                        // Requirement: Close date cannot be set prior to the task creation date
+                        ((ASPxDateEdit)e.Editor).MinDate = rowValues.CreationDate;
+
+                        break;
+
+                    case "DepartmentId":
+
+                        e.Editor.DataSource = DepartmentsDAL.GetUserDepartments(ViewBag.User);
+                        e.Editor.DataBind();
+
+                        // Once created department id can not be edited
+                        e.Editor.ClientEnabled = false;
+
+                        break;
+
+                    case "TaskTypeId":
+
+                        // The task types data source is dependent upon the selected department
+                        var taskTypes = (rowValues.DepartmentId > 0)
+                            ? TaskTypeProvider.GetActiveTaskTypesForDepartment(rowValues.DepartmentId)
+                            : new List<TaskType>();
+
+                        e.Editor.DataSource = taskTypes;
+                        e.Editor.DataBind();
+
+                        // Once created task type id can not be edited
+                        e.Editor.ClientEnabled = false;
+
+                        break;
+
+                    case "State":
+
+                        e.Editor.ClientEnabled =
+
+                            // Task is not automated
+                            Constants.AutomatedTaskTypes.Contains(rowValues.TaskTypeId) == false
+                            && (
+                                // Admin can always change task state
+                                ViewBag.IsAdmin
+
+                                // Department routers can always change task state
+                                || (ViewBag.DepartmentId == rowValues.DepartmentId && ViewBag.User.RoleId == 2)
+
+                                // Department users can change state of inner department tasks only when the task is open
+                                || (ViewBag.DepartmentId == rowValues.DepartmentId && rowValues.State == "Ανοιχτή")
+                            );
+
+                        break;
+
+                    case "Comments":
+
+                        e.Editor.ClientEnabled =
+
+                            // TODO: [BI] This requires handling differentiated upon automated/manual entry
+                            // Task is not automated
+                            //!Constants.AutomatedTaskTypes.Contains(rowValues.TaskTypeId)
+                            (
+                                // Admin can always change task comments
+                                ViewBag.IsAdmin
+
+                                || ViewBag.DepartmentId == rowValues.DepartmentId
+                            );
+
+                        break;
+
+                    default:
+
+                        // Security Fallback: All other/future fields should be read only.
+                        e.Editor.ClientEnabled = false;
+
+                        break;
+
+                }
+            }
+        }
+    };
+
+    settings.HtmlDataCellPrepared = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        switch (e.DataColumn.FieldName)
+        {
+            case "State":
+                var stateValue = gridView.GetRowValues(e.VisibleIndex, "State").ToString();
+                switch (stateValue)
+                {
+                    case "Ανοιχτή":
+                        e.Cell.CssClass += " dx-status-open";
+                        break;
+                    case "Ολοκληρωμένη":
+                        e.Cell.CssClass += " dx-status-closed";
+                        break;
+                    case "Ακυρωμένη":
+                        e.Cell.CssClass += " dx-status-canceled";
+                        break;
+                }
+                break;
+        }
+    };
+
+    settings.CustomUnboundColumnData = (sender, e) =>
+    {
+        if (e.Column.Name == "AllComments")
+        {
+            e.Value = "Όλα τα σχόλια";
+        }
+    };
+
+    settings.BeforeGetCallbackResult = (sender, e) =>
+    {
+        if (ViewBag.FocusedRowKey != null)
+        {
+            var gridView = (ASPxGridView)sender;
+
+            var focusedRowIndex = gridView.FindVisibleIndexByKeyValue(ViewBag.FocusedRowKey);
+            var visibleRowStartIndex = gridView.PageIndex * gridView.SettingsPager.PageSize;
+            var visibleRowEndIndex = Math.Min(gridView.VisibleRowCount, visibleRowStartIndex + gridView.SettingsPager.PageSize);
+
+            if (focusedRowIndex >= visibleRowStartIndex && focusedRowIndex < visibleRowEndIndex)
+            {
+                gridView.FocusedRowIndex = focusedRowIndex;
+            }
+            else
+            {
+                gridView.FocusedRowIndex = visibleRowStartIndex;
+            }
+        }
+    };
+
+    // Client side properties
+    settings.CustomJSProperties = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        var startIndex = gridView.PageIndex * gridView.SettingsPager.PageSize;
+        var endIndex = Math.Min(gridView.VisibleRowCount, startIndex + gridView.SettingsPager.PageSize);
+        var rowValues = new object[endIndex - startIndex];
+
+        for (var n = startIndex; n < endIndex; n++)
+        {
+            rowValues[n - startIndex] = gridView.GetRowValues(n, "TaskId", "IncidentId", "DepartmentId", "TaskTypeId", "Comments", "State", "CreationDate", "ClosingDate");
+        }
+
+        e.Properties["cpRowValues"] = rowValues;
+        e.Properties["cpFocusedRowIndex"] = gridView.FocusedRowIndex;
+        e.Properties["cpEditingRowVisibleIndex"] = gridView.EditingRowVisibleIndex;
+    };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "TaskGridView_Init";
+    settings.ClientSideEvents.BeginCallback = "TaskGridView_BeginCallback";
+    settings.ClientSideEvents.EndCallback = "TaskGridView_EndCallback";
+    settings.ClientSideEvents.DetailRowExpanding = "TaskGridView_DetailRowExpanding";
+    settings.ClientSideEvents.DetailRowCollapsing = "TaskGridView_DetailRowCollapsing";
+    settings.ClientSideEvents.ToolbarItemClick = "TaskGridView_ToolbarItemClick";
+    settings.ClientSideEvents.FocusedRowChanged = "TaskGridView_FocusedRowChanged";
+
+}).SetEditErrorText(ViewBag.EditError).Bind(Model).GetHtml())

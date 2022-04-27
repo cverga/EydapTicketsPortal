@@ -1,0 +1,158 @@
+﻿@using EydapTickets.Models;
+
+@model MigrationPopupDetailsModel
+
+@Html.DevExpress().FormLayout(settings =>
+{
+    settings.Name = "MigrationDetailsFormLayout";
+    settings.AlignItemCaptions = true;
+    settings.EncodeHtml = false;
+    settings.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.SingleColumnWindowLimit;
+    settings.SettingsAdaptivity.SwitchToSingleColumnAtWindowInnerWidth = 720;
+    settings.ShowItemCaptionColon = false;
+    settings.UseDefaultPaddings = false;
+    settings.Width = Unit.Pixel(600);
+
+    settings.Items.AddGroupItem(g =>
+    {
+        g.ColCount = 1;
+        g.GroupBoxDecoration = GroupBoxDecoration.None;
+        g.UseDefaultPaddings = false;
+
+        g.Items.Add(m => m.Code, i =>
+        {
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.NotificationDate, i =>
+        {
+            i.NestedExtension().DateEdit(s =>
+            {
+                s.Properties.DisplayFormatString = "dd/MM/yyyy hh:mm tt";
+                s.Properties.DisplayFormatInEditMode = true;
+                s.Properties.DropDownButton.Visible = false;
+                s.Properties.EditFormatString = "dd/MM/yyyy hh:mm tt";
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.DisconnectionDate, i =>
+        {
+            i.NestedExtension().DateEdit(s =>
+            {
+                s.Properties.DisplayFormatString = "dd/MM/yyyy hh:mm tt";
+                s.Properties.DisplayFormatInEditMode = true;
+                s.Properties.DropDownButton.Visible = false;
+                s.Properties.EditFormatString = "dd/MM/yyyy hh:mm tt";
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.ReconnectionDate, i =>
+        {
+            i.NestedExtension().DateEdit(s =>
+            {
+                s.Properties.DisplayFormatString = "dd/MM/yyyy hh:mm tt";
+                s.Properties.DisplayFormatInEditMode = true;
+                s.Properties.DropDownButton.Visible = false;
+                s.Properties.EditFormatString = "dd/MM/yyyy hh:mm tt";
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.mBlab, i =>
+        {
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.mWay, i =>
+        {
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.mPointbl, i =>
+        {
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.mNote1, i =>
+        {
+            i.NestedExtension().Memo(s =>
+            {
+                s.Properties.Rows = 3;
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.mNote2, i =>
+        {
+            i.NestedExtension().Memo(s =>
+            {
+                s.Properties.Rows = 3;
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.mEidos_Blabhs, i =>
+        {
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.mZone, i =>
+        {
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.mIdiotiko, i =>
+        {
+            i.NestedExtension().CheckBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.mIdCod1, i =>
+        {
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.mIdCod2, i =>
+        {
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.mF1202, i =>
+        {
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+    });
+
+}).GetHtml()

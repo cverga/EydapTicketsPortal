@@ -1,0 +1,165 @@
+﻿@media print
+{
+  * {
+    -webkit-transition: none !important;
+    transition: none !important;
+  }
+
+  .col-md-1,
+  .col-md-2,
+  .col-md-3,
+  .col-md-4,
+  .col-md-5,
+  .col-md-6,
+  .col-md-7,
+  .col-md-8,
+  .col-md-9,
+  .col-md-10,
+  .col-md-11,
+  .col-md-12 {
+    width: 100%;
+  }
+
+  body {
+    font-size: 10px;
+    font-size: 1em;
+    line-height: 1;
+  }
+
+  .page-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .panel {
+    border: 0;
+    margin-top: 4px;
+    margin-bottom: 0;
+    page-break-inside:avoid;
+  }
+
+  .panel-heading {
+    padding-left: 0;
+    padding-right: 0;
+    border-bottom: 0;
+    background-color: transparent;
+  }
+
+  .panel-title {
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .panel-body {
+    padding: 0;
+  }
+
+  .panel-body > div {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .form-group {
+    margin-bottom: 2px;
+  }
+
+  .form-group label {
+    width: 30%;
+    color: #000;
+    font-size: 12px;
+    margin-bottom: 0;
+    float: left;
+    padding-top: 8px;
+  }
+
+  .checkbox {
+    padding-left: 30%;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .form-group input,
+  .form-group textbox,
+  .form-group select {
+    /*border: 0;*/
+  }
+
+  .form-group input[type=text],
+  .form-group > .input-group,
+  .form-group > .select2,
+  .form-group > .cke,
+  /*.form-group div,*/
+  #fileFileAttatchments {
+    display: inline-block;
+    width: 69% !important;
+    background-color: transparent;
+  }
+
+  .input-group.date input[type=text] {
+    width: 100% !important;
+  }
+
+  .select2-container--default .select2-selection--single {
+    height: 26px !important;
+  }
+
+  .form-group:after {
+    content: "";
+    display: block;
+    clear:both;
+  }
+
+  .form-control {
+    padding-left: 6px;
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 18px;
+  }
+
+  .form-control,
+  .select2-selection {
+    height: 26px;
+  }
+
+  .cke_top {
+    height: 0;
+    padding: 0;
+    border-bottom: 0;
+  }
+
+  .cke_top.cke_reset_all {
+    display: none;
+  }
+
+  .cke_contents,
+  .cke_reset {
+    height: 100px !important;
+    padding: 0 !important;
+  }
+
+  .form-control,
+  div.form-group > .cke,
+  .form-group .select2-selection {
+    background-color: transparent;
+    border-color: #ddd;
+    /*border: 0;*/
+  }
+
+  .form-group .input-group-addon {
+    display: none;
+  }
+
+  .select2-selection__arrow,
+  input[type="button"],
+  input[type="file"],
+  .btn,
+  .time_clear {
+    display: none !important;
+  }
+
+  .select2-selection__rendered {
+    font-size: 14px;
+  }
+}

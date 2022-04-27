@@ -1,0 +1,87 @@
+﻿@using System.Drawing.Printing
+@using EydapTickets.Helpers
+@using EydapTickets.Models
+
+@model IEnumerable<RolesModel>
+
+@(Html.DevExpress().GridView<RolesModel>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "RoleGridView";
+    settings.CallbackRouteValues = new { Controller = "Roles", Action = "GridViewPartial" };
+
+    // Text configuration
+    settings.SettingsText.Title = "Ρόλοι";
+
+    // Editing configuration
+    //settings.SettingsEditing.EditFormColumnCount = 2;
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Roles", Action = "AddNewRow" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Roles", Action = "UpdateRow" };
+    //settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Roles", Action = "DeleteRow" };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "GlobalGridView_Init";
+    settings.ClientSideEvents.EndCallback = "GlobalGridView_EndCallback";
+
+    // Column configuration
+    {
+        settings.KeyFieldName = "RoleId";
+
+        settings.Columns.Add(m => m.RoleId, column =>
+        {
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(m => m.RoleDescription, column =>
+        {
+            column.EditorProperties().TextBox(p =>
+            {
+                p.MaxLength = 50;
+            });
+        });
+    }
+
+    // Export configuration
+    {
+        settings.SettingsExport.EnableClientSideExportAPI = true;
+        settings.SettingsExport.ExcelExportMode = DevExpress.Export.ExportType.DataAware;
+        settings.SettingsExport.PaperKind = PaperKind.A4;
+        settings.SettingsExport.Landscape = true;
+
+        settings.SettingsExport.FileName = "Ρόλοι_" + DateTime.Now.ToShortDateString();
+        settings.SettingsExport.ReportHeader = "Ρόλοι";
+        settings.SettingsExport.PageFooter.Center = " Ημερομηνία: " + DateTime.Now.ToString();
+
+        settings.SettingsExport.BeforeExport = (sender, e) =>
+        {
+            var gridView = (MVCxGridView)sender;
+
+            gridView.Columns["RoleId"].Visible = false;
+            gridView.Columns["RoleDescription"].ExportWidth = 260;
+        };
+    }
+
+    // Initialize cell editor
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+    };
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            //.AddNewRowCommand()
+            //.AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+}).SetEditErrorText(ViewData["EditError"] as string).Bind(Model).GetHtml())

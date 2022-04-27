@@ -1,0 +1,34 @@
+﻿@model DM.App.Library.Models.Incidents
+@using DM.App.Library.Core
+
+@{
+    Layout = null;
+    Model.FormState = Enums.FormStates.ViewEmbedded;
+    Model.ShowActionButtons = false;
+    if (UILibSelector.GetUILibrary(this.Request).Library == UILibSelector.UILibs.Bootstrap)
+    {
+        @Html.Partial("~/Views/IncidentsGen/_EntityBtSp.cshtml", Model)
+    }
+    else
+    {
+        @Html.Partial("~/Views/IncidentsGen/_Entity.cshtml", Model)
+    }
+}
+<script type="text/javascript">
+        $(document).ready(function () {
+            if (app != undefined) {
+                app.Log("Request view Edit", "App");
+
+                app.FormState = "View";
+                // Postpone calling these functions due to timing issues with MetroUI.js
+                app.SubscribeDefaultCallbacksForControllersInView();
+
+                // Force update UI for new elements
+                CKEDITOR.replace("Comments");
+                if (_libUi == 'Bootstrap') {
+                    $(".switch").bootstrapSwitch();
+                }
+            }
+        });
+
+</script>

@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0" />
+        <title>@ViewBag.Title</title>
+        <link href="@Url.Content("~/favicon.ico")" rel="shortcut icon" type="image/x-icon" />
+
+        @Html.DevExpress().GetStyleSheets(
+            new StyleSheet { ExtensionSuite = ExtensionSuite.NavigationAndLayout, Theme = "Office365" },
+            new StyleSheet { ExtensionSuite = ExtensionSuite.Editors, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.HtmlEditor, Theme = "Office365" },
+            new StyleSheet { ExtensionSuite = ExtensionSuite.GridView, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.PivotGrid, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.Chart, Theme = "Office365" },
+            new StyleSheet { ExtensionSuite = ExtensionSuite.Report, Theme = "Office365" }
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.Scheduler, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.TreeList, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.RichEdit, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.Spreadsheet, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.SpellChecker, Theme = "Office365" },
+        )
+
+        @{ Html.RenderPartial("_ApplicationInsightsScript"); }
+
+        @Html.DevExpress().GetScripts(
+            new Script { ExtensionSuite = ExtensionSuite.NavigationAndLayout },
+            //new Script { ExtensionSuite = ExtensionSuite.HtmlEditor },
+            new Script { ExtensionSuite = ExtensionSuite.GridView },
+            new Script { ExtensionSuite = ExtensionSuite.Editors },
+            new Script { ExtensionSuite = ExtensionSuite.Report }
+            //new Script { ExtensionSuite = ExtensionSuite.PivotGrid },
+            //new Script { ExtensionSuite = ExtensionSuite.Editors },
+            //new Script { ExtensionSuite = ExtensionSuite.Chart },
+            //new Script { ExtensionSuite = ExtensionSuite.Report },
+            //new Script { ExtensionSuite = ExtensionSuite.Scheduler },
+            //new Script { ExtensionSuite = ExtensionSuite.TreeList },
+            //new Script { ExtensionSuite = ExtensionSuite.RichEdit },
+            //new Script { ExtensionSuite = ExtensionSuite.Spreadsheet },
+            //new Script { ExtensionSuite = ExtensionSuite.SpellChecker }
+        )
+
+        @Styles.Render("~/Bundles/MainStyle.Bundle")
+
+        @RenderSection("HeadScripts", required:false)
+    </head>
+    <body class="defaultFont">
+        @RenderBody()
+    </body>
+</html>

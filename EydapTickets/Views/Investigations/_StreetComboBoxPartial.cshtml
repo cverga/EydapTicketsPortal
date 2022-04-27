@@ -1,0 +1,15 @@
+﻿@model SelectList
+@Html.DevExpress().ComboBox(settings =>
+{
+    settings.Name = "Fakelos_Odos";
+    settings.CallbackRouteValues = new { Controller = "Investigations", Action = "StreetsComboBoxPartial" };
+    settings.Properties.ClientSideEvents.BeginCallback = "StreetsComboInvestigations_BeginCallback";
+    settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+    settings.Properties.EnableSynchronization = DefaultBoolean.False;
+    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+    settings.Properties.ValidationSettings.Display = Display.Dynamic;
+    settings.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+    settings.ShowModelErrors = true;
+    settings.Width = Unit.Percentage(100);
+
+}).BindList(Model.Items).Bind(Model.SelectedValue).GetHtml()

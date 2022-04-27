@@ -1,0 +1,49 @@
+﻿@using EydapTickets.Models;
+@using System.Diagnostics;
+
+@model MigrationSearchCriteria
+
+@using (Html.BeginForm())
+{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    @Html.AntiForgeryToken();
+
+    Html.RenderPartial("_CriteriaRoundPanelPartial", Model);
+
+    Html.RenderAction("GridViewPartial", "Migration", new { Area = "", Criteria = Model });
+
+    Html.RenderPartial("_DetailsPopupPartial");
+}
+
+@section HeadScripts
+{
+    <script type="text/javascript">
+
+        // 21.10.2016, Andreas Kasapleris
+        // Javascript / Ajax call to Controller. Passing two parameters.
+        // a. Migration database selected and b. the key code of Incident
+        // for which to display details in popup window
+        // Controller : Migration
+        // Controller action : MigrationIncidentDetails
+        function ShowAjaxMigrationDetailsPopUp(sector, code) {
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("DetailsFormLayoutPartial", "Migration")",
+                data: {
+                    Sector: sector,
+                    Code: code
+                },
+                //dataType: "json",
+                success: function (response) {
+                    $("#migrationdetailspopupdiv").html(response);
+                },
+                cache: false,
+                error: function (errordesc) {
+                    debugger;
+                }
+            });
+        }
+    </script>
+}

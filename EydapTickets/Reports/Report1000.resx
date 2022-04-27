@@ -1,0 +1,250 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <metadata name="sqlDataSource1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <data name="customSqlQuery1.Sql" xml:space="preserve">
+    <value>SELECT 
+       ID1022, 
+       DateOfAssignment, 
+	 Municipality,
+	 Street_Name, 
+	 Street_Number, 
+	 Perioxi,
+	 SectorId,
+	 SectorDescription,
+	 DepartmentId,
+	 TaskTypeId,
+	 Task_Description,
+	 State,
+	 BackEndTabletId, 
+	 ID,
+	 EpanaforaOdostromatos_Mikos1,
+	 EpanaforaOdostromatos_Platos1,
+   	 Mpeton_mikos, 
+	 Mpeton_platos,
+	 Kraspedo,
+	 Reithro,
+	 Mikos,
+	 ArithmosMetriti,
+	 ApokomidiMpazwnEkkremei,
+	 Paratiriseis,
+	 WorkTeam_ID,
+	 FName,
+	 LName
+	 FROM 
+	 (
+SELECT 
+     A.ID1022, 
+     H.Assigned                          AS DateOfAssignment, 
+     A.Municipality  COLLATE Greek_CI_AS AS Municipality,
+     A.Street_Name   COLLATE Greek_CI_AS As Street_Name, 
+     A.Street_Number COLLATE Greek_CI_AS AS Street_Number, 
+     A.Perioxi,
+     B.SectorId,
+     G.SectorDescription,
+     B.DepartmentId,
+     B.TaskTypeId,
+     B.Task_Description,
+     B.State,
+     B.BackEndTabletId, 
+     C.ID,
+     D.EpanaforaOdostromatos_Mikos1,
+     D.EpanaforaOdostromatos_Platos1,
+     E.Mpeton_mikos, 
+     E.Mpeton_platos,
+     D.Kraspedo,
+     D.Reithro,
+     D.Mikos,
+     A.ArithmosMetriti,
+     D.ApokomidiMpazwnEkkremei,
+     F.Paratiriseis,
+	 (SELECT MAX(A.Workteam_ID)
+		FROM [EydapFieldWorks].[dbo].WorkteamIncidents AS A
+		WHERE A.Incident_ID = C.ID
+	 ) AS WorkTeam_ID,
+	 (
+		SELECT TOP 1 FirstName
+			  FROM [EydapFieldWorks].[dbo].AspNetUsers A, [EydapFieldWorks].[dbo].UsersInWorkTeams  B
+			 WHERE B.WorkTeam_ID = (SELECT MAX(Workteam_ID) FROM [EydapFieldWorks].[dbo].WorkteamIncidents WHERE Incident_ID = C.ID)
+			   AND B.User_ID = A.Id
+	 ) AS FName,
+	 (
+		SELECT TOP 1 LastName
+			  FROM [EydapFieldWorks].[dbo].AspNetUsers A, [EydapFieldWorks].[dbo].UsersInWorkTeams  B
+			 WHERE B.WorkTeam_ID = (SELECT MAX(Workteam_ID) FROM [EydapFieldWorks].[dbo].WorkteamIncidents WHERE Incident_ID = C.ID)
+			   AND B.User_ID = A.Id
+	 ) AS LName
+FROM [TT_db].[dbo].Incidents                            A,
+     [TT_db].[dbo].Tasks                                B, 
+     [EydapFieldWorks].[dbo].Incident                   C,
+     [EydapFieldWorks].[dbo].ErgasiesApokatastasisTomis D,
+     [EydapFieldWorks].[dbo].ErgasiesEpiskeuhs          E,
+     [EydapFieldWorks].[dbo].FinalComments              F,
+     [TT_db].[dbo].Sectors                              G,
+     [EydapFieldWorks].[dbo].WorkteamIncidents          H
+WHERE A.TT_Id                               = B.Incident_Id AND
+      A.Municipality  COLLATE Greek_CI_AS   = C.dimos       AND
+	A.Street_Name   COLLATE Greek_CI_AS = C.odos1         AND
+	A.Street_Number COLLATE Greek_CI_AS = C.StreetNumber1 AND
+      G.SectorId                          = B.SectorId      AND 
+      B.TaskTypeId                        = 1120            AND              
+      B.BackEndTabletId                   = C.ID            AND 
+	D.Incident_ID                       = C.ID            AND
+	E.Incident_ID                       = C.ID            AND
+	F.Incident_ID                       = C.ID            AND
+	H.Incident_ID                       = C.ID            AND
+	H.Workteam_ID                       = ( SELECT MAX(Workteam_ID)
+		                                    FROM [EydapFieldWorks].[dbo].WorkteamIncidents
+		                                   WHERE Incident_ID = C.ID ) AND
+	B.BackEndTabletId IS NOT NULL     
+) RESULTS</value>
+  </data>
+  <data name="customSqlQuery2.Sql" xml:space="preserve">
+    <value>SELECT A.Incident_ID,
+	 A.Description, 
+	 A.IsCubeStone, 
+	 A.IsPlate, 
+       A.Items, 
+      (CASE A.Size
+	        WHEN 0 THEN ''
+			WHEN 1 THEN '10X10'
+			WHEN 2 THEN '20X10' 
+	        	WHEN 4 THEN '40X40'
+			WHEN 5 THEN '50X50'
+	    		ELSE 'ΑΓΝΩΣΤΟ'
+		END) AS TSize,
+		A.CubeStonesLength,
+		A.CubeStonesWidth,
+		(CASE A.Color
+	        WHEN 0 THEN ''
+			WHEN 1 THEN 'ΑΣΠΡΟ'
+			WHEN 2 THEN 'ΚΙΤΡΙΝΟ'
+	        	WHEN 3 THEN 'ΓΚΡΙ'
+			WHEN 4 THEN 'ΚΟΚΚΙΝΟ'
+	    		ELSE 'ΑΓΝΩΣΤΟ'
+		END) AS TColor,
+	    A.ExistOnSite
+	  FROM [EydapFieldWorks].[dbo].IncidentStructureMaterials AS A</value>
+  </data>
+  <data name="sqlDataSource1.ResultSchemaSerializable" xml:space="preserve">
+    <value>PERhdGFTZXQgTmFtZT0ic3FsRGF0YVNvdXJjZTEiPjxWaWV3IE5hbWU9IlF1ZXJ5Ij48RmllbGQgTmFtZT0iSUQxMDIyIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkRhdGVPZkFzc2lnbm1lbnQiIFR5cGU9IkRhdGVUaW1lIiAvPjxGaWVsZCBOYW1lPSJNdW5pY2lwYWxpdHkiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iU3RyZWV0X05hbWUiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iU3RyZWV0X051bWJlciIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJQZXJpb3hpIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IlNlY3RvcklkIiBUeXBlPSJJbnQzMiIgLz48RmllbGQgTmFtZT0iU2VjdG9yRGVzY3JpcHRpb24iIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iRGVwYXJ0bWVudElkIiBUeXBlPSJJbnQzMiIgLz48RmllbGQgTmFtZT0iVGFza1R5cGVJZCIgVHlwZT0iSW50MzIiIC8+PEZpZWxkIE5hbWU9IlRhc2tfRGVzY3JpcHRpb24iIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iU3RhdGUiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iQmFja0VuZFRhYmxldElkIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IklEIiBUeXBlPSJJbnQ2NCIgLz48RmllbGQgTmFtZT0iRXBhbmFmb3JhT2Rvc3Ryb21hdG9zX01pa29zMSIgVHlwZT0iRG91YmxlIiAvPjxGaWVsZCBOYW1lPSJFcGFuYWZvcmFPZG9zdHJvbWF0b3NfUGxhdG9zMSIgVHlwZT0iRG91YmxlIiAvPjxGaWVsZCBOYW1lPSJNcGV0b25fbWlrb3MiIFR5cGU9IkRvdWJsZSIgLz48RmllbGQgTmFtZT0iTXBldG9uX3BsYXRvcyIgVHlwZT0iRG91YmxlIiAvPjxGaWVsZCBOYW1lPSJLcmFzcGVkbyIgVHlwZT0iQm9vbGVhbiIgLz48RmllbGQgTmFtZT0iUmVpdGhybyIgVHlwZT0iQm9vbGVhbiIgLz48RmllbGQgTmFtZT0iTWlrb3MiIFR5cGU9IkRvdWJsZSIgLz48RmllbGQgTmFtZT0iQXJpdGhtb3NNZXRyaXRpIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkFwb2tvbWlkaU1wYXp3bkVra3JlbWVpIiBUeXBlPSJCb29sZWFuIiAvPjxGaWVsZCBOYW1lPSJQYXJhdGlyaXNlaXMiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iV29ya1RlYW1fSUQiIFR5cGU9IkludDY0IiAvPjxGaWVsZCBOYW1lPSJGTmFtZSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJMTmFtZSIgVHlwZT0iU3RyaW5nIiAvPjwvVmlldz48VmlldyBOYW1lPSJRdWVyeV8xIj48RmllbGQgTmFtZT0iSW5jaWRlbnRfSUQiIFR5cGU9IkludDY0IiAvPjxGaWVsZCBOYW1lPSJEZXNjcmlwdGlvbiIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJJc0N1YmVTdG9uZSIgVHlwZT0iQm9vbGVhbiIgLz48RmllbGQgTmFtZT0iSXNQbGF0ZSIgVHlwZT0iQm9vbGVhbiIgLz48RmllbGQgTmFtZT0iSXRlbXMiIFR5cGU9IkludDMyIiAvPjxGaWVsZCBOYW1lPSJUU2l6ZSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJDdWJlU3RvbmVzTGVuZ3RoIiBUeXBlPSJEb3VibGUiIC8+PEZpZWxkIE5hbWU9IkN1YmVTdG9uZXNXaWR0aCIgVHlwZT0iRG91YmxlIiAvPjxGaWVsZCBOYW1lPSJUQ29sb3IiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iRXhpc3RPblNpdGUiIFR5cGU9IkJvb2xlYW4iIC8+PC9WaWV3PjxSZWxhdGlvbiBNYXN0ZXI9IlF1ZXJ5IiBEZXRhaWw9IlF1ZXJ5XzEiPjxLZXlDb2x1bW4gTWFzdGVyPSJJRCIgRGV0YWlsPSJJbmNpZGVudF9JRCIgLz48L1JlbGF0aW9uPjwvRGF0YVNldD4=</value>
+  </data>
+</root>

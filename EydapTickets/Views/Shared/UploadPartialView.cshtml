@@ -1,0 +1,41 @@
+﻿
+<script type="text/javascript">
+    function OnUploadClick(s, e) {
+        document.getElementById('hf1').value = e;
+        document.getElementById('hf2').value = 'Investigations';
+        uc.Upload();
+    }
+    function OnFileUploadComplete(s, e) {
+        if (e.callbackData !== "") {
+            eval(e.callbackData).Refresh();
+        }
+        else {
+            alert("The selected file was not uploaded.");
+        }
+    }
+</script>
+
+
+
+
+@using (Html.BeginForm("UploadControlCallbackAction", "Upload", FormMethod.Post))
+{
+    //  Html.RenderPartial("UploadControlPartial");
+    ViewContext.Writer.Write(Html.Hidden("hf1"));
+    ViewContext.Writer.Write(Html.Hidden("hf2"));
+    @Html.DevExpress().UploadControl(settings =>
+    {
+        settings.Name = "uc";
+        settings.CallbackRouteValues = new { Controller = "Upload", Action = "UploadControlCallbackAction" };
+        settings.ClientSideEvents.FileUploadComplete = "OnFileUploadComplete";
+        settings.ShowProgressPanel = true;
+        //settings.ValidationSettings.Assign(UploadControl.Controllers.UploadControlHelper.ValidationSettings);
+    }).GetHtml()
+
+    @Html.DevExpress().Button(button =>
+    {
+        button.Name = "btnUploadFile";
+        button.Text = "Upload File";
+        button.ClientSideEvents.Click = "function(s,e) { OnUploadClick(this, window['InvestigationId']); }";
+    }).GetHtml()
+}

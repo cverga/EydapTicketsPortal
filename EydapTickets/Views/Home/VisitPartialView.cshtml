@@ -1,0 +1,47 @@
+﻿@model EydapTickets.Models.VisitDetailsModel
+
+@using (Html.BeginForm("VisitDetailsSave", "Home", FormMethod.Post))
+{
+        @Html.DevExpress().RoundPanel(settings2 =>
+        {
+        settings2.Name = "myroundPanel1";
+        settings2.AllowCollapsingByHeaderClick = false;
+        settings2.ShowCollapseButton = false;
+        settings2.ShowHeader = true;
+        settings2.View = DevExpress.Web.View.GroupBox;
+        settings2.EnableAnimation = false;
+        settings2.Width = 270;
+        settings2.HeaderText = "Οχήματα";
+
+        settings2.SetContent(() =>
+        {
+            @Html.DevExpress().TokenBoxFor(m => m.Items,
+                settings3 =>
+                {
+                    settings3.Name = "Items";
+                    settings3.Width = 350;
+                    settings3.Properties.EnableClientSideAPI = true;
+                    settings3.Properties.AllowCustomTokens = false;
+                    settings3.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                    //settings3.Properties.TextField = "VehicleRegNumber";
+                    //settings3.Properties.ValueField = "VehicleID";
+                }).BindList(ViewData["Tokens"]).Bind(Model.Items).GetHtml();
+                });
+        }).GetHtml()
+
+            @*<input type="submit" value="Send" />*@
+            @Html.DevExpress().Button(settings1 =>
+            {
+
+                settings1.Name = "ButtonSaveVisit";
+                settings1.Text = "Αποθήκευση";
+                settings1.UseSubmitBehavior = true;
+                //settings1.ClientSideEvents.Click = "function(s,e) { debugger; AjaxCallSaveAssignment(modelDataJSON2); }";\
+                //settings1.ClientSideEvents.Click = "function(s,e) { debugger; formpopup.Show(); AjaxCallSaveAssignment(modelDataJSON2); }";
+            }).GetHtml()
+    }
+
+
+
+
+

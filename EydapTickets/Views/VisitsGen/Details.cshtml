@@ -1,0 +1,58 @@
+﻿@model DM.App.Library.Models.Visits
+@using DM.App.Library.Core
+
+@{
+    ViewBag.PageTitle = Model.Task_Description;// "Προβολή";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">@ViewBag.PageTitle</h1>
+    </div>
+</div>
+
+@{
+    Model.FormState = Enums.FormStates.View;
+    if (UILibSelector.GetUILibrary(this.Request).Library == UILibSelector.UILibs.Bootstrap)
+    {
+        @Html.Partial("~/Views/VisitsGen/_EntityBtSp.cshtml", Model)
+    }
+    else
+    {
+        @Html.Partial("~/Views/VisitsGen/_Entity.cshtml", Model)
+    }
+}
+<script type="text/javascript">
+        $(document).ready(function () {
+            if (app != undefined) {
+                app.Log("Task view Edit", "App");
+
+                app.FormState = "View";
+                // Postpone calling these functions due to timing issues with MetroUI.js
+                app.SubscribeDefaultCallbacksForControllersInView();
+                //app.CallManager.PushFunction(function () { app.Hierarchy.bindHierarchyData(); });
+                //app.CallManager.PushFunction(function () { app.DynamicContent.prepareContent(); });
+                //app.CallManager.PushFunction(function () { app.Lookup.prepareLookups(); });
+                //app.CallManager.PushFunction(function () { app.PopUpSearch.prepareSearch(); });
+            }
+
+            $('#btnSubmit').hide();
+            $('#btnCancel').hide();
+
+            $("#print").show();
+
+            $("#print").click(function () {
+
+                window.print();
+            });
+        });
+
+</script>
+@*<p class="no-print">
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Task_Id }) | @Html.ActionLink("Back to List", "Index")
+</p>*@
+
+<br />
+<br />
+<br />

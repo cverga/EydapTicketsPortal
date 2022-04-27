@@ -1,0 +1,24 @@
+﻿@model object
+@{
+    Type tModel = typeof(string);
+
+    var containerType = ViewData.ModelMetadata.ContainerType;
+    if (containerType != null)
+    {
+        var containerPropertyInfo = containerType.GetProperty(ViewData.ModelMetadata.PropertyName);
+        if (containerPropertyInfo != null)
+        {
+            tModel = containerPropertyInfo.PropertyType;
+        }
+    }
+
+    if(typeof(string).IsAssignableFrom(tModel)) {
+        @Html.DevExpress().TextBoxFor(m => m).GetHtml();
+    } else if(typeof(Enum).IsAssignableFrom(tModel)) {
+        @Html.DevExpress().ComboBoxFor(m => m, s => {
+            s.Properties.Items.AddRange(Enum.GetValues(tModel));
+            s.SelectedIndex = 0;
+            s.Properties.DropDownStyle = DropDownStyle.DropDownList;
+        }).GetHtml();
+    }
+}

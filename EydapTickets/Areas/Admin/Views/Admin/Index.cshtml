@@ -1,0 +1,18 @@
+﻿@{
+    Layout = "~/Views/Shared/_mainLayout.cshtml";
+}
+
+@using (Html.BeginForm())
+{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+    @Html.Action("SectionTabsPartial")
+}
+
+@Html.DevExpress().LoadingPanel(settings =>
+{
+    settings.Name = "LoadingPanel";
+    settings.Text = "Φόρτωση ...";
+    settings.ContainerElementID = "SectionTabs";
+    settings.Modal = true;
+}).GetHtml()

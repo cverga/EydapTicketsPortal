@@ -1,0 +1,110 @@
+﻿@using System.Drawing.Printing
+@using EydapTickets.Helpers
+@using EydapTickets.Models;
+
+@model IEnumerable<TaskType>
+
+@(Html.DevExpress().GridView<TaskType>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "TaskTypesGridViewPartial";
+    settings.CallbackRouteValues = new { Controller = "TaskTypes", Action = "GridViewPartial" };
+
+    // Text configuration
+    settings.SettingsText.Title = "Τύποι Εργασιών";
+
+    // Editing configuration
+    settings.SettingsEditing.EditFormColumnCount = 2;
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "TaskTypes", Action = "AddNewRow" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "TaskTypes", Action = "UpdateRow" };
+    //settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "TaskTypes", Action = "DeleteRow" };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "GlobalGridView_Init";
+    settings.ClientSideEvents.EndCallback = "GlobalGridView_EndCallback";
+
+    // Column configuration
+    {
+        settings.KeyFieldName = "Id";
+
+        settings.Columns.Add(m => m.Id, column =>
+        {
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(m => m.Code, column =>
+        {
+            column.EditorProperties().TextBox(p =>
+            {
+                p.MaxLength = 50;
+            });
+        });
+
+        settings.Columns.Add(m => m.Description, column =>
+        {
+            column.EditorProperties().TextBox(p =>
+            {
+                p.MaxLength = 250;
+            });
+        });
+
+        settings.Columns.Add(m => m.IsActive, column =>
+        {
+            column.EditorProperties().CheckBox(p =>
+            {
+                p.AllowGrayed = false;
+                p.ValueType = typeof(bool);
+                p.ValueChecked = true;
+                p.ValueUnchecked = false;
+                p.DisplayTextChecked = "Ναί";
+                p.DisplayTextUnchecked = "Όχι";
+            });
+        });
+    }
+
+    // Initialize cell editor
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+    };
+
+    // Export configuration
+    {
+        settings.SettingsExport.EnableClientSideExportAPI = true;
+        settings.SettingsExport.ExcelExportMode = DevExpress.Export.ExportType.DataAware;
+        settings.SettingsExport.PaperKind = PaperKind.A4;
+        settings.SettingsExport.Landscape = true;
+
+        settings.SettingsExport.FileName = "Τύποι_Εργασιών_" + DateTime.Now.ToShortDateString();
+        settings.SettingsExport.ReportHeader = settings.SettingsText.Title;
+        settings.SettingsExport.PageFooter.Center = " Ημερομηνία: " + DateTime.Now.ToString();
+
+        settings.SettingsExport.BeforeExport = (sender, e) =>
+        {
+            var gridView = (MVCxGridView)sender;
+
+            gridView.Columns["Id"].Visible = false;
+            gridView.Columns["Code"].ExportWidth = 40;
+            gridView.Columns["Description"].ExportWidth = 360;
+            gridView.Columns["IsActive"].ExportWidth = 40;
+        };
+    }
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            .AddNewRowCommand()
+            .AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+}).SetEditErrorText(ViewBag.EditError as string).Bind(Model).GetHtml())

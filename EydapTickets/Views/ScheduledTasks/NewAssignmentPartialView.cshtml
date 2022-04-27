@@ -1,0 +1,9 @@
+﻿
+@Html.DevExpress().Button(settings =>
+{
+    string functioncontent = "ScheduledAssignmentsGridView_" + ViewData["TaskGuid"].ToString().Replace("-", "") + ".AddNewRow();";
+    settings.ClientSideEvents.Click = "function(s, e) { " + functioncontent + "}";
+    settings.Name = "ButtonNewAssignMent" + ViewData["TaskGuid"].ToString().Replace("-", "");
+    settings.Text = "Εισαγωγή Νέας Ανάθεσης";
+    settings.Enabled = (bool)ViewData["Enabled"];
+}).GetHtml()

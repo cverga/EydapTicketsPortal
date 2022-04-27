@@ -1,0 +1,99 @@
+﻿@using EydapTickets.Models
+
+@model IncidentSearchCriteria
+
+<script type="text/javascript">
+    function Municipality_SelectedIndexChanged() {
+        StreetName.PerformCallback();
+        Perioxi.PerformCallback();
+        Odos2.PerformCallback();
+    }
+    function StreetName_BeginCallback(s, e) {
+        e.customArgs.Municipality = Municipality.GetValue();
+    }
+    function Perioxi_BeginCallback(s, e) {
+        e.customArgs.Municipality = Municipality.GetValue();
+    }
+    function Odos2_BeginCallback(s, e) {
+        e.customArgs.Municipality = Municipality.GetValue();
+    }
+</script>
+
+@Html.DevExpress().FormLayout(settings =>
+{
+    settings.Name = "CriteriaFormLayout";
+    settings.AlignItemCaptions = true;
+    settings.EncodeHtml = false;
+    settings.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.SingleColumnWindowLimit;
+    settings.SettingsAdaptivity.SwitchToSingleColumnAtWindowInnerWidth = 720;
+    settings.ShowItemCaptionColon = false;
+    settings.UseDefaultPaddings = false;
+    settings.Width = Unit.Percentage(100);
+
+    settings.Items.AddGroupItem(g =>
+    {
+        g.Caption = "Κριτήρια Αναζήτησης";
+        g.ColCount = 2;
+        g.GroupBoxDecoration = GroupBoxDecoration.None;
+
+        g.Items.Add(m => m.DateFrom)
+            .SetNestedContent(() => Html.RenderAction("DateFromPartial", "Filters", new { Area = "", SelectedValue = Model.DateFrom }));
+
+        g.Items.Add(m => m.DateTo)
+            .SetNestedContent(() => Html.RenderAction("DateToPartial", "Filters", new { Area = "", SelectedValue = Model.DateTo }));
+
+        g.Items.Add(m => m.Code1022)
+            .SetNestedContent(() => Html.RenderAction("Code1022Partial", "Filters", new { Area = "", SelectedValue = Model.Code1022 }));
+
+        g.Items.Add(m => m.CallerFullName)
+            .SetNestedContent(() => Html.RenderAction("CallerFullNamePartial", "Filters", new { Area = "", SelectedValue = Model.CallerFullName }));
+
+        g.Items.Add(m => m.Municipality)
+            .SetNestedContent(() => Html.RenderAction("MunicipalityPartial", "Filters", new { Area = "", SelectedValue = Model.Municipality }));
+
+        g.Items.Add(m => m.Perioxi)
+            .SetNestedContent(() => Html.RenderAction("PerioxiPartial", "Filters", new { Area = "", Model.Municipality, SelectedValue = Model.Perioxi }));
+
+        g.Items.Add(m => m.StreetName)
+            .SetNestedContent(() => Html.RenderAction("StreetNamePartial", "Filters", new { Area = "", Model.Municipality, SelectedValue = Model.StreetName }));
+
+        g.Items.Add(m => m.StreetNumber)
+            .SetNestedContent(() => Html.RenderAction("StreetNumberPartial", "Filters", new { Area = "", Model.Municipality, SelectedValue = Model.StreetNumber }));
+
+        g.Items.Add(m => m.Odos2)
+            .SetNestedContent(() => Html.RenderAction("Odos2Partial", "Filters", new { Area = "", Model.Municipality, SelectedValue = Model.Odos2 }));
+
+        g.Items.Add(m => m.TaskType)
+            .SetNestedContent(() => Html.RenderAction("TaskTypePartial", "Filters", new { Area = "", SelectedValue = Model.TaskType }));
+
+        g.Items.Add(m => m.TaskState)
+            .SetNestedContent(() => Html.RenderAction("TaskStatePartial", "Filters", new { Area = "", SelectedValue = Model.TaskState }));
+    });
+
+    if (Model.RoleId == 1 || Model.RoleId == 2)
+    {
+        settings.Items.AddGroupItem(g =>
+        {
+            g.Caption = "Επιλογές Αναζήτησης";
+            g.ColCount = 4;
+            g.GroupBoxDecoration = GroupBoxDecoration.None;
+            g.Items.Add(m => m.ShowCrossSectorResults);
+        });
+    }
+
+    settings.Items.Add(i => {
+        i.ShowCaption = DefaultBoolean.False;
+        i.ParentContainerStyle.Paddings.PaddingTop = 5;
+        i.ParentContainerStyle.Paddings.PaddingRight = 0;
+        i.Width = 70;
+
+        i.NestedExtension().Button(s =>
+        {
+            s.Name = "Search";
+            s.Text = "Αναζήτηση";
+            s.UseSubmitBehavior = true;
+            s.ClientSideEvents.Click = "function() { LoadingPanel.Show(); }";
+        });
+    });
+
+}).GetHtml()

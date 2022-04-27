@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="urn:eydap1022" version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="FaultsMessageFault">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="FaultCode" type="xs:string" />
+        <xs:element minOccurs="0" name="FaultDescription" type="xs:string" />
+        <xs:element name="FaultID" type="xs:long" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getAddressCoordinateRequest">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="municipality" type="xs:string" />
+        <xs:element name="street" type="xs:string" />
+        <xs:element name="number" type="xs:string" />
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getAddressCoordinateResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="coordinateList">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="coordinate" nillable="true">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="municipality" type="xs:string" />
+                    <xs:element name="tk" type="xs:string" />
+                    <xs:element name="district" type="xs:string" />
+                    <xs:element name="street" type="xs:string" />
+                    <xs:element name="number" type="xs:string" />
+                    <xs:element name="longitude" type="xs:string" />
+                    <xs:element name="latitude" type="xs:string" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getCrossCoordinateRequest">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="municipality" type="xs:string" />
+        <xs:element name="street1" type="xs:string" />
+        <xs:element name="street2" type="xs:string" />
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getCrossCoordinateResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="coordinateList">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="coordinate" nillable="true">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="municipality" type="xs:string" />
+                    <xs:element name="tk" type="xs:string" />
+                    <xs:element name="district" type="xs:string" />
+                    <xs:element name="street1" type="xs:string" />
+                    <xs:element name="street2" type="xs:string" />
+                    <xs:element name="longitude" type="xs:string" />
+                    <xs:element name="latitude" type="xs:string" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getDepartmentsRequest">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="longitude" type="xs:string" />
+        <xs:element name="latitude" type="xs:string" />
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getDepartmentsResponse">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="waterDepartment" type="xs:string" />
+        <xs:element name="sewDepartment" type="xs:string" />
+        <xs:element name="pkEydap" type="xs:string" />
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getMunicipalitiesRequest" nillable="true" type="xs:anyType" />
+  <xs:element name="getMunicipalitiesResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="municipalitiesList">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="municipality" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getStreetsRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="municipality_name" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getStreetsResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="streetsList">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="street" nillable="true" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getWaterDetailsRequest">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="longitude" type="xs:string" />
+        <xs:element name="latitude" type="xs:string" />
+        <xs:element name="isolation_last_days" type="xs:string" />
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="getWaterDetailsResponse">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="pressure_zone" type="xs:string" />
+        <xs:element name="inside_isolation">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="isolation" type="xs:string" />
+              <xs:element xmlns:ns1="urn:eydap1022" minOccurs="0" maxOccurs="unbounded" name="isolation_property" type="ns1:propertyType" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="near_isolations">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="isolation" nillable="true">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element xmlns:ns2="urn:eydap1022" minOccurs="0" maxOccurs="unbounded" name="isolation_property" type="ns2:propertyType" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="near_fault_valves">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="valve" nillable="true">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element xmlns:ns3="urn:eydap1022" minOccurs="0" maxOccurs="unbounded" name="valve_property" type="ns3:propertyType" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="last_isolations">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="isolation" nillable="true">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element xmlns:ns4="urn:eydap1022" minOccurs="0" maxOccurs="unbounded" name="isolation_property" type="ns4:propertyType" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="last_alarms">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="alarm" nillable="true">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element xmlns:ns5="urn:eydap1022" minOccurs="0" maxOccurs="unbounded" name="alarm_property" type="ns5:propertyType" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="propertyType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="property_name" type="xs:string" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:schema>

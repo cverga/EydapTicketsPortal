@@ -1,0 +1,61 @@
+﻿@using EydapTickets.Helpers
+@using EydapTickets.Models
+
+@model MigrationSearchCriteria
+
+@Html.DevExpress().FormLayout(settings =>
+{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    settings.Name = "CriteriaFormLayout";
+    settings.AlignItemCaptions = true;
+    settings.EncodeHtml = false;
+    settings.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.SingleColumnWindowLimit;
+    settings.SettingsAdaptivity.SwitchToSingleColumnAtWindowInnerWidth = 720;
+    settings.ShowItemCaptionColon = false;
+    settings.UseDefaultPaddings = false;
+    settings.Width = Unit.Percentage(100);
+
+    settings.Items.AddGroupItem(g =>
+    {
+        g.Caption = "Κριτήρια Αναζήτησης";
+        g.ColCount = 2;
+        g.GroupBoxDecoration = GroupBoxDecoration.None;
+
+        g.Items.Add(m => m.DateFrom)
+            .SetNestedContent(() => Html.RenderAction("DateFromPartial", "Filters", new { Area = "", SelectedValue = Model.GetSafeValue(m => m.DateFrom) }));
+
+        g.Items.Add(m => m.DateTo)
+            .SetNestedContent(() => Html.RenderAction("DateToPartial", "Filters", new { Area = "", SelectedValue = Model.GetSafeValue(m => m.DateTo) }));
+
+        g.Items.Add(m => m.Sector)
+            .SetNestedContent(() => Html.RenderAction("SectorComboBoxPartial", "Migration", new { Area = "", SelectedValue = Model.GetSafeValue(m => m.Sector) }));
+
+        g.Items.Add(m => m.Municipality)
+            .SetNestedContent(() => Html.RenderAction("MunicipalityComboBoxPartial", "Migration", new { Area = "", Sector = Model.GetSafeValue(m => m.Sector), SelectedValue = Model.GetSafeValue(m => m.Municipality) }));
+
+        g.Items.Add(m => m.StreetName)
+            .SetNestedContent(() => Html.RenderAction("StreetNameComboBoxPartial", "Migration", new { Area = "", Sector = Model.GetSafeValue(m => m.Sector), Municipality = Model.GetSafeValue(m => m.Municipality), SelectedValue = Model.GetSafeValue(m => m.StreetName) }));
+
+        g.Items.Add(m => m.StreetNumber)
+            .SetNestedContent(() => Html.RenderAction("StreetNumberTextBoxPartial", "Migration", new { Area = "", SelectedValue = Model.GetSafeValue(m => m.StreetNumber) }));
+    });
+
+    settings.Items.Add(i =>
+    {
+        i.ShowCaption = DefaultBoolean.False;
+        i.ParentContainerStyle.Paddings.PaddingTop = 5;
+        i.ParentContainerStyle.Paddings.PaddingRight = 0;
+        i.Width = 70;
+
+        i.NestedExtension().Button(s =>
+        {
+            s.Name = "Search";
+            s.Text = "Αναζήτηση";
+            s.UseSubmitBehavior = true;
+            //s.ClientSideEvents.Click = "fieldValidation";
+        });
+    });
+
+}).GetHtml()

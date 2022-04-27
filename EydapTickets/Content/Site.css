@@ -1,0 +1,441 @@
+﻿html {
+  overflow: hidden;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+.defaultFont {
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  color: #000;
+  font: 14px "Segoe UI", "Helvetica Neue", Helvetica, "Droid Sans", Tahoma, Geneva, sans-serif;
+  text-size-adjust: 100%;
+}
+
+main .content-section .header-wrapper {
+  box-sizing: border-box;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 25px;
+}
+
+main .control-area {
+  box-sizing: border-box;
+  display: inline-block;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 5px;
+  width: 100%;
+}
+
+/* Header */
+
+.dxpnl-edge.t.headerPane {
+  background-color: #eff3f7;
+  background-position: left top;
+  background-repeat: no-repeat;
+}
+
+.dxpnl-edge.t.headerPane.panel { padding: 0; }
+
+.headerTop {
+  background: #17232d;
+  color: #fff;
+  padding: 2px 10px;
+}
+
+.headerTop a {
+  color: #fff;
+}
+
+.headerTop .navbar-brand img {
+  display: inline-block;
+  height: 20px;
+  vertical-align: middle;
+}
+
+.headerTop .navbar-brand span {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.headerTop .navbar-brand span:before {
+  background-color: #00adef;
+  content: "";
+  display: inline-block;
+  height: 14px;
+  margin: 3px 6px;
+  vertical-align: bottom;
+  width: 2px;
+}
+
+.headerMenu {
+  border-top-width: 1px !important;
+  border-width: 0 !important;
+}
+
+.expandedPanel {
+  padding: 2px !important;
+}
+
+.expandedPanel .headerMenu {
+  border-top-width: 0 !important;
+}
+
+.expandedPanel .headerTop {
+  display: none;
+}
+
+.templateTitle {
+  float: left;
+  margin: 0 4px 8px;
+}
+
+.dxpnl-edge.t.headerPane.bar .templateTitle {
+  margin: 0;
+}
+
+.templateTitle a {
+  color: #fff;
+  font-size: x-large;
+  text-decoration: none;
+}
+
+.loginControl {
+  float: right;
+  font-size: 12px;
+  margin: 12px;
+}
+
+.loginControl a {
+  color: #fff;
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* Footer */
+
+.dxpnl-edge.b.footerPane {
+  background-color: #eff3f7;
+}
+
+.dxpnl-edge.b.footerPane.panel {
+  padding: 0;
+}
+
+.footerMenu {
+  float: right;
+  padding-top: 7px;
+}
+
+.copyright {
+  float: left;
+  margin: 100px 15px 11px;
+}
+
+.content {
+  padding: 5px;
+}
+
+/* Left Panel */
+
+.leftPane.panel {
+  padding: 1px;
+  width: 200px;
+}
+
+/* Right Panel */
+
+.rightPane.panel {
+  padding: 0;
+  width: 250px;
+}
+
+/* Account */
+
+.accountHeader h2 {
+  font-size: 16px;
+  margin: 10px 0 7px 0;
+}
+
+.accountHeader p {
+  margin: 0;
+  padding: 0;
+}
+
+.accountHeader {
+  margin-bottom: 20px;
+}
+
+.form-field {
+  margin-bottom: 8px;
+}
+
+.dxGridView_gvAutoResize {
+  -ms-overflow: hidden;
+  overflow: hidden;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  padding-left: 20px;
+}
+
+/* Office 365 */
+
+.dxtcLite_Office365 > .dxtc-content.dxtc-autoHeight {
+  padding: 0;
+}
+
+.dxgvFilterRow_Office365 td.dxgv {
+  background-color: #eff3f7;
+}
+
+.dxgvGroupPanel_Office365 {
+  padding: 16px 10px 16px;
+  background: #eff3f7;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dxgvEditForm_Office365 {
+  background-color: #eff3f7;
+}
+
+.dxeButtonEdit_Office365 {
+  border-collapse: collapse;
+}
+
+.dxgvControl_Office365 {
+  color: #000;
+}
+
+.dxmLite_Office365 .dxctToolbar_Office365.dxm-main.dxmtb {
+  padding: 10px 0;
+}
+
+.dxmLite_Office365, .dxmLite_Office365 .dxm-item a.dx {
+  color: #000;
+}
+
+.dxeCalendarHeader_Office365 span {
+  /* Fix date editor breakage due to variable size month name */
+  padding: 0 !important;
+}
+
+.dxgvEditFormDisplayRow_Office365:last-child td.dxgv,
+.dxgvDetailCell_Office365:last-child td.dxgv,
+.dxgvDataRow_Office365:last-child td.dxgv,
+.dxgvDetailRow_Office365.dxgvADR:last-child td.dxgvAIC {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.dxgvCSD {
+  background-color: #eff3f7;
+}
+
+.dxgv.height-auto .dxgvCSD {
+  height: auto !important;
+}
+
+.dxtcLite_Office365 > .dxtc-stripContainer,
+.dxtcLite_Office365 > .dxtc-stripContainer .dxtc-strip {
+  padding: 10px 0;
+}
+
+/* Menu buttons */
+
+.dxmLite_Office365 .dxctToolbar_Office365.dxmtb .dxm-title {
+  border: 0 none;
+}
+
+.dxmLite_Office365 .dxctToolbar_Office365.dxmtb .dxm-title .dx-vam {
+  color: #000;
+  font-size: 18px;
+  vertical-align: middle;
+}
+
+.dxmLite_Office365 .dxctToolbar_Office365.dxmtb .dxm-spring {
+  border-bottom-style: hidden;
+  border-top-style: hidden;
+}
+
+.dxmLite_Office365 .dxm-gutter .dxm-spring {
+  display: none;
+}
+
+.dxmLite_Office365 .dxctToolbar_Office365.dxmtb .dxm-spring:first-child,
+.dxmLite_Office365 .dxctToolbar_Office365.dxmtb .dxm-title + .dxm-spacing + .dxm-spring {
+  border-left-style: hidden;
+}
+
+.dxeMemoEditArea_Office365.dxeDisabled_Office365 {
+  color: #bbbbbb;
+}
+
+.dxbButton_Office365.dxbError {
+  background-color:  rgba(255, 0, 0, 1);
+}
+
+/* Statues */
+
+/*[class^="dxgvFocusedRow_"] .dxgv,
+[class^="dxgvFocusedRow_"][class*=" dxgvDataRow_"],
+[class*=" dxgvFocusedRow_"] .dxgv,
+[class^="dxgvDataRow_"][class*=" dxgvFocusedRow_"] {
+  background-color: rgba(0, 173, 255, 0.2) !important;
+  color: #17232d;
+}*/
+
+.dxgvFocusedRow_Office365 .dxGridView_gvDetailCollapsedButton_Office365,
+.dxgvFocusedRow_Office365 .dxGridView_gvDetailExpandedButton_Office365 {
+  filter: brightness(0) invert(1);
+}
+
+.dxgv.dx-status-green,
+[class^="dxgvDataRow_"].dx-status-green,
+[class*=" dxgvDataRow_"].dx-status-green {
+  background-color: rgba(0, 220, 0, 0.8) !important;
+}
+
+[class^="dxgvFocusedRow_"] .dxgv.dx-status-green,
+[class^="dxgvFocusedRow_"][class*=" dxgvDataRow_"].dx-status-green,
+[class*=" dxgvFocusedRow_"] .dxgv.dx-status-green,
+[class^="dxgvDataRow_"][class*=" dxgvFocusedRow_"].dx-status-green {
+  background-color: rgba(0, 220, 0, 1) !important;
+}
+
+.dxgv.dx-status-red,
+[class^="dxgvDataRow_"].dx-status-red,
+[class*=" dxgvDataRow_"].dx-status-red {
+  background-color: rgba(255, 0, 0, 0.8) !important;
+}
+
+[class^="dxgvFocusedRow_"] .dxgv.dx-status-red,
+[class^="dxgvFocusedRow_"][class*=" dxgvDataRow_"].dx-status-red,
+[class*=" dxgvFocusedRow_"] .dxgv.dx-status-red,
+[class^="dxgvDataRow_"][class*=" dxgvFocusedRow_"].dx-status-red {
+  background-color: rgba(255, 0, 0, 1) !important;
+}
+
+.dxgv.dx-status-white,
+[class^="dxgvDataRow_"].dx-status-white,
+[class*=" dxgvDataRow_"].dx-status-white {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+[class^="dxgvFocusedRow_"] .dxgv.dx-status-white,
+[class^="dxgvFocusedRow_"][class*=" dxgvDataRow_"].dx-status-white,
+[class*=" dxgvFocusedRow_"] .dxgv.dx-status-white,
+[class^="dxgvDataRow_"][class*=" dxgvFocusedRow_"].dx-status-white {
+  background-color: rgba(255, 255, 255, 1) !important;
+}
+
+.dxgv.dx-status-open,
+[class^="dxgvDataRow_"].dx-status-open,
+[class*=" dxgvDataRow_"].dx-status-open {
+  color: #000;
+  background-color: rgba(135, 206, 250, 0.8) !important;
+}
+
+[class^="dxgvFocusedRow_"] .dxgv.dx-status-open,
+[class^="dxgvFocusedRow_"][class*=" dxgvDataRow_"].dx-status-open,
+[class*=" dxgvFocusedRow_"] .dxgv.dx-status-open,
+[class^="dxgvDataRow_"][class*=" dxgvFocusedRow_"].dx-status-open {
+  background-color: rgba(135, 206, 250, 1) !important;
+}
+
+.dxgv.dx-status-closed,
+[class^="dxgvDataRow_"].dx-status-closed,
+[class*=" dxgvDataRow_"].dx-status-closed {
+  background-color: rgba(119, 136, 153, 0.8) !important;
+}
+
+[class^="dxgvFocusedRow_"] .dxgv.dx-status-closed,
+[class^="dxgvFocusedRow_"][class*=" dxgvDataRow_"].dx-status-closed,
+[class*=" dxgvFocusedRow_"] .dxgv.dx-status-closed,
+[class^="dxgvDataRow_"][class*=" dxgvFocusedRow_"].dx-status-closed {
+  background-color: rgba(119, 136, 153, 1) !important;
+}
+
+.dxgv.dx-status-canceled,
+[class^="dxgvDataRow_"].dx-status-canceled,
+[class*=" dxgvDataRow_"].dx-status-canceled {
+  background-color: rgba(255, 165, 0, 0.8) !important;
+}
+
+[class^="dxgvFocusedRow_"] .dxgv.dx-status-canceled,
+[class^="dxgvFocusedRow_"][class*=" dxgvDataRow_"].dx-status-canceled,
+[class*=" dxgvFocusedRow_"] .dxgv.dx-status-canceled,
+[class^="dxgvDataRow_"][class*=" dxgvFocusedRow_"].dx-status-canceled {
+  background-color: rgba(255, 165, 0, 1) !important;
+}
+
+.dxeEditArea_Office365,
+body input.dxeEditArea_Office365 {
+    color: #000;
+}
+.dxeListBoxItemHover_Office365
+{
+  /* background-color: #707A83; */
+  color: #fff;
+}
+
+/** High Contrast GridView Table Borders */
+
+.dxpnlControl_Office365 {
+  border-color: rgba(1, 57, 116, 0.5);
+}
+
+.dxgvGroupPanel_Office365,
+.dxgvTable_Office365,
+.dxgvHeader_Office365,
+.dxgvFilterRow_Office365,
+.dxgvControl_Office365 .dxgvHSDC,
+.dxgvControl_Office365 .dxgvCSD,
+.dxgvFilterRow_Office365 td.dxgv,
+.dxgvDataRow_Office365 td.dxgv,
+.dxgvEmptyDataRow_Office365 td.dxgv,
+.dxgvPagerBottomPanel_Office365,
+.dxgvDataRow_Office365,
+.dxgvEditFormDisplayRow_Office365:last-child td.dxgv,
+.dxgvDetailCell_Office365:last-child td.dxgv,
+.dxgvDataRow_Office365:last-child td.dxgv,
+.dxgvDetailRow_Office365.dxgvADR:last-child td.dxgvAIC
+{
+  border-top-color: rgba(1, 57, 116, 0.5) !important;
+  border-right-color: rgba(1, 57, 116, 0.5) !important;
+  border-left-color: rgba(1, 57, 116, 0.5) !important;
+  border-bottom-color: rgba(1, 57, 116, 0.5) !important;
+}
+
+.dxgvEditFormDisplayRow_Office365 td.dxgv,
+.dxgvDetailCell_Office365 td.dxgv,
+.dxgvDataRow_Office365 td.dxgv,
+/*.dxgvDataRow_Office365:last-child,*/
+.dxgvDetailRow_Office365.dxgvADR td.dxgvAIC {
+  border-bottom-width: 1px !important;
+}
+.dxgvDataRow_Office365 td.dxgv:first-child {
+  border-right-width: 1px !important;
+}
+
+/*.dxgvDetailRow_Office365 .dxgvDetailCell_Office365,*/
+.dxgvDetailCell_Office365:last-child td.dxgv,
+td.dxgvHeader_Office365:last-child,
+.dxgvFilterRow_Office365 td:last-child,
+.dxgvDataRow_Office365 td.dxgv:last-child {
+  border-right-width: 0px !important;
+}
+
+.dxgvDetailCell_Office365:last-child tr.last-of-type td.dxgv,
+.dxgvTable_Office365 .dxgvDataRow_Office365.dxgvLVR > td.dxgv,
+.dxgvTable_Office365 .dxgvEmptyDataRow_Office365.dxgvLVR > td.dxgv {
+  border-bottom-width: 0px !important;
+}

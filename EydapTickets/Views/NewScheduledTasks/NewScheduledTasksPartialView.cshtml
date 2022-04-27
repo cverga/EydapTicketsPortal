@@ -1,0 +1,670 @@
+﻿@using EydapTickets.Helpers;
+@using EydapTickets.Models;
+
+@model IEnumerable<NewScheduledTask>
+
+@(Html.DevExpress().GridView<NewScheduledTask>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "NewScheduledTasksGridView";
+    settings.SettingsText.Title = "Προγραμματισμός Εργασιών";
+
+    settings.CallbackRouteValues = new { Controller = "NewScheduledTasks", Action = "NewScheduledTasksPartial" };
+
+
+    settings.SettingsDetail.ShowDetailRow = true;
+    settings.SettingsDetail.AllowOnlyOneMasterRowExpanded = true;
+
+    settings.CommandColumn.Visible = true;
+    settings.CommandColumn.Caption = "Επεξεργασία";
+    settings.CommandColumn.ShowNewButton = false;
+    settings.CommandColumn.ShowEditButton = true;
+    settings.SettingsCommandButton.EditButton.RenderMode = GridCommandButtonRenderMode.Button;
+
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "NewScheduledTasks", Action = "AddNewScheduledTask" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "NewScheduledTasks", Action = "UpdateNewScheduledTask" };
+
+    // settings.EditFormLayoutProperties.ColCount = 2;
+
+    settings.KeyFieldName = "TaskId";
+
+    //
+    // 13.07.2018, Andreas Kasapleris
+    // if TaskTypeId is 1063 = ΣΥΝΤΗΡΗΣΗ-ΕΠΙΣΚΕΥΗ ΒΛΑΒΗΣ ΔΙΚΤΥΟΥ or
+    // 1120 = ΕΡΓΑΣΙΑ ΑΝΤΙΜΕΤΩΠΙΣΗΣ ΒΛΑΒΗΣ ΑΠΟ ΤΟ ΕΡΕΥΝΩΝ
+    // do not allow user to expand Task row and add Visit (Ανάθεση)
+    // this case is trapped below in settings.Init
+    //
+
+    settings.Init = (s, e) =>
+    {
+        MVCxGridView gv = (MVCxGridView)s;
+        gv.DetailRowGetButtonVisibility += (sender, args) =>
+        {
+            var detailRowHandlerGrid = (MVCxGridView)sender;
+            var value = detailRowHandlerGrid.GetRowValuesByKeyValue(args.KeyValue, "TaskTypeId");
+
+            // 13.07.2018, Andreas Kasapleris
+            // use code below to show + button or not
+            // used to decide whether on not to show the (+) button
+            // var BackEndTabletId = detailRowHandlerGrid.GetRowValuesByKeyValue(args.KeyValue, "BackEndTabletId");
+            // var DepartmentId = detailRowHandlerGrid.GetRowValuesByKeyValue(args.KeyValue, "DepartmentId");
+
+            if (Convert.ToInt32(value) == 1063 || Convert.ToInt32(value) == 1120)
+                args.ButtonState = GridViewDetailRowButtonState.Hidden;
+        };
+    };
+
+    //
+    // detail row, Panel of Visits
+    //
+
+    settings.SetDetailRowTemplateContent(c =>
+    {
+        Html.DevExpress().RoundPanel(settingsRoundPanel =>
+        {
+            settingsRoundPanel.Name = "roundPanel" + Guid.NewGuid().ToString();
+            settingsRoundPanel.AllowCollapsingByHeaderClick = true;
+            settingsRoundPanel.ShowCollapseButton = true;
+            settingsRoundPanel.ShowHeader = true;
+            settingsRoundPanel.View = DevExpress.Web.View.Standard;
+            settingsRoundPanel.EnableAnimation = true;
+
+            settingsRoundPanel.Width = Unit.Percentage(100);
+            settingsRoundPanel.Styles.Header.Font.Size = System.Web.UI.WebControls.FontUnit.Large;
+            settingsRoundPanel.Styles.Header.BackColor = System.Drawing.Color.Beige;
+            settingsRoundPanel.HeaderText = "Αναθέσεις";
+
+            settingsRoundPanel.SetContent(() =>
+            {
+                // 11.07.2018, Andreas Kasapleris, passing the parameter TaskId one level below;
+                // following action will show the View filled with the list of Assignments (Αναθέσεις)
+                Html.RenderAction("NewScheduledTasksAssignmentsPartial", new { aTaskGuid = DataBinder.Eval(c.DataItem, "TaskId") });
+
+                int tasktypeid = (int)DataBinder.Eval(c.DataItem, "TaskTypeId");
+                ViewData["TaskGuid"] = DataBinder.Eval(c.DataItem, "TaskId");
+                // 13.07.2018, Andreas Kasapleris
+                // DO NOT enable button 'Εισαγωγή Νέας Ανάθεσης' for TaskTypeIds
+                // (a) 1063 = ΣΥΝΤΗΡΗΣΗ-ΕΠΙΣΚΕΥΗ ΒΛΑΒΗΣ ΔΙΚΤΥΟΥ
+                // (b) 1120 = ΕΡΓΑΣΙΑ ΑΝΤΙΜΕΤΩΠΙΣΗΣ ΒΛΑΒΗΣ ΑΠΟ ΤΟ ΕΡΕΥΝΩΝ
+                ViewData["Enabled"] = (ViewBag.DepartmentId ==
+                   (int)DataBinder.Eval(c.DataItem, "DepartmentId") || ViewBag.IsAdmin) &&
+                   (tasktypeid != 1063 && tasktypeid != 1120);
+
+                // 13.07.2018, Andreas Kasapleris, render Button 'Εισαγωγή Νέας Ανάθεσης' partial view
+                Html.RenderPartial("NewScheduledTasksAssignmentsPartialView", ViewData);
+            });
+        }).GetHtml();
+    });
+
+    settings.Columns.Add(m => m.TaskId).Visible = false;
+
+    settings.Columns.Add(m => m.CreationDate, column =>
+    {
+        column.Caption = "Ημερ.Δημιουργίας";
+        column.ColumnType = MVCxGridViewColumnType.DateEdit;
+        (column.PropertiesEdit as DateEditProperties).DisplayFormatString = "dd/MM/yyyy HH:mm:ss";
+        // (column.PropertiesEdit as DateEditProperties).ReadOnlyStyle.BackColor = System.Drawing.Color.Gray;
+        column.Visible = false;
+        column.VisibleIndex = 1;
+        column.ReadOnly = true;
+        column.EditFormSettings.Visible = DefaultBoolean.Default;
+    });
+
+    settings.Columns.Add(m => m.ScheduleDate, column =>
+    {
+        column.Caption = "Ημερ.Προγ/μού";
+        column.ColumnType = MVCxGridViewColumnType.DateEdit;
+        column.Name = "ScheduleDate";
+
+        // (column.PropertiesEdit as DateEditProperties).ReadOnlyStyle.BackColor = System.Drawing.Color.Gray;
+        column.Visible = true;
+        column.VisibleIndex = 2;
+        column.ReadOnly = false;
+        column.EditFormSettings.Visible = DefaultBoolean.Default;
+
+        //
+        // 16.07.2018, Andreas Kasapleris
+        // these are the right validation settings when a field is conditionally 'required';
+        // see below the JavaScript for ClientSide validation; and immediately below the error
+        // message settings which will be used
+        //
+        column.EditorProperties().DateEdit(p =>
+        {
+            //propertiesDateEdit.ValidationSettings.EnableCustomValidation = true;
+            p.ValidationSettings.ErrorText = "Πρέπει να καταχωρήσετε την Ημερομηνία Προγραμματισμού."; // 16.07.2018, Andreas Kasapleris
+            p.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithText;
+            p.ValidationSettings.ErrorTextPosition = ErrorTextPosition.Right;
+
+            p.TimeSectionProperties.Visible = true;
+            //(column.PropertiesEdit as DateEditProperties).DisplayFormatString = "g";
+            p.DisplayFormatString = "dd/MM/yyyy HH:mm:ss";
+            p.EditFormatString = "dd/MM/yyyy HH:mm:ss";
+
+            p.ClientSideEvents.Validation = "function(s,e) { var grid =" + settings.Name + "; var scheduledate = grid.GetEditor('ScheduleDate').GetText();if (scheduledate == '') { grid.GetEditor('ScheduleDate').SetIsValid(false); e.isValid=false;} }";
+        });
+    });
+
+    //
+    // column Combo Box of TaskTypes
+    //
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "TaskTypeId";
+        column.Caption = "Περιγραφη Εργασίας";
+
+        column.Visible = true;
+        column.VisibleIndex = 3;
+        column.ReadOnly = true;
+        column.EditFormSettings.Visible = DefaultBoolean.Default;
+
+        column.ColumnType = MVCxGridViewColumnType.ComboBox;
+
+        column.EditorProperties().ComboBox(p =>
+        {
+            List<string> mStates = new List<string>();
+            p.DataSource = TaskTypeProvider.GetAllTaskTypesForUser(ViewBag.User);
+            p.TextField = "Description";
+            p.ValueField = "Id";
+            p.ValueType = typeof(int);
+
+            p.ValidationSettings.ErrorText = "Πρέπει να καταχωρήσετε τον Τύπο Εργασίας."; // 16.07.2018, Andreas Kasapleris
+            p.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithText;
+            p.ValidationSettings.ErrorTextPosition = ErrorTextPosition.Right;
+
+            p.EnableSynchronization = DefaultBoolean.False;
+            p.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+
+            p.ClientSideEvents.Validation = "function(s,e) { var grid =" + settings.Name + "; var tasktypeid = grid.GetEditor('TaskTypeId').GetText();if (tasktypeid == '') { grid.GetEditor('TaskTypeId').SetIsValid(false); e.isValid=false;} }";
+        });
+
+    });
+
+    //
+    // model field 'Perioxi'
+    //
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "Perioxi";
+        column.Caption = "Περιοχή";
+
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+        var textBoxProperties = column.PropertiesEdit as TextBoxProperties;
+        textBoxProperties.MaxLength = 50;
+
+        column.Visible = true;
+        column.VisibleIndex = 4;
+        column.ReadOnly = false;
+        column.EditFormSettings.Visible = DefaultBoolean.Default;
+    });
+
+    //
+    // model field 'Municipality'
+    //
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "Municipality";
+        column.Caption = "Δήμος";
+        column.Name = "Municipality";
+        column.ColumnType = MVCxGridViewColumnType.ComboBox;
+        ComboBoxProperties propertiesComboBox = column.PropertiesEdit as ComboBoxProperties;
+
+        propertiesComboBox.DataSource = IncidentProvider.GetMunicipalities();
+        propertiesComboBox.TextField = "MunicipalityName";
+        propertiesComboBox.ValueField = "MunicipalityName";
+        propertiesComboBox.ValueType = typeof(string);
+
+        propertiesComboBox.EnableSynchronization = DefaultBoolean.False;
+        propertiesComboBox.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+
+        // 16.07.2018, Andreas Kasapleris
+        // code instead of calling EYDAP GIS Web Service
+        column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+        column.Visible = true;
+        column.VisibleIndex = 5;
+        column.ReadOnly = false;
+
+        column.EditFormSettings.Visible = DefaultBoolean.Default;
+        propertiesComboBox.ClientSideEvents.SelectedIndexChanged = "MunicipalitiesCombo_SelectedIndexChangedNewScheduledTasks";
+    });
+
+    //
+    // model field 'StreetName'
+    //
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "StreetName";
+        column.Caption = "Οδός";
+        column.Name = "StreetName";
+        /*Display Mode*/
+        column.ColumnType = MVCxGridViewColumnType.ComboBox;
+        ComboBoxProperties propertiesComboBox = column.PropertiesEdit as ComboBoxProperties;
+        propertiesComboBox.DataSource = IncidentProvider.GetStreetsForMunicipality("");
+
+        propertiesComboBox.TextField = "StreetName";
+        propertiesComboBox.ValueField = "StreetName";
+        propertiesComboBox.ValueType = typeof(string);
+
+        // 17.07.2018, Andreas Kasapleris
+        // code instead of calling EYDAP GIS Web Service
+        column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+        /*Display Mode*/
+        column.Visible = true;
+        column.VisibleIndex = 6;
+        column.ReadOnly = false;
+        column.EditFormSettings.Visible = DefaultBoolean.Default;
+
+        /*Edit Mode*/
+        column.SetEditItemTemplateContent(c =>
+        {
+            var temp = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, "Municipality");
+            string Municipality = "";
+            if (temp != null)
+            {
+                Municipality = temp.ToString();
+            }
+            var Street = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, c.Column.FieldName);
+            ViewData["Street"] = Street;
+
+            var Streets = (Municipality == null)
+                ? null
+                : IncidentProvider.GetStreetsForMunicipality(Municipality);
+
+            Html.RenderPartial("StreetsComboBoxPartialNewScheduledTasks");
+        });
+        /*Edit Mode*/
+    });
+
+    //
+    // model field 'StreetNumber'
+    //
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "StreetNumber";
+        column.Caption = "Αριθμός";
+        column.Visible = true;
+
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+        var textBoxProperties = column.PropertiesEdit as TextBoxProperties;
+        textBoxProperties.MaxLength = 5;
+
+        column.VisibleIndex = 7;
+        column.ReadOnly = false;
+        column.EditFormSettings.Visible = DefaultBoolean.Default;
+    });
+
+    //
+    // model field 'Odos2'
+    //
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "Odos2";
+        column.Caption = "Οδός 2";
+        column.Name = "Odos2";
+
+        /*Display Mode*/
+        column.ColumnType = MVCxGridViewColumnType.ComboBox;
+        ComboBoxProperties propertiesComboBox = column.PropertiesEdit as ComboBoxProperties;
+        propertiesComboBox.DataSource = IncidentProvider.GetStreetsForMunicipality("");
+
+        propertiesComboBox.TextField = "StreetName";
+        propertiesComboBox.ValueField = "StreetName";
+        propertiesComboBox.ValueType = typeof(string);
+
+        /*Display Mode*/
+        column.Visible = true;
+        column.VisibleIndex = 8;
+        column.ReadOnly = false;
+        column.EditFormSettings.Visible = DefaultBoolean.Default;
+
+        // 17.07.2018, Andreas Kasapleris
+        // code instead of calling EYDAP GIS Web Service
+        column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+        /*Edit Mode*/
+        column.SetEditItemTemplateContent(c =>
+        {
+            var temp = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, "Municipality");
+            string Municipality = "";
+            if (temp != null)
+            {
+                Municipality = temp.ToString();
+            }
+            var Street = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, c.Column.FieldName);
+            ViewData["Street"] = Street;
+
+            var Streets = (Municipality == null)
+                ? null
+                : IncidentProvider.GetStreetsForMunicipality(Municipality);
+
+            Html.RenderPartial("Odos2ComboBoxPartialNewScheduledTasks");
+        });
+        /*Edit Mode*/
+    });
+
+    //
+    // model field 'TaxKodikas'
+    //
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "TaxKodikas";
+        column.Caption = "Ταχ.Κώδικας";
+        column.Visible = true;
+
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+        var textBoxProperties = column.PropertiesEdit as TextBoxProperties;
+        textBoxProperties.MaxLength = 5;
+
+        column.VisibleIndex = 9;
+        column.ReadOnly = false;
+        column.EditFormSettings.Visible = DefaultBoolean.Default;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "Comments";
+        column.Caption = "Σχόλια";
+        column.ColumnType = MVCxGridViewColumnType.Memo;
+        column.Visible = true;
+
+        var memoProperties = column.PropertiesEdit as MemoProperties;
+        memoProperties.MaxLength = 500;
+
+        column.VisibleIndex = 10;
+        column.ReadOnly = false;
+        column.EditFormSettings.Visible = DefaultBoolean.Default;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "State";
+        column.Caption = "Κατάσταση";
+        column.ColumnType = MVCxGridViewColumnType.ComboBox;
+        ComboBoxProperties propertiesComboBox = column.PropertiesEdit as ComboBoxProperties;
+
+        // propertiesComboBox.Style.BackColor = System.Drawing.Color.Yellow;
+        // propertiesComboBox.ItemStyle.BackColor = System.Drawing.Color.Yellow;
+
+        IEnumerable<StatusDefinition> mStates;
+
+        StatusDefinition openStatus = new StatusDefinition() { StatusId = 1, StatusDescription = "Ανοιχτή" };
+        StatusDefinition closedStatus = new StatusDefinition() { StatusId = 2, StatusDescription = "Ολοκληρωμένη" };
+        StatusDefinition canceledStatus = new StatusDefinition() { StatusId = 3, StatusDescription = "Ακυρωμένη" };
+
+        mStates = new StatusDefinition[] { openStatus, closedStatus, canceledStatus };
+
+        propertiesComboBox.DataSource = mStates;
+
+        propertiesComboBox.TextField = "StatusDescription";
+        //propertiesComboBox.ValueField = "StatusId";
+        propertiesComboBox.ValueField = "StatusDescription";
+        propertiesComboBox.ValueType = typeof(string);
+
+        column.Visible = true;
+        column.VisibleIndex = 11;
+        column.ReadOnly = false;
+        column.EditFormSettings.Visible = DefaultBoolean.Default;
+
+        //propertiesComboBox.EnableSynchronization = DefaultBoolean.False;
+        //propertiesComboBox.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+
+        // column.Settings.AllowAutoFilter = DefaultBoolean.False;
+
+        //
+        // 13.07.2018, Andreas Kasapleris
+        // these are the right validation settings when a field is conditionally 'required';
+        // see below the JavaScript for ClientSide validation; and immediately below the error
+        // message settings which will be used
+        //
+
+        propertiesComboBox.ValidationSettings.ErrorText = "Επιλέξτε την σωστή Κατάσταση"; // 20.11.2017, Andreas Kasapleris
+        propertiesComboBox.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithText;
+        propertiesComboBox.ValidationSettings.ErrorTextPosition = ErrorTextPosition.Bottom;
+
+        propertiesComboBox.ClientSideEvents.SelectedIndexChanged = "function(s,e) { var grid =" + settings.Name + "; var state = grid.GetEditor('State').GetValue(); if (state=='Ανοιχτή' || state == 'Ακυρωμένη') { grid.GetEditor('ClosingDate').SetText(null); } }";
+        propertiesComboBox.ClientSideEvents.Validation = "function(s,e) { var grid =" + settings.Name + "; var state = grid.GetEditor('State').GetValue(); var closingdate = grid.GetEditor('ClosingDate').GetText(); if (closingdate !='' &&  state == 'Ανοιχτή') { s.SetIsValid(false); e.isValid=false; } }";
+
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "ClosingDate";
+        column.ColumnType = MVCxGridViewColumnType.DateEdit;
+        column.Caption = "Ημερομηνία Ολοκλήρωσης";
+        column.Name = "ClosingDate";
+
+        column.Visible = false;
+        column.VisibleIndex = 12;
+        column.ReadOnly = false;
+        column.EditFormSettings.Visible = DefaultBoolean.True;
+
+        //
+        // 20.11.2017, Andreas Kasapleris
+        // these are the right validation settings when a field is conditionally 'required';
+        // see below the JavaScript for ClientSide validation; and immediately below the error
+        // message settings which will be used
+        //
+        DateEditProperties propertiesDateEdit = column.PropertiesEdit as DateEditProperties;
+
+        propertiesDateEdit.ValidationSettings.ErrorText = "Πρέπει να καταχωρήσετε την Ημερομηνία Ολοκλήρωσης."; // 20.11.2017, Andreas Kasapleris
+        propertiesDateEdit.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithText;
+        propertiesDateEdit.ValidationSettings.ErrorTextPosition = ErrorTextPosition.Right;
+
+        propertiesDateEdit.TimeSectionProperties.Visible = true;
+        //(column.PropertiesEdit as DateEditProperties).DisplayFormatString = "g";
+        propertiesDateEdit.DisplayFormatString = "dd/MM/yyyy HH:mm:ss";
+        propertiesDateEdit.EditFormatString = "dd/MM/yyyy HH:mm:ss";
+
+        propertiesDateEdit.ValidationSettings.RequiredField.IsRequired = false;
+        propertiesDateEdit.ClientSideEvents.Validation = "function(s,e) { var grid =" + settings.Name + "; var state =grid.GetEditor('State').GetText(); if (state=='Ολοκληρωμένη') { if (grid.GetEditor('ClosingDate').GetText()=='') { grid.GetEditor('ClosingDate').SetIsValid(false); e.isValid=false;} } }";
+    });
+
+    //
+    // model field 'NrOfVisitsForTask'
+    //
+
+    settings.Columns.Add(column =>
+    {
+        column.FieldName = "NrOfVisitsForTask";
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+        column.Caption = "Αρ.Αναθέσεων";
+        column.Name = "NumberOfVisits";
+        column.VisibleIndex = 13;
+        column.ReadOnly = true;
+        column.EditFormSettings.Visible = DefaultBoolean.False;
+    });
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            .AddNewRowCommand()
+            //.AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+    settings.CommandButtonInitialize = (sender, e) =>
+    {
+        if (e.ButtonType == ColumnCommandButtonType.Edit)
+        {
+            var gridView = (ASPxGridView)sender;
+
+            var departmentId = gridView.GetRowValues<int>(e.VisibleIndex, "DepartmentId");
+
+            // 09.05.2017, Andreas Kasapleris
+            int tasktypeid = (int)gridView.GetRowValues(e.VisibleIndex, "TaskTypeId");
+
+            // 23.05.2017, Andreas Kasapleris
+            // string backendtabletid = (string)g.GetRowValues(e.VisibleIndex, "BackEndTabletId");
+
+            DateTime? mdateTime = (DateTime?)gridView.GetRowValues(e.VisibleIndex, "ClosingDate");
+
+            e.Enabled = (
+                          // 19.05.2018, following line of code does not activate button 'Επεξεργασία Εργασίας' for 'Μετρητών'
+                          //( (ViewBag.DepartmentId == value || ViewBag.IsAdmin ) && (tasktypeid != 1063) && (tasktypeid != 1120 ) && (value != 1036) && (value != 1041) && (value != 1045) )
+
+                          // 12.07.2018, activate button 'Επεξεργασία Εργασίας' for TaskTypes EXCEPT from
+                          // 1063 = ΣΥΝΤΗΡΗΣΗ-ΕΠΙΣΚΕΥΗ ΒΛΑΒΗΣ ΔΙΚΤΥΟΥ
+                          // 1120 = ΕΡΓΑΣΙΑ ΑΝΤΙΜΕΤΩΠΙΣΗΣ ΒΛΑΒΗΣ ΑΠΟ ΤΟ ΕΡΕΥΝΩΝ
+                          // && (tasktypeid != 1063) && (tasktypeid != 1120))
+                          ( (ViewBag.DepartmentId == departmentId || ViewBag.IsAdmin) )
+                        );
+        }
+    };
+
+    // process the initialization of new rows
+    settings.InitNewRow = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        e.NewValues["State"] = "Ανοιχτή";
+        e.NewValues["CreationDate"] = DateTime.Now;
+
+        //
+        // 17.07.2018, Andreas Kasapleris
+        // coumment out if NOT wanted!
+        //
+        if (gridView.IsNewRowEditing && gridView.IsEditing)
+        {
+            e.NewValues["ScheduleDate"] = DateTime.Now;
+        }
+
+    };
+
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+        editor.Width = Unit.Percentage(100);
+
+        var gridView = (ASPxGridView)sender;
+
+        //if (!e.Column.Grid.IsNewRowEditing)
+        //{
+        //    if (e.Column.FieldName == "ID1022" || e.Column.FieldName == "HmerominiaAnagelias")
+        //        e.Editor.Enabled = false;
+        //}
+
+        if (gridView.IsNewRowEditing && gridView.IsEditing)
+        {
+            if (e.Column.FieldName == "TaskTypeId")
+            {
+                e.Editor.Enabled = true;
+                e.Editor.ReadOnly = false;
+                //e.Column.ReadOnly = false;
+            }
+            if (e.Column.FieldName == "ClosingDate")
+            {
+                e.Editor.Enabled = false;
+                //e.Editor.ReadOnly = true;
+                //e.Column.ReadOnly = true;
+            }
+            if (e.Column.FieldName == "State")
+            {
+                e.Editor.Enabled = false;
+                //e.Editor.ReadOnly = true;
+                //e.Column.ReadOnly = true;
+            }
+        }
+
+        if (e.Column.FieldName == "ScheduleDate")
+        {
+            //(e.Editor).Height = System.Web.UI.WebControls.Unit.Pixel(200);
+        }
+
+        //if (e.Column.FieldName == "StreetNumber" ||
+        //    e.Column.FieldName == "TaxKodikas")
+        //{
+        //    (e.Editor).Width = System.Web.UI.WebControls.Unit.Pixel(100);
+        //}
+
+        //if (e.Column.FieldName == "Comments")
+        //{
+        //    (e.Editor).Width = System.Web.UI.WebControls.Unit.Pixel(400);
+        //    //(e.Editor).Height = System.Web.UI.WebControls.Unit.Pixel(100);
+        //}
+
+        if (e.Column.FieldName == "TaskTypeId")
+        {
+            //(e.Editor).Width = System.Web.UI.WebControls.Unit.Pixel(250);
+            if (e.Editor as ASPxComboBox != null)
+            {
+                (e.Editor as ASPxComboBox).Items.Clear();
+                (e.Editor as ASPxComboBox).DataSource = TaskTypeProvider.GetAllTaskTypesForUser(ViewBag.User);
+                (e.Editor as ASPxComboBox).DataBind();
+            }
+        }
+
+        //if (e.Column.FieldName == "ClosingDate")
+        //{
+        //    (e.Editor).Width = System.Web.UI.WebControls.Unit.Pixel(200);
+        //    //(e.Editor).Height = System.Web.UI.WebControls.Unit.Pixel(100);
+        //}
+    };
+
+    settings.HtmlDataCellPrepared = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        switch (e.DataColumn.FieldName)
+        {
+            case "State":
+                var stateValue = gridView.GetRowValues<string>(e.VisibleIndex, "State");
+                switch (stateValue)
+                {
+                    case "Ανοιχτή":
+                        e.Cell.CssClass += " dx-status-open";
+                        break;
+                    case "Ολοκληρωμένη":
+                        e.Cell.CssClass += " dx-status-closed";
+                        break;
+                    case "Ακυρωμένη":
+                        e.Cell.CssClass += " dx-status-canceled";
+                        break;
+                }
+                break;
+        }
+    };
+
+    // 17.07.2018, Andreas Kasapleris
+    // see also JavaScript function passValuesToActionAddNewScheduledTask(s, e)
+    // in file \Views\Shared\_mainLayout.cshtml
+    settings.CustomJSProperties = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        // when gridView.EditingRowVisibleIndex = -1 then this is a new row!
+        //if (gridView.EditingRowVisibleIndex > -1)
+        //{
+        e.Properties["cpState"] = "Ανοιχτή";
+        //}
+    };
+
+    settings.ClientSideEvents.Init = @"
+        function(s,e) {
+            window.GlobalGridView_Init(s, e);
+            window.GlobalGridView_AdjustSize(s);
+        }";
+
+    settings.ClientSideEvents.BeginCallback = "passValuesToActionAddNewScheduledTask";
+
+    settings.ClientSideEvents.EndCallback = "window.GlobalGridView_AdjustSize";
+
+    settings.ClientSideEvents.DetailRowExpanding = "function(s, e) {  window.IsExpanded = true; window.expkey = s.GetRowKey(e.visibleIndex);  }";
+
+}).SetEditErrorText(ViewBag.EditError).Bind(Model).GetHtml())

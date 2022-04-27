@@ -1,0 +1,39 @@
+﻿@using EydapTickets.Models
+
+@model HeaderViewRenderMode
+
+@{
+    var applicationTitle = "PORTAL ΔΙΕΥΘΥΝΣΗΣ ΔΙΚΤΥΟΥ ΥΔΡΕΥΣΗΣ";
+}
+
+@if (Model == HeaderViewRenderMode.Title)
+{
+    <div class="templateTitle">
+        @Html.ActionLink(applicationTitle, "Index", new { Area = "" , Controller = "Home"})
+    </div>
+}
+else
+{
+    if (Model == HeaderViewRenderMode.Full)
+    {
+        <div class="headerTop">
+            <div class="templateTitle">
+                <a class="navbar-brand" href="@Url.Action("Index", "Home", new { Area = "" })"><img src="@Url.Content("~/Content/images/logo.png")" /><span>@applicationTitle</span></a>
+            </div>
+            <div class="loginControl">
+                @Html.Label(string.Format("Συνδεμένος Χρήστης: {0}", ViewData["UserHeaderLabel"]))
+                @Html.ActionLink("[Log out]", "Logout", new { Area = "", Controller = "Home" }, new { @class="button"})
+            </div>
+            <b class="dx-clear"></b>
+        </div>
+    }
+    <div class="layout-menu">
+        @Html.Partial("MenuPartialView")
+        @if (ViewBag.ShowMainButtonStrip)
+        {
+            <div style="padding-top: 5px; padding-bottom: 5px">
+                @Html.Partial("MainButtonStripView")
+            </div>
+        }
+    </div>
+}

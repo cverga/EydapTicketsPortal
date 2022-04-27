@@ -1,0 +1,13 @@
+﻿@model DateTime?
+
+@Html.DevExpress().DateEdit(settings =>
+{
+    settings.Name = "DateTo";
+    settings.ControlStyle.CssClass = "form-control";
+    settings.Properties.ClearButton.DisplayMode = ClearButtonDisplayMode.Always;
+    settings.Properties.ValidationSettings.Display = Display.Dynamic;
+    settings.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+    settings.ShowModelErrors = true;
+    settings.Width = Unit.Percentage(100);
+
+}).Bind(Model).GetHtml()

@@ -1,0 +1,429 @@
+﻿@using EydapTickets.Helpers
+@using EydapTickets.Models
+@using System.Drawing
+
+@model IEnumerable<Incident>
+
+@(Html.DevExpress().GridView<Incident>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    var viewMode = (IncidentGridViewMode)ViewBag.ViewMode;
+    switch (viewMode)
+    {
+        case IncidentGridViewMode.Open:
+            settings.SettingsText.Title = "Ανοιχτά Περιστατικά";
+            break;
+
+        case IncidentGridViewMode.ClosedSeventyTwoHours:
+            settings.SettingsText.Title = "Κλειστά Περιστατικά 72 Ωρες";
+            break;
+
+        case IncidentGridViewMode.ClosedWithPendingTasks:
+            settings.SettingsText.Title = "Κλειστά Περιστατικά με Εκκρεμότητες";
+            break;
+
+        case IncidentGridViewMode.Search:
+            settings.SettingsText.Title = "Αναζήτηση Περιστατικών";
+            break;
+    }
+
+    settings.Name = "IncidentGridView";
+    settings.CallbackRouteValues = new { Area = "", Controller = "Incidents", Action = "GridViewPartial", ViewBag.ViewMode };
+
+    // Editing configuration
+    //settings.SettingsEditing.EditFormColumnCount = 2;
+    //settings.SettingsEditing.AddNewRowRouteValues = new { Area = "", Controller = "Incidents", Action = "AddNewIncident" };
+    //settings.SettingsEditing.UpdateRowRouteValues = new { Area = "", Controller = "Incidents", Action = "UpdateIncident" };
+    //settings.SettingsEditing.DeleteRowRouteValues = new { Area = "", Controller = "Incidents", Action = "DeleteIncident" };
+
+    // Behavior Configuration
+    //settings.SettingsBehavior.EnableCustomizationWindow = true;
+
+    // Detail configuration
+    settings.SettingsDetail.ShowDetailRow = true;
+    settings.SettingsDetail.AllowOnlyOneMasterRowExpanded = true;
+
+    settings.SetDetailRowTemplateContent(c =>
+    {
+        ViewContext.Writer.Write("<div id=\"TaskGridViewContainer\" style=\"height:100%; width:100%\">");
+
+        var routeValues = new {
+            Area = "",
+            IncidentId = c.KeyValue,
+        };
+
+        Html.RenderAction("GridViewPartial", "Tasks", routeValues);
+
+        ViewContext.Writer.Write("</div>");
+    });
+
+    settings.KeyFieldName = "TTId";
+
+    settings.Columns.Add(m => m.TTId, column =>
+    {
+        column.ReadOnly = true;
+        column.Visible = false;
+    });
+
+    // 24.11.2017, Andreas Kasapleris
+    // add GridView column to color the status of Incident for the Department
+    // logged in user belongs; give the column a Name to be able to set
+    // it below in HtmlDataCellPrepared
+    settings.Columns.Add(m => m.MyDepartmentColor, column =>
+    {
+        column.Width = Unit.Pixel(50);
+        column.ReadOnly = true;
+        column.Settings.AllowAutoFilter = DefaultBoolean.False;
+    });
+
+    // 24.11.2017, Andreas Kasapleris
+    // add GridView column to color status of Incident for Other Departments
+    // give the column a Name to be able to set it below in HtmlDataCellPrepared
+    settings.Columns.Add(m => m.OtherDepartmentColor, column =>
+    {
+        column.Width = Unit.Pixel(50);
+        column.ReadOnly = true;
+        column.Settings.AllowAutoFilter = DefaultBoolean.False;
+    });
+
+    settings.Columns.Add(m => m.ID1022)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.Municipality)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.Perioxi)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.StreetName)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.StreetNumber)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.StreetName1)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.Comments)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.Cause)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.EidosProblimatosDescr)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.DateCreated, column =>
+    {
+        column.ReadOnly = true;
+        column.EditFormSettings.Visible = DefaultBoolean.False;
+        column.EditorProperties().DateEdit(p =>
+        {
+            p.DisplayFormatString = "dd/MM/yyyy HH:mm";
+        });
+    });
+
+    settings.Columns.Add(m => m.Status, column =>
+    {
+        column.Width = Unit.Pixel(120);
+        column.EditorProperties().ComboBox(p =>
+        {
+            p.DataSource = IncidentProvider.GetStatusDefinitions(null);
+            p.TextField = "StatusDescription";
+            p.ValueField = "StatusId";
+            p.ValueType = typeof(int);
+            p.DropDownStyle = DropDownStyle.DropDown;
+        });
+    });
+
+    settings.Columns.Add(m => m.CommentCount, column =>
+    {
+        column.Width = Unit.Pixel(50);
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+        column.ReadOnly = true;
+        column.Visible = false;
+
+    });
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            //.AddNewRowCommand()
+            //.AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddCustomCommand(b =>
+            {
+                b.Name = "CmdRouteIncident";
+                b.Text = "Δρομολόγηση";
+                b.ClientEnabled = false;
+            })
+            .AddCustomCommand(b =>
+            {
+                b.Name = "CmdShowIncidentInfo";
+                b.Text = "Λεπτομέρειες";
+                b.ClientEnabled = false;
+            })
+            .AddCustomCommand(b =>
+            {
+                b.Name = "CmdShowIncidentLocation";
+                b.Text = "Χάρτης [GIS]";
+                b.ClientEnabled = false;
+            })
+            //.AddCommand(GridViewToolbarCommand.ShowCustomizationWindow, c =>
+            //{
+            //    c.Text = "Επιλογή Στηλών";
+            //    c.Enabled = true;
+            //})
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddCustomCommand(true, c =>
+            {
+                c.Text = "Εκτύπωση";
+                c.Image.IconID = IconID.PrintSummary16x16devav;
+
+                c.Items.AddCustomCommand(b =>
+                {
+                    b.Name = "CmdPrintIncidentForm";
+                    b.Text = "Αναφορά Σήματος";
+                    //b.Image.IconID = IconID.Repo;
+                    b.ClientEnabled = false;
+                });
+            })
+            .AddExportCommandGroup();
+    });
+
+    // Export Support
+    {
+        settings.SettingsExport.EnableClientSideExportAPI = true;
+        settings.SettingsExport.ExcelExportMode = DevExpress.Export.ExportType.DataAware;
+        settings.SettingsExport.PaperKind = System.Drawing.Printing.PaperKind.A4;
+        settings.SettingsExport.Landscape = true;
+
+        switch (viewMode)
+        {
+            case IncidentGridViewMode.Open:
+                settings.SettingsExport.FileName = "Βλάβες_Ανοιχτές_" + DateTime.Now.ToShortDateString();
+                settings.SettingsExport.ReportHeader = "ΒΛΑΒΕΣ ΑΝΟΙΧΤΕΣ";
+                break;
+
+            case IncidentGridViewMode.ClosedSeventyTwoHours:
+                settings.SettingsExport.FileName = "Βλάβες_Κλειστές_72_Ώρες_" + DateTime.Now.ToShortDateString();
+                settings.SettingsExport.ReportHeader = "ΒΛΑΒΕΣ ΚΛΕΙΣΤΕΣ (72 Ώρες)";
+                break;
+
+            case IncidentGridViewMode.ClosedWithPendingTasks:
+                settings.SettingsExport.FileName = "Βλάβες_Κλειστές_με_Εκκρεμότητες_" + DateTime.Now.ToShortDateString();
+                settings.SettingsExport.ReportHeader = "ΒΛΑΒΕΣ ΚΛΕΙΣΤΕΣ (με Εκκρεμότητες)";
+                break;
+
+            case IncidentGridViewMode.Search:
+                settings.SettingsExport.FileName = "Αποτελέσματα_Αναζήτησης_" + DateTime.Now.ToShortDateString();
+                settings.SettingsExport.ReportHeader = "ΑΠΟΤΕΛΕΣΜΑΤΑ ΑΝΑΖΗΤΗΣΗΣ";
+                break;
+        }
+
+        settings.SettingsExport.PageFooter.Center = " Ημερομηνία: " + DateTime.Now.ToString();
+
+        settings.SettingsExport.BeforeExport = (sender, e) =>
+        {
+            var gridView = sender as MVCxGridView;
+            if (gridView == null) return;
+
+            gridView.Columns["TTId"].Visible = false;
+            gridView.Columns["MyDepartmentColor"].Visible = false;
+            gridView.Columns["OtherDepartmentColor"].Visible = false;
+
+            gridView.Columns["ID1022"].ExportWidth = 40;
+            gridView.Columns["Municipality"].ExportWidth = 80;
+            gridView.Columns["StreetName"].ExportWidth = 100;
+            gridView.Columns["Perioxi"].ExportWidth = 80;
+
+            gridView.Columns["StreetName1"].ExportWidth = 100;
+            gridView.Columns["StreetNumber"].ExportWidth = 20;
+            gridView.Columns["Comments"].ExportWidth = 135;
+            gridView.Columns["Cause"].ExportWidth = 80;
+            gridView.Columns["EidosProblimatosDescr"].ExportWidth = 80;
+
+            gridView.Columns["DateCreated"].ExportWidth = 80;
+            gridView.Columns["Status"].ExportWidth = 70;
+
+            gridView.Columns["CommentCount"].Visible = false;
+        };
+    }
+
+    settings.HtmlRowPrepared = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        switch (e.RowType)
+        {
+
+            case GridViewRowType.Data:
+                var commentCountValue = gridView.GetRowValues(e.VisibleIndex, "CommentCount").ToString();
+                if (commentCountValue != "0")
+                {
+                    e.Row.CssClass += " dx-status-red";
+                }
+                break;
+
+            case GridViewRowType.Detail:
+                if (e.Row.TableSection == TableRowSection.TableBody)
+                {
+                    e.Row.Cells[1].Style.Add("overflow", "auto");
+                    e.Row.Height = Unit.Percentage(100);
+                }
+                break;
+        }
+    };
+
+    settings.HtmlDataCellPrepared = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        switch (e.DataColumn.FieldName)
+        {
+            case "TTId":
+                e.Cell.Text = e.KeyValue.ToString().Substring(0, 5);
+                break;
+
+
+            // 24.11.2017, Andreas Kasapleris
+            // set the Incident status color for the User's department
+            case "MyDepartmentColor":
+                e.Cell.ForeColor = Color.Transparent;
+                int myDepartmentColorValue = (int) gridView.GetRowValues(e.VisibleIndex, "MyDepartmentColor");
+                switch (myDepartmentColorValue)
+                {
+                    case 0:
+                        e.Cell.CssClass += " dx-status-red";
+                        break;
+                    case 1:
+                        e.Cell.CssClass += " dx-status-green";
+                        break;
+                    case 2:
+                        e.Cell.CssClass += " dx-status-white";
+                        break;
+                }
+                break;
+
+            // 24.11.2017, Andreas Kasapleris
+            // set the Incident status color for Other departments
+            case "OtherDepartmentColor":
+
+                e.Cell.ForeColor = Color.Transparent;
+                int otherDepartmentColorValue = (int) gridView.GetRowValues(e.VisibleIndex, "OtherDepartmentColor");
+                switch (otherDepartmentColorValue)
+                {
+                    case 0:
+                        e.Cell.CssClass += " dx-status-red";
+                        break;
+                    case 1:
+                        e.Cell.CssClass += " dx-status-green";
+                        break;
+                    case 2:
+                        e.Cell.CssClass += " dx-status-white";
+                        break;
+                }
+                break;
+
+            case "Status":
+                var statusValue = gridView.GetRowValues(e.VisibleIndex, "Status").ToString();
+                switch (statusValue)
+                {
+                    case "1":
+                        e.Cell.CssClass += " dx-status-open";
+                        break;
+                    case "3":
+                        e.Cell.CssClass += " dx-status-closed";
+                        break;
+                    case "5":
+                        e.Cell.CssClass += " dx-status-canceled";
+                        break;
+                }
+                break;
+        }
+    };
+
+    settings.CellEditorInitialize = (s, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+
+        if (e.Column.FieldName == "TTId")
+        {
+            editor.Value = new Guid();
+        }
+    };
+
+    settings.ClientLayout = (s, e) =>
+    {
+        if (e.LayoutMode == ClientLayoutMode.Saving)
+        {
+            if (viewMode == IncidentGridViewMode.Open)
+            {
+                IncidentProvider.SaveLayout(ViewBag.UserId, e.LayoutData);
+            }
+        }
+        else if (viewMode == IncidentGridViewMode.Open)
+        {
+            e.LayoutData = IncidentProvider.LoadLayout(ViewBag.UserId);
+        }
+    };
+
+    settings.BeforeGetCallbackResult = (sender, e) =>
+    {
+        if (ViewBag.FocusedRowKey != null)
+        {
+            var gridView = (ASPxGridView)sender;
+
+            var focusedRowIndex = gridView.FindVisibleIndexByKeyValue(ViewBag.FocusedRowKey);
+            var visibleRowStartIndex = gridView.PageIndex * gridView.SettingsPager.PageSize;
+            var visibleRowEndIndex = Math.Min(gridView.VisibleRowCount, visibleRowStartIndex + gridView.SettingsPager.PageSize);
+
+            if (focusedRowIndex >= visibleRowStartIndex && focusedRowIndex < visibleRowEndIndex)
+            {
+                gridView.FocusedRowIndex = focusedRowIndex;
+            }
+            else
+            {
+                gridView.FocusedRowIndex = visibleRowStartIndex;
+            }
+        }
+    };
+
+    // Client side properties
+    settings.CustomJSProperties = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        int startIndex = gridView.PageIndex * gridView.SettingsPager.PageSize;
+        int endIndex = Math.Min(gridView.VisibleRowCount, startIndex + gridView.SettingsPager.PageSize);
+
+        var rowValues = new object[endIndex - startIndex];
+
+        for (var n = startIndex; n < endIndex; n++)
+        {
+            rowValues[n - startIndex] = gridView.GetRowValues(n, "TTId", "MyDepartmentColor", "OtherDepartmentColor", "Comments", "Status", "Latitude", "Longitude");
+        }
+
+        e.Properties["cpRowValues"] = rowValues;
+        e.Properties["cpFocusedRowIndex"] = gridView.FocusedRowIndex;
+        e.Properties["cpEditingRowVisibleIndex"] = gridView.EditingRowVisibleIndex;
+        e.Properties["cpTotalIncidents"] = ViewBag.TotalIncidents ?? 0;
+    };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "IncidentGridView_Init";
+    settings.ClientSideEvents.BeginCallback = "IncidentGridView_BeginCallback";
+    settings.ClientSideEvents.EndCallback = "IncidentGridView_EndCallback";
+    settings.ClientSideEvents.DetailRowExpanding = "IncidentGridView_DetailRowExpanding";
+    settings.ClientSideEvents.DetailRowCollapsing = "IncidentGridView_DetailRowCollapsing";
+    settings.ClientSideEvents.ToolbarItemClick = "IncidentGridView_ToolbarItemClick";
+    settings.ClientSideEvents.FocusedRowChanged = "IncidentGridView_FocusedRowChanged";
+
+}).SetEditErrorText(ViewBag.EditError).Bind(Model).GetHtml())

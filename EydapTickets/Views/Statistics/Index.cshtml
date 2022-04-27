@@ -1,0 +1,46 @@
+﻿
+@* DXCOMMENT: Configure GridView *@
+
+@using EydapTickets.Models;
+@using System.Diagnostics;
+
+@model StatisticsCreteriaModel
+
+
+<script type="text/javascript">
+
+    function OnClick(s, e)
+    {
+        var actionParams = $("form").attr("action").split("?OutputFormat=");
+        actionParams[1] = s.GetMainElement().getAttribute("OutputFormatAttribute");
+        $("form").attr("action", actionParams.join("?OutputFormat="));
+    }
+
+</script>
+
+
+@{
+    //Html.EnableClientValidation();
+    //Html.EnableUnobtrusiveJavaScript();
+    //Html.RenderPartial("CriteriaPartialView");
+    //Html.RenderPartial("ResultsPartialView");
+    @Html.Partial("CriteriaPartialView", Model)
+
+        <div>
+            <table align="center">
+                <tr>
+                    <td align="center" id="statisticsresultsdiv" style="padding-top: 10px;">
+                        @*@Html.Partial("ResultsPartialView", new BasicStatisticsModel(new List<string>(), new List<BasciValuesModel>()))*@
+                        @Html.Partial("ResultsPartialView", new BasicStatisticsModel())
+                    </td>
+                </tr>
+            </table>
+        </div>
+    }
+
+
+
+
+
+
+

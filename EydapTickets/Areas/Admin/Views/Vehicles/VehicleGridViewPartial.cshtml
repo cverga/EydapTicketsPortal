@@ -1,0 +1,179 @@
+﻿@using System.Drawing.Printing;
+@using EydapTickets.Models;
+@using EydapTickets.Helpers
+
+@model IEnumerable<Vehicle>
+
+@(Html.DevExpress().GridView<Vehicle>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "VehicleGridView";
+    settings.CallbackRouteValues = new { Controller = "Vehicles", Action = "GridViewPartial" };
+
+    // Text configuration
+    settings.SettingsText.Title = "Οχήματα";
+
+    // Editing configuration
+    settings.SettingsEditing.EditFormColumnCount = 2;
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Vehicles", Action = "AddNewRow" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Vehicles", Action = "UpdateRow" };
+    // settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Vehicles", Action = "DeleteRow" };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "GlobalGridView_Init";
+    settings.ClientSideEvents.EndCallback = "GlobalGridView_EndCallback";
+
+    // Column configuration
+    {
+        settings.KeyFieldName = "VehicleID";
+
+        settings.Columns.Add(m => m.VehicleID).Visible = false;
+
+        settings.Columns.Add(m => m.VehicleSector, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = UsersDAL.GetSectors();
+                p.TextField = "SectorDescription";
+                p.ValueField = "SectorId";
+                p.ValueType = typeof(int);
+                p.ValidationSettings.RequiredField.IsRequired = true;
+
+                p.EnableSynchronization = DefaultBoolean.False;
+                p.IncrementalFilteringMode = IncrementalFilteringMode.None;
+
+                p.ClientSideEvents.SelectedIndexChanged = @"
+                    function(s, e) {
+                        var editorDepartmentId = VehicleGridView.GetEditor('VehicleDepartment');
+                        if (editorDepartmentId) {
+                            editorDepartmentId.PerformCallback();
+                        }
+                    }
+                ";
+            });
+        });
+
+        settings.Columns.Add(m => m.VehicleDepartment, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = DepartmentsDAL.GetAllDepartments();
+                p.TextField = "DepartmentName";
+                p.ValueField = "DepartmentId";
+                p.ValueType = typeof(int);
+                p.ValidationSettings.RequiredField.IsRequired = true;
+
+                p.CallbackRouteValues = new { Controller = "Sectors", Action = "GetDepartments" };
+                p.ClientSideEvents.BeginCallback = @"
+                    function(s, e) {
+                        var editorSectorId = VehicleGridView.GetEditor('VehicleSector');
+                        if (editorSectorId) {
+                            e.customArgs['sectorId'] = editorSectorId.GetValue();
+                        }
+                    }
+                ";
+            });
+        });
+
+        settings.Columns.Add(m => m.VehicleRegNumber);
+
+        settings.Columns.Add(m => m.VehicleType, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = IncidentProvider.GetVehicleTypes();
+                p.TextField = "VehicleTypeDescription";
+                p.ValueField = "VehicleTypeID";
+                p.ValueType = typeof(int);
+                p.ValidationSettings.RequiredField.IsRequired = true;
+            });
+        });
+
+        settings.Columns.Add(m => m.OwnerName);
+
+        settings.Columns.Add(m => m.OwnerSurName);
+
+        settings.Columns.Add(m => m.IsEydap, column =>
+        {
+            column.EditorProperties().CheckBox(p =>
+            {
+                p.ValueType = typeof(bool);
+                p.ValueChecked = true;
+                p.ValueUnchecked = false;
+                p.DisplayTextChecked = "Ναί";
+                p.DisplayTextUnchecked = "Όχι";
+            });
+        });
+    }
+
+    // Initialize cell editor
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+
+        var gridView = (MVCxGridView)sender;
+
+        // Requirement: disallow changing SectorId after insertion
+        if (e.Column.FieldName == "VehicleSector")
+        {
+            if (gridView.IsEditing && !gridView.IsNewRowEditing)
+            {
+                //e.Editor.ReadOnly = true;
+                //e.Column.ReadOnly = true;
+            }
+        }
+
+        // Requirement: Filter departments on sector.
+        if (e.Column.FieldName == "VehicleDepartment")
+        {
+            var sectorId = gridView.GetRowValues(gridView.EditingRowVisibleIndex, "VehicleSector") as int?;
+            var cmb = (MVCxComboBox) e.Editor;
+            cmb.DataSource = UsersDAL.GetDepartmentsForSector(sectorId ?? -1);
+            cmb.DataBind();
+        }
+    };
+
+    // Export configuration
+    {
+        settings.SettingsExport.EnableClientSideExportAPI = true;
+        settings.SettingsExport.ExcelExportMode = DevExpress.Export.ExportType.DataAware;
+        settings.SettingsExport.PaperKind = PaperKind.A4;
+        settings.SettingsExport.Landscape = true;
+
+        settings.SettingsExport.FileName = "Οχήματα_" + DateTime.Now.ToShortDateString();
+        settings.SettingsExport.ReportHeader = "Οχήματα";
+        settings.SettingsExport.PageFooter.Center = " Ημερομηνία: " + DateTime.Now.ToString();
+
+        settings.SettingsExport.BeforeExport = (sender, e) =>
+        {
+            var gridView = (MVCxGridView)sender;
+
+            gridView.Columns["VehicleID"].Visible = false;
+            gridView.Columns["VehicleSector"].ExportWidth = 140;
+            gridView.Columns["VehicleDepartment"].ExportWidth = 260;
+            gridView.Columns["VehicleRegNumber"].ExportWidth = 200;
+            gridView.Columns["VehicleType"].ExportWidth = 230;
+            gridView.Columns["OwnerName"].ExportWidth = 180;
+            gridView.Columns["OwnerSurName"].ExportWidth = 180;
+            gridView.Columns["IsEydap"].ExportWidth = 100;
+        };
+    }
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            .AddNewRowCommand()
+            .AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+}).SetEditErrorText(ViewData["EditError"] as string).Bind(Model).GetHtml())

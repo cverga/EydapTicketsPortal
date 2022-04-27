@@ -1,0 +1,29 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>AccessRequiredView</title>
+
+</head>
+<body class="defaultFont">
+    <div>
+
+
+        @{
+            ViewContext.Writer.Write("ACCESS DENIED FOR USERNAME: "  + ViewData["UserName"].ToString() + "</b>" +"<br />" + "<br />");
+
+        }
+
+
+
+        @*//ACCESS NOT GRANDED FOR USERNAME +  ViewData["UserName"].ToString();*@
+
+    </div>
+</body>
+</html>

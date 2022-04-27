@@ -1,0 +1,53 @@
+﻿@model List<EydapTickets.Models.DepartmentsModel>
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    //
+    // your DevExpress ComboBox Control
+    //
+    settings.CallbackRouteValues = new { Controller = "IncidentsRouting", Action = "ComboBoxRouteToDepartmentsPartial" };
+
+    settings.ReadOnly = false;
+    settings.Enabled = true;
+    settings.ShowModelErrors = true;
+
+     settings.Name = "RouteToDepartmentId"; // BEAWARE !!! this .Name property of the ComboBox
+                                            // should be same as .Name of the Grid View column !
+
+    settings.Properties.TextField  = "DepartmentName";
+    settings.Properties.ValueField = "DepartmentId";
+    settings.Properties.ValueType  = typeof(int);
+
+    settings.Properties.ValidationSettings.RequiredField.IsRequired = true;
+    settings.Properties.EnableSynchronization = DefaultBoolean.True;
+    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.None;
+
+    settings.Properties.Width = 350;
+
+    //
+    // 21/06/2016, Andreas Kasapleris
+    // following two Callbacks are defined in Views\Home\Index.cshtml
+    //
+    settings.Properties.ClientSideEvents.BeginCallback = "RouteToDepartmentId_BeginCallbackIncidentsRouting";
+
+    // is placed in the Views\Shared\_mainLayout.cshtml file but for the moment, is not used
+    // settings.Properties.ClientSideEvents.SelectedIndexChanged = "RouteToDepartmentId_SelectedIndexChangedIncidentsRouting";
+
+    settings.Properties.ValidationSettings.EnableCustomValidation = false;
+    //settings.Properties.ValidationSettings.Assign(EydapTickets.Helpers.ValidationsHelper.DepartmentValidationSettings);
+    //settings.Properties.ClientSideEvents.Validation = "OnDepartmentIdValidation"; //defines the validation event handler on a client side
+
+    settings.PreRender = (sender, e) =>
+    {
+        if ((bool)ViewData["SelectFirst"] == true)
+        {
+            //settings.SelectedIndex = 0;
+        }
+    };
+
+    // ViewData["DepartmentId"] is set in the main page;
+    // you are saying here to this ComboBox Control; bind to
+    // the Model passed (namely 'Departments') binding on the
+    // column 'RoutingDepartmentId'
+    // BindList(Model).Bind(ViewData["RoutingDepartmentId"]).GetHtml()
+}).BindList(Model).Bind(ViewData["RouteToDepartmentId"]).GetHtml()

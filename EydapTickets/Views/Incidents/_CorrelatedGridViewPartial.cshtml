@@ -1,0 +1,225 @@
+﻿@using System.Drawing.Printing
+@using EydapTickets.Helpers
+@using EydapTickets.Models;
+
+@model IEnumerable<Incident>
+
+@(Html.DevExpress().GridView<Incident>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "CorrelatedGridView";
+    settings.SettingsText.Title = "Σχετιζόμενα Περιστατικά";
+    settings.CallbackRouteValues = new { Area = "", Controller = "Incidents", Action = "CorrelatedGridViewPartial" };
+
+    // Cookie configuration
+    settings.SettingsCookies.Enabled = true;
+    settings.SettingsCookies.StoreColumnsWidth = true;
+
+    // Detail configuration
+    settings.SettingsDetail.ShowDetailRow = false;
+
+    settings.KeyFieldName = "TTId";
+
+    settings.Columns.Add(m => m.TTId).Visible = false;
+
+    //settings.Columns.Add(column =>
+    //{
+    //    column.FieldName = "";
+    //    column.Caption = "";
+    //    column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+    //    column.EditFormSettings.Visible = DevExpress.Utils.DefaultBoolean.False;
+    //    //column.Width = Unit.Percentage(10);
+    //    column.Width = Unit.Pixel(80);
+    //    column.Settings.AllowDragDrop = DefaultBoolean.False;
+
+    //    column.SetDataItemTemplateContent((ca) =>
+    //    {
+    //        //int mEnabled = Convert.ToInt32(DataBinder.Eval(ca.DataItem, "Status"));
+    //        Html.DevExpress().Button(b =>
+    //        {
+    //            b.Name = "ClearCorrelated" + ca.KeyValue.ToString().Replace("-", "");
+    //            b.Text = "Αποσυσχέτιση";
+    //            b.ToolTip = "Καθαρισμός Συσχετισμού";
+    //            b.Width = Unit.Pixel(80);
+    //            b.ClientSideEvents.Click = String.Format("function(s, e) {{ var result = confirm('Είστε βέβαιοι ότι θέλετε να αποσυσχετίσετε το Περιστατικο;'); if (result) {{ClearTTCorrelation('{0}'); }} var malakia = '{0}'; }}", ca.KeyValue.ToString());
+    //        }).Render();
+    //    });
+    //});
+
+    settings.Columns.Add(m => m.ID1022)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.CustomerName)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.CustomerPhone)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    //settings.Columns.Add(m => m.CustomerEmail)
+    //    .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.EidosProblimatosDescr)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.RelatedID1022)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.Municipality)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.StreetName)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.StreetNumber)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.Comments)
+        .Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+    settings.Columns.Add(m => m.DateCreated, column =>
+    {
+        column.EditFormSettings.Visible = DefaultBoolean.False;
+        column.ReadOnly = true;
+    });
+
+    settings.Columns.Add(m => m.CommentCount, column =>
+    {
+        column.Width = 50;
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+        column.Visible = false;
+        //column.SetDataItemTemplateContent((ca) =>
+        //{
+        //    Html.DevExpress().Button(b =>
+        //    {
+        //        b.Name = "CommentCount" + ca.KeyValue.ToString().Replace("-", "");
+        //        b.Text = "";
+        //        //b.ClientSideEvents.Click = String.Format("function(s, e) {{ if (!routepopup.IsVisible()){{  routepopup.Show();}} AjaxCall('{0}'); }}", ca.KeyValue.ToString());
+        //        b.ClientSideEvents.Click = String.Format("function(s, e) {{ window['RTT'] = '{0}'; routepopup.Show(); ShowAjaxRoutingPopUp('{0}');}}", ca.KeyValue.ToString());
+        //    }).GetHtml();
+        //    //ViewData["popup"] = "ButtonRoute" + ca.KeyValue.ToString().Replace("-", "");
+        //});
+    });
+
+    settings.Columns.Add(m => m.Status, column =>
+    {
+        column.EditorProperties().ComboBox(p =>
+        {
+            p.AllowUserInput = false;
+            p.DataSource = IncidentProvider.GetStatusDefinitions(null);
+            p.TextField = "StatusDescription";
+            p.ValueField = "StatusId";
+            p.ValueType = typeof(int);
+            p.DropDownStyle = DropDownStyle.DropDown;
+        });
+    });
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            //.AddNewRowCommand()
+            //.AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddCustomCommand(c =>
+            {
+                c.Name = "CmdClearIncidentCorrelation";
+                c.Text = "Αποσυσχέτιση";
+                c.ToolTip = "Καθαρισμός συσχετισμού περιστατικού";
+            })
+            .AddSpring()
+            .AddRefreshAllCommand();
+        //.AddExportCommandGroup();
+    });
+
+    // Initialize cell editor
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+    };
+
+    settings.HtmlRowPrepared = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        switch (e.RowType)
+        {
+            case GridViewRowType.Data:
+                var commentCountValue = gridView.GetRowValues(e.VisibleIndex, "CommentCount").ToString();
+                if (commentCountValue != "0")
+                {
+                    e.Row.CssClass += " dx-status-red";
+                }
+                break;
+
+            case GridViewRowType.Detail:
+                if (e.Row.TableSection == TableRowSection.TableBody)
+                {
+                    e.Row.Cells[1].Style.Add("overflow", "auto");
+                }
+                break;
+        }
+    };
+
+    settings.HtmlDataCellPrepared = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        switch (e.DataColumn.FieldName)
+        {
+            case "TTId":
+                e.Cell.Text = e.KeyValue.ToString().Substring(0, 5);
+                break;
+
+            case "Status":
+                var statusValue = gridView.GetRowValues(e.VisibleIndex, "Status").ToString();
+                switch (statusValue)
+                {
+                    case "1":
+                        e.Cell.CssClass += " dx-status-open";
+                        break;
+                    case "3":
+                        e.Cell.CssClass += " dx-status-closed";
+                        break;
+                    case "5":
+                        e.Cell.CssClass += " dx-status-canceled";
+                        break;
+                }
+                break;
+        }
+    };
+
+    // Client side properties
+    settings.CustomJSProperties = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        int startIndex = gridView.PageIndex * gridView.SettingsPager.PageSize;
+        int endIndex = Math.Min(gridView.VisibleRowCount, startIndex + gridView.SettingsPager.PageSize);
+
+        var rowValues = new object[endIndex - startIndex];
+
+        for (var n = startIndex; n < endIndex; n++)
+        {
+            rowValues[n - startIndex] = gridView.GetRowValues(n, "TTId");
+        }
+
+        e.Properties["cpRowValues"] = rowValues;
+        e.Properties["cpFocusedRowIndex"] = gridView.FocusedRowIndex;
+        e.Properties["cpEditingRowVisibleIndex"] = gridView.EditingRowVisibleIndex;
+    };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "CorrelatedGridView_Init";
+    settings.ClientSideEvents.BeginCallback = "CorrelatedGridView_BeginCallback";
+    settings.ClientSideEvents.EndCallback = "CorrelatedGridView_EndCallback";
+    settings.ClientSideEvents.DetailRowExpanding = "CorrelatedGridView_DetailRowExpanding";
+    settings.ClientSideEvents.DetailRowCollapsing = "CorrelatedGridView_DetailRowCollapsing";
+    settings.ClientSideEvents.ToolbarItemClick = "CorrelatedGridView_ToolbarItemClick";
+    settings.ClientSideEvents.FocusedRowChanged = "CorrelatedGridView_FocusedRowChanged";
+
+}).SetEditErrorText(ViewBag.EditError).Bind(Model).GetHtml())

@@ -1,0 +1,29 @@
+﻿@using ReportViewerForMvc
+
+@model Microsoft.Reporting.WebForms.ReportViewer
+
+<style>
+
+    .report-container {
+        margin-top: 94px;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
+    }
+
+    .report {
+        position:absolute;
+        width: 100%!important;
+        height: 100%!important;
+        border: 0px;
+    }
+
+</style>
+
+<div class="report-container">
+
+    @Html.ReportViewer(Model, new {@class = "report"})
+
+</div>

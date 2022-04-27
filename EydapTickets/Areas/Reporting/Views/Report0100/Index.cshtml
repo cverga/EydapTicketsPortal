@@ -1,0 +1,38 @@
+﻿@using EydapTickets.Areas.Reporting.Models
+
+@model Report0100SearchModel
+
+@{
+    ViewBag.Title = "Συγκεντρωτική Κατάσταση Αναθέσεων";
+    ViewBag.CriteriaModel = Model;
+    ViewBag.ShowMainButtonStrip = false;
+
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    @Html.DevExpress().RoundPanel(settings =>
+    {
+        settings.Name = "CriteriaPanel";
+
+        settings.AllowCollapsingByHeaderClick = false;
+        settings.ShowCollapseButton = true;
+        settings.ShowHeader = true;
+        settings.View = DevExpress.Web.View.Standard;
+        settings.EnableAnimation = false;
+        settings.Width = Unit.Percentage(100);
+        settings.HeaderText = "Κριτήρια Αναζήτησης";
+
+        settings.SetContent(() =>
+        {
+            Html.RenderPartial("_CriteriaFormLayoutPartial", Model);
+        });
+
+    }).GetHtml()
+
+    @Html.Partial("_ResultsGridViewPartial", Model.Results)
+}

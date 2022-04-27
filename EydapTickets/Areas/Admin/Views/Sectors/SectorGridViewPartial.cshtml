@@ -1,0 +1,84 @@
+﻿@using System.Drawing.Printing
+@using EydapTickets.Helpers
+@using EydapTickets.Models;
+
+@model IEnumerable<SectorsModel>
+
+@(Html.DevExpress().GridView<SectorsModel>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "SectorGridView";
+    settings.CallbackRouteValues = new { Controller = "Sectors", Action = "GridViewPartial" };
+
+    // Text configuration
+    settings.SettingsText.Title = "Τομείς";
+
+    // Editing configuration
+    //settings.SettingsEditing.EditFormColumnCount = 2;
+    //settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Tasks", Action = "AddNewRow" };
+    //settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Tasks", Action = "UpdateRow" };
+    //settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Tasks", Action = "DeleteRow" };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "GlobalGridView_Init";
+    settings.ClientSideEvents.EndCallback = "GlobalGridView_EndCallback";
+
+    // Column configuration
+    {
+        settings.KeyFieldName = "SectorId";
+
+        settings.Columns.Add(m => m.SectorId, column =>
+        {
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(m => m.SectorCode);
+
+        settings.Columns.Add(m => m.SectorDescription);
+    }
+
+    // Initialize cell editor
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+    };
+
+    // Export configuration
+    {
+        settings.SettingsExport.EnableClientSideExportAPI = true;
+        settings.SettingsExport.ExcelExportMode = DevExpress.Export.ExportType.DataAware;
+        settings.SettingsExport.PaperKind = PaperKind.A4;
+        settings.SettingsExport.Landscape = true;
+
+        settings.SettingsExport.FileName = "Τομείς_" + DateTime.Now.ToShortDateString();
+        settings.SettingsExport.ReportHeader = "Τομείς";
+        settings.SettingsExport.PageFooter.Center = " Ημερομηνία: " + DateTime.Now.ToString();
+
+        settings.SettingsExport.BeforeExport = (sender, e) =>
+        {
+            var gridView = (MVCxGridView)sender;
+
+            gridView.Columns["SectorId"].Visible = false;
+            gridView.Columns["SectorCode"].ExportWidth = 40;
+            gridView.Columns["SectorDescription"].ExportWidth = 360;
+        };
+    }
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            //.AddNewRowCommand()
+            //.AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+}).SetEditErrorText(ViewData["EditError"] as string).Bind(Model).GetHtml())

@@ -1,0 +1,72 @@
+﻿
+<script type="text/javascript">
+
+    //function RoutingSectorIdCombo_SelectedIndexChanged(s, e) {
+    //    // debugger;
+    //    // programmatic identifier of RoutingSectorId ComboBox is set to "RoutingSectorId"; from its'
+    //    // editor get the text; then set this text on the grid column with programmatic
+    //    // identifier "RoutingSectorName"
+    //    var RoutingSectorDescription = IncidentsRoutingMainGridPartialView.GetEditor('RoutingSectorId').GetText();
+    //    IncidentsRoutingMainGridPartialView.GetEditor('RoutingSectorName').SetText(RoutingSectorDescription);
+    //    // alert("RoutingSectorDescription = " + RoutingSectorDescription);
+    //}
+
+    //
+    // 22/07.2016, commented out
+    //
+
+    //function EidosProblemsIdCombo_SelectedIndexChanged(s, e)
+    //{
+    //    // debugger;
+    //    // programmatic identifier of EidosProblemsId ComboBox is set to "EidosProblemsId"; from its'
+    //    // editor get the text; then set this text on the grid column with programmatic
+    //    // identifier "EidosProblemsDescription"
+    //    var EidosProblemsDescription = IncidentsRoutingMainGridPartialView.GetEditor('EidosProblemsId').GetText();
+
+    //    // column must be visible in GridView to be able to set its' text! so comment out line below
+    //    // IncidentsRoutingMainGridPartialView.GetEditor('EidosProblemsDescription').SetText(EidosProblemsDescription);
+    //    // alert("EidosProblemsDescription = " + EidosProblemsDescription);
+    //}
+
+    //
+    // 22/07.2016, commented out
+    //
+
+    //function ProblemsIdCombo_SelectedIndexChanged(s, e) {
+    //    // debugger;
+    //    // programmatic identifier of ProblemsId ComboBox is set to "ProblemsId"; from its'
+    //    // editor get the text; then set this text on the grid column with programmatic
+    //    // identifier "ProblemsDescription"
+    //    var ProblemsDescription = IncidentsRoutingMainGridPartialView.GetEditor('ProblemsId').GetText();
+
+    //    // column must be visible in GridView to be able to set its' text! so comment out line below
+    //    // IncidentsRoutingMainGridPartialView.GetEditor('ProblemsDescription').SetText(ProblemsDescription);
+    //    // alert("ProblemsDescription = " + ProblemsDescription);
+    //}
+
+    //
+    // 22/07.2016, commented out
+    //
+
+    //function EgkatastasiIdCombo_SelectedIndexChanged(s, e) {
+    //    // debugger;
+    //    // programmatic identifier of EgkatastasiId ComboBox is set to "EgkatastasiId"; from its'
+    //    // editor get the text; then set this text on the grid column with programmatic
+    //    // identifier "EgkatastasiDescription"
+    //    var EgkatastasiDescription = IncidentsRoutingMainGridPartialView.GetEditor('EgkatastasiId').GetText();
+
+    //    // column must be visible in GridView to be able to set its' text! so comment out line below
+    //    // IncidentsRoutingMainGridPartialView.GetEditor('EgkatastasiDescription').SetText(EgkatastasiDescription);
+    //    // alert("ProblemsDescription = " + ProblemsDescription);
+    //}
+
+    function RoutingIsActiveCheckBox_CheckedChanged(s, e) {
+        // debugger;
+        var valueChecked = s.GetValue();
+        // alert("Ενεργή Δρομολόγηση = " + valueChecked);
+    }
+
+
+</script>
+
+@Html.Partial("IncidentsRoutingMainGridPartialView")

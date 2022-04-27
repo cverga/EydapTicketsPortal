@@ -1,0 +1,761 @@
+﻿@*
+    Callback events are placed in source file Views\Shared\_mainLayout.cshtml
+*@
+
+@model IEnumerable<EydapTickets.Models.IncidentsRoutingModel>
+
+@* if you need to use DataTables*@
+@using System.Data;
+@using EydapTickets.Models;
+@using System.Linq;
+
+@{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    var grid = Html.DevExpress().GridView(
+    settings =>
+    {
+        settings.Name = "IncidentsRoutingMainGridPartialView";
+        settings.CallbackRouteValues = new { Controller = "IncidentsRouting", Action = "GetIncidentsRoutings" };
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+
+        settings.SettingsPager.PageSize = 15;
+        settings.Settings.ShowGroupPanel = true;
+        settings.Settings.ShowFilterRow = true;
+
+        settings.ControlStyle.Paddings.Padding = System.Web.UI.WebControls.Unit.Pixel(0);
+        settings.ControlStyle.Border.BorderWidth = System.Web.UI.WebControls.Unit.Pixel(0);
+        settings.ControlStyle.BorderBottom.BorderWidth = System.Web.UI.WebControls.Unit.Pixel(1);
+
+        // show CommandColumn
+        settings.CommandColumn.Visible = true;
+        settings.CommandColumn.Caption = "Επιλογές";
+
+        // show New Button in header
+        settings.CommandColumn.ShowNewButtonInHeader = true;
+
+        // customize the following HeaderTemplateContent to add your custom 'New' button to the command
+        // column; block below sets the desired type of DevExpress Control (ie.Button, Hyperlink etc)
+        // for adding a new row in your grid; Control is placed in Header template; sets also the text
+        // of button or hyperlink displayed
+
+        // use this for placing a Button Control in Header Template
+        settings.CommandColumn.SetHeaderTemplateContent(container =>
+        {
+            @Html.DevExpress().Button(s =>
+            {
+                s.Name = "NewIncidentRoutingButton";
+                s.Text = "Νέα Δρομολόγηση";
+                s.ClientSideEvents.Click = "function (s, e) { IncidentsRoutingMainGridPartialView.AddNewRow();}";
+            }).Render();
+        });
+
+        // use this for placing a Hyperlink Control in Header Template
+        //settings.CommandColumn.SetHeaderTemplateContent(container => {
+        //    @Html.DevExpress().HyperLink(s => {
+        //          s.Name = "NewTaskButton";
+        //          s.Properties.Text = "Νέα Εργασία";
+        //          s.Properties.ClientSideEvents.Click = "function (s, e) { TasksMainGridPartialView.AddNewRow();}";
+        //    }).Render();
+        //});
+
+        // change/set the type of the command buttons; command below sets them to buttons
+        // settings.CommandColumn.ButtonType = GridCommandButtonRenderMode.Button;
+        settings.CommandColumn.ButtonType = GridCommandButtonRenderMode.Link;
+
+        // settings.CommandColumn.ShowNewButton = true;
+        settings.CommandColumn.ShowEditButton = true;
+        settings.SettingsCommandButton.EditButton.Text = "Επεξ/σία";
+
+        // 09.08.2016, Andreas Kasapleris
+        settings.SettingsCommandButton.UpdateButton.Text = "Αποθήκευση";
+        settings.SettingsCommandButton.CancelButton.Text = "Ακύρωση";
+
+        settings.CommandColumn.ShowDeleteButton = false;
+
+        settings.Settings.ShowFilterRow = true;
+        settings.SettingsBehavior.ColumnResizeMode = ColumnResizeMode.NextColumn;
+
+        // add new record action method in Controller
+        settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "IncidentsRouting", Action = "AddNewIncidentRouting" };
+        // update record action method in Controller
+        settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "IncidentsRouting", Action = "UpdateIncidentRouting" };
+        // delete record action method in Controller
+        settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "IncidentsRouting", Action = "DeleteIncidentRouting" };
+
+        // change the text of buttons in New, Update or Delete commands
+        // in the form of GridView
+        // settings.SettingsText.CommandNew = "Νέα Εγγραφή";
+        // settings.SettingsText.CommandUpdate = "Μεταβολή";
+        // link https://www.devexpress.com/Support/Center/Question/Details/Q514761
+
+        // change the text of buttons in New, Update or Cancel commands
+        // in the form of GridView
+        settings.BeforeGetCallbackResult = (sender, e) =>
+        {
+            MVCxGridView tasksgridView = sender as MVCxGridView;
+            if (tasksgridView.IsNewRowEditing)
+                tasksgridView.SettingsText.CommandUpdate = "Αποθήκευση";
+            else
+                tasksgridView.SettingsText.CommandUpdate = "Αποθήκευση Αλλαγών";
+            tasksgridView.SettingsText.CommandCancel = "Ακύρωση";
+        };
+
+        // property to set the maximum number of columns allowed in the Edit Form
+        // see https://www.devexpress.com/Support/Center/Question/Details/Q319190
+        settings.SettingsEditing.EditFormColumnCount = 1;
+
+        settings.SettingsEditing.Mode = GridViewEditingMode.EditFormAndDisplayRow;
+
+        // DXCOMMENT: Specify the grid's key field name and define grid columns in accordance with data model fields
+        settings.KeyFieldName = "RecId";
+
+        settings.Columns.Add(column =>
+        {
+            column.Name = "RecId";
+            column.Caption = "α/α Δρομολόγησης";
+            column.FieldName = "RecId"; // model (class) fieldname, binds to your model
+
+            column.ReadOnly = true;
+            column.Visible  = false;
+            column.EditFormSettings.Visible = DefaultBoolean.False;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Name = "ComesFromTTSectorName";
+            column.Caption = "Ονομασία Τομέα";
+            column.FieldName = "ComesFromTTSectorName"; // model (class) fieldname, binds to your model
+
+            // set the Column type to ComboBox
+            column.ColumnType = MVCxGridViewColumnType.ComboBox;
+
+            // define a variable of type ComboBoxProperties to access field properties (field editor)
+            var ComesFromTTSectorNameComboBoxProperties = column.PropertiesEdit as ComboBoxProperties;
+
+            // get all Sectors from database into an IEnumerable list
+            List<SectorsModel> AllSectors = EydapTickets.Models.UsersDAL.GetSectors() as List<SectorsModel>;
+
+            ComesFromTTSectorNameComboBoxProperties.DataSource = (AllSectors != null) ? AllSectors : null; // DX151Admin.Models.UsersDAL.GetSectors();
+
+            ComesFromTTSectorNameComboBoxProperties.TextField  = "SectorDescription";
+            ComesFromTTSectorNameComboBoxProperties.ValueField = "SectorDescription";
+         // ComesFromTTSectorNameComboBoxProperties.ValueField = "SectorId";
+            ComesFromTTSectorNameComboBoxProperties.ValueType = typeof(string);
+
+            ComesFromTTSectorNameComboBoxProperties.ValidationSettings.RequiredField.IsRequired = true;
+            ComesFromTTSectorNameComboBoxProperties.EnableSynchronization = DefaultBoolean.False;
+            ComesFromTTSectorNameComboBoxProperties.IncrementalFilteringMode = IncrementalFilteringMode.None;
+
+            //
+            // 23/07/2016, callback is placed in file Views\Shared\_mainLayout.cshtml
+            //
+            ComesFromTTSectorNameComboBoxProperties.ClientSideEvents.SelectedIndexChanged = "ComesFromTTSectorNameCombo_SelectedIndexChanged";
+
+            ComesFromTTSectorNameComboBoxProperties.Width = 350;
+
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Name = "ComesFromTTDeptName";
+            column.Caption = "Ονομασία Τμήματος";
+            column.FieldName = "ComesFromTTDeptName"; // model (class) fieldname, binds to your model
+
+            // set the Column type to ComboBox
+            column.ColumnType = MVCxGridViewColumnType.ComboBox;
+
+            // define a variable of type ComboBoxProperties to access field properties (field editor)
+            var ComesFromTTDeptNameComboBoxProperties = column.PropertiesEdit as ComboBoxProperties;
+
+            ComesFromTTDeptNameComboBoxProperties.TextField  = "DepartmentName";
+         // ComesFromTTDeptNameComboBoxProperties.ValueField = "DepartmentId";
+            ComesFromTTDeptNameComboBoxProperties.ValueField = "DepartmentName";
+            ComesFromTTDeptNameComboBoxProperties.ValueType  = typeof(string);
+
+            ComesFromTTDeptNameComboBoxProperties.ValidationSettings.RequiredField.IsRequired = true;
+            ComesFromTTDeptNameComboBoxProperties.EnableSynchronization = DefaultBoolean.False;
+            ComesFromTTDeptNameComboBoxProperties.IncrementalFilteringMode = IncrementalFilteringMode.None;
+
+            ComesFromTTDeptNameComboBoxProperties.DataSource =
+                EydapTickets.Models.UsersDAL.GetAllDepartments();
+
+            /* Edit Mode, when user edits the GridView row, either for Insert or Update */
+            /* this part of code is visited for every single column of the GridView and */
+            /* opens the Column's editor template */
+            column.SetEditItemTemplateContent(c =>
+            {
+                List<DepartmentsModel> Departments = null;
+
+                var mSectorName = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, "ComesFromTTSectorName");
+                var mDepartmentName = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, c.Column.FieldName);
+                ViewData["DepartmentName"] = mDepartmentName;
+
+                if (ViewData["ValidationFailed"] != null && (bool)ViewData["ValidationFailed"] == true)
+                {
+                    EydapTickets.Models.IncidentsRoutingModel mModel = (IncidentsRoutingModel)ViewData["Passedmodel"];
+                    mSectorName = mModel.ComesFromTTSectorName;
+                    mDepartmentName = mModel.ComesFromTTDeptName;
+                    Departments = EydapTickets.Models.IncidentsRoutingDAL.GetDepartmentsForSector(Convert.ToString(mSectorName))
+                                  as List<DepartmentsModel>;
+
+                    if (Departments.Any(dep => dep.DepartmentName == (string)mDepartmentName))
+                    {
+                        ViewData["DepartmentName"] = mDepartmentName;
+                    }
+                    else
+                    {
+                        ViewData["DepartmentName"] = null;
+                    }
+                }
+
+                else
+                {
+                    if (mSectorName == null)
+                    {
+                        Departments = new List<DepartmentsModel>();
+                    }
+                    else
+                    {
+                        Departments = EydapTickets.Models.IncidentsRoutingDAL.GetDepartmentsForSector(Convert.ToString(mSectorName))
+                                      as List<DepartmentsModel>;
+                    }
+                    // Server Side Validation
+                }
+
+                ViewData["SelectFirst"] = false;
+                if (c.Grid.IsNewRowEditing)
+                {
+                    ViewData["SelectFirst"] = true;
+
+                }
+                //UserDepartmentComboBoxProperties.ValidationSettings.Assign(EydapTickets.Helpers.ValidationsHelper.DepartmentValidationSettings);
+
+                Html.RenderPartial("ComboBoxDepartmentsPartialRouting", Departments);
+            });
+            /*Edit Mode*/
+
+            // set ComboBox width to 250 characters
+            ComesFromTTDeptNameComboBoxProperties.Width = 350;
+
+            // hide column from GridView
+            // column.Visible = false;
+
+            // hide column in edit form; but save it in database
+            // column.EditFormSettings.Visible = DefaultBoolean.False;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Name = "ProblemD04Description";
+            column.Caption = "Είδος Προβλήματος";
+            column.FieldName = "ProblemD04Description"; // model (class) fieldname, binds to your model
+
+            // set the Column type to ComboBox
+            column.ColumnType = MVCxGridViewColumnType.ComboBox;
+
+            // define a variable of type ComboBoxProperties to access field properties (field editor)
+            var ProblemD04DescriptionComboBoxProperties = column.PropertiesEdit as ComboBoxProperties;
+
+            ProblemD04DescriptionComboBoxProperties.DataSource = EydapTickets.Models.IncidentsRoutingDAL.GetProblemD04Descriptions();
+            ProblemD04DescriptionComboBoxProperties.TextField = "D04Description";
+            ProblemD04DescriptionComboBoxProperties.ValueField = "D04Description";
+            ProblemD04DescriptionComboBoxProperties.ValueType = typeof(string);
+
+            ProblemD04DescriptionComboBoxProperties.ValidationSettings.RequiredField.IsRequired = true;
+
+            ProblemD04DescriptionComboBoxProperties.Width = 350;
+
+            // ProblemD04DescriptionComboBoxProperties.ClientSideEvents.SelectedIndexChanged =
+            //    "EidosProblemsIdCombo_SelectedIndexChanged";
+        });
+
+        //
+        // 09.08.2016, Andreas Kasapleris
+        //
+        settings.Columns.Add(column =>
+        {
+            column.Name = "FromWorkingDate"; // programmatic identifier
+            column.Caption = "Από Ημερομηνία (Εργάσιμη)";
+            column.FieldName = "FromWorkingDate"; // model (class) fieldname, binds to your model
+
+            column.ReadOnly = false;
+
+            // set the Column type to Date
+            column.ColumnType = MVCxGridViewColumnType.DateEdit;
+            // define a variable of type DateEditProperties to access field properties (field editor)
+            var FromWorkingDateEditProperties = column.PropertiesEdit as DateEditProperties;
+            // set DateEdit properties
+            FromWorkingDateEditProperties.EditFormatString = "dd/MM/yyyy HH:mm:ss";
+            FromWorkingDateEditProperties.DisplayFormatString = "dd/MM/yyyy HH:mm:ss";
+
+            FromWorkingDateEditProperties.ValidationSettings.RequiredField.IsRequired = true;
+
+            FromWorkingDateEditProperties.Width = 250;
+
+            // show column in GridView
+            column.Visible = true;
+
+            // hide column in edit form; but save it in database
+            // column.EditFormSettings.Visible = DefaultBoolean.False;
+        });
+
+        //
+        // 09.08.2016, Andreas Kasapleris
+        //
+        settings.Columns.Add(column =>
+        {
+            column.Name = "ToWorkingDate"; // programmatic identifier
+            column.Caption = "Έως Ημερομηνία (Εργάσιμη)";
+            column.FieldName = "ToWorkingDate"; // model (class) fieldname, binds to your model
+
+            column.ReadOnly = false;
+
+            // set the Column type to Date
+            column.ColumnType = MVCxGridViewColumnType.DateEdit;
+            // define a variable of type DateEditProperties to access field properties (field editor)
+            var ToWorkingDateEditProperties = column.PropertiesEdit as DateEditProperties;
+            // set DateEdit properties
+            ToWorkingDateEditProperties.EditFormatString = "dd/MM/yyyy HH:mm:ss";
+            ToWorkingDateEditProperties.DisplayFormatString = "dd/MM/yyyy HH:mm:ss";
+
+            ToWorkingDateEditProperties.ValidationSettings.RequiredField.IsRequired = true;
+
+            ToWorkingDateEditProperties.Width = 250;
+
+            // show column in GridView
+            column.Visible = true;
+
+            // hide column in edit form; but save it in database
+            // column.EditFormSettings.Visible = DefaultBoolean.False;
+        });
+
+        //
+        // 09.08.2016, Andreas Kasapleris
+        //
+        settings.Columns.Add(column =>
+        {
+            column.Name = "FromWeekendDate"; // programmatic identifier
+            column.Caption = "Από Ημερομηνία (ΣαββατοΚύριακου)";
+            column.FieldName = "FromWeekendDate"; // model (class) fieldname, binds to your model
+
+            column.ReadOnly = false;
+
+            // set the Column type to Date
+            column.ColumnType = MVCxGridViewColumnType.DateEdit;
+            // define a variable of type DateEditProperties to access field properties (field editor)
+            var FromWeekendDateEditProperties = column.PropertiesEdit as DateEditProperties;
+            // set DateEdit properties
+            FromWeekendDateEditProperties.EditFormatString = "dd/MM/yyyy HH:mm:ss";
+            FromWeekendDateEditProperties.DisplayFormatString = "dd/MM/yyyy HH:mm:ss";
+
+            FromWeekendDateEditProperties.ValidationSettings.RequiredField.IsRequired = true;
+
+            FromWeekendDateEditProperties.Width = 250;
+
+            // show column in GridView
+            column.Visible = true;
+
+            // hide column in edit form; but save it in database
+            // column.EditFormSettings.Visible = DefaultBoolean.False;
+        });
+
+        //
+        // 09.08.2016, Andreas Kasapleris
+        //
+        settings.Columns.Add(column =>
+        {
+            column.Name = "ToWeekendDate"; // programmatic identifier
+            column.Caption = "Έως Ημερομηνία (ΣαββατοΚύριακου)";
+            column.FieldName = "ToWeekendDate"; // model (class) fieldname, binds to your model
+
+            column.ReadOnly = false;
+
+            // set the Column type to Date
+            column.ColumnType = MVCxGridViewColumnType.DateEdit;
+            // define a variable of type DateEditProperties to access field properties (field editor)
+            var ToWeekendDateEditProperties = column.PropertiesEdit as DateEditProperties;
+            // set DateEdit properties
+            ToWeekendDateEditProperties.EditFormatString = "dd/MM/yyyy HH:mm:ss";
+            ToWeekendDateEditProperties.DisplayFormatString = "dd/MM/yyyy HH:mm:ss";
+
+            ToWeekendDateEditProperties.ValidationSettings.RequiredField.IsRequired = true;
+
+            ToWeekendDateEditProperties.Width = 250;
+
+            // show column in GridView
+            column.Visible = true;
+
+            // hide column in edit form; but save it in database
+            // column.EditFormSettings.Visible = DefaultBoolean.False;
+        });
+
+
+        //
+        // 09.08.2016, Andreas Kasapleris
+        //
+
+        settings.Columns.Add(column =>
+        {
+            column.Name      = "RouteToDepartmentId";
+            column.Caption   = "Δρομολόγηση ΣΕ";
+            column.FieldName = "RouteToDepartmentId"; // model (class) fieldname, binds to your model
+
+            // set the Column type to ComboBox
+            column.ColumnType = MVCxGridViewColumnType.ComboBox;
+
+            // define a variable of type ComboBoxProperties to access field properties (field editor)
+            var RouteToDepartmentIdComboBoxProperties = column.PropertiesEdit as ComboBoxProperties;
+
+            // get all Departments from database into an IEnumerable list; irrelevant from Sector!
+            List<DepartmentsModel> AllDepartments = EydapTickets.Models.DepartmentsDAL.GetAllDepartments() as List<DepartmentsModel>;
+
+            RouteToDepartmentIdComboBoxProperties.DataSource = (AllDepartments != null) ? AllDepartments : null; // DX151Admin.Models.UsersDAL.GetSectors();
+
+            RouteToDepartmentIdComboBoxProperties.TextField  = "DepartmentName";
+            RouteToDepartmentIdComboBoxProperties.ValueField = "DepartmentId";
+            RouteToDepartmentIdComboBoxProperties.ValueType  = typeof(int);
+
+            RouteToDepartmentIdComboBoxProperties.ValidationSettings.RequiredField.IsRequired = true;
+            RouteToDepartmentIdComboBoxProperties.EnableSynchronization = DefaultBoolean.False;
+            RouteToDepartmentIdComboBoxProperties.IncrementalFilteringMode = IncrementalFilteringMode.None;
+
+            //
+            // 23/07/2016, callback is placed in file Views\Shared\_mainLayout.cshtml
+            //
+            // RouteToDepartmentIdComboBoxProperties.ClientSideEvents.SelectedIndexChanged = "ComesFromTTSectorNameCombo_SelectedIndexChanged";
+            //
+
+            // 23.09.2016, inserted code
+
+            /* Edit Mode, when user edits the GridView row, either for Insert or Update */
+            /* this part of code is visited for every single column of the GridView and */
+            /* opens the Column's editor template */
+            column.SetEditItemTemplateContent(c =>
+            {
+                List<DepartmentsModel> Departments = null;
+
+                var mSectorName = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, "ComesFromTTSectorName");
+                var mRouteToDepartmentId = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, c.Column.FieldName);
+                ViewData["RouteToDepartmentId"] = mRouteToDepartmentId;
+
+                if (ViewData["ValidationFailed"] != null && (bool)ViewData["ValidationFailed"] == true)
+                {
+                    EydapTickets.Models.IncidentsRoutingModel mModel = (IncidentsRoutingModel)ViewData["Passedmodel"];
+                    mSectorName = mModel.ComesFromTTSectorName;
+                    mRouteToDepartmentId = mModel.RouteToDepartmentId;
+                    Departments = EydapTickets.Models.IncidentsRoutingDAL.GetDepartmentsForSector(Convert.ToString(mSectorName))
+                                  as List<DepartmentsModel>;
+
+                    if (Departments.Any(dep => dep.DepartmentId == (int)mRouteToDepartmentId))
+                    {
+                        ViewData["RouteToDepartmentId"] = mRouteToDepartmentId;
+                    }
+                    else
+                    {
+                        ViewData["RouteToDepartmentId"] = null;
+                    }
+                }
+                else
+                {
+                    if (mSectorName == null)
+                    {
+                        Departments = new List<DepartmentsModel>();
+                    }
+                    else
+                    {
+                        Departments = EydapTickets.Models.IncidentsRoutingDAL.GetDepartmentsForSector(Convert.ToString(mSectorName))
+                                      as List<DepartmentsModel>;
+                    }
+                    // Server Side Validation
+                }
+
+                ViewData["SelectFirst"] = false;
+                if (c.Grid.IsNewRowEditing)
+                {
+                    ViewData["SelectFirst"] = true;
+
+                }
+                //UserDepartmentComboBoxProperties.ValidationSettings.Assign(EydapTickets.Helpers.ValidationsHelper.DepartmentValidationSettings);
+
+                Html.RenderPartial("ComboBoxRouteToDepartmentsPartial", Departments);
+            });
+            /*Edit Mode*/
+
+            RouteToDepartmentIdComboBoxProperties.Width = 350;
+
+        });
+
+        //settings.Columns.Add(column =>
+        //{
+        //    column.Name = "ProblemsId";
+        //    column.Caption = "Πρόβλημα";
+        //    column.FieldName = "ProblemsId"; // model (class) fieldname, binds to your model
+
+        //    // set the Column type to ComboBox
+        //    column.ColumnType = MVCxGridViewColumnType.ComboBox;
+
+        //    // define a variable of type ComboBoxProperties to access field properties (field editor)
+        //    var ProblemsIdComboBoxProperties = column.PropertiesEdit as ComboBoxProperties;
+
+        //    ProblemsIdComboBoxProperties.DataSource = EydapTickets.Models.IncidentsRoutingDAL.Get1022Problems();
+        //    ProblemsIdComboBoxProperties.TextField = "ProblemsDescription";
+        //    ProblemsIdComboBoxProperties.ValueField = "ProblemsId";
+        //    ProblemsIdComboBoxProperties.ValueType = typeof(int);
+
+        //    ProblemsIdComboBoxProperties.Width = 250;
+
+        //    ProblemsIdComboBoxProperties.ClientSideEvents.SelectedIndexChanged =
+        //        "ProblemsIdCombo_SelectedIndexChanged";
+
+        //});
+
+        //settings.Columns.Add(column =>
+        //{
+        //    column.Name = "ProblemsDescription";
+        //    column.Caption = "Περιγραφή Προβλήματος";
+        //    column.FieldName = "ProblemsDescription"; // model (class) fieldname, binds to your model
+
+        //    column.ReadOnly = true;
+
+        //    // set the Column type to TextBox
+        //    column.ColumnType = MVCxGridViewColumnType.TextBox;
+        //    // define a variable of type TextBoxProperties to access field properties (field editor)
+        //    var ProblemsDescriptionTextBoxProperties = column.PropertiesEdit as TextBoxProperties;
+        //    // set TextBox max length to 25 characters
+        //    ProblemsDescriptionTextBoxProperties.MaxLength = 50;
+
+        //    // hide column from GridView
+        //    column.Visible = false;
+
+        //    // hide column in edit form; but save it in database
+        //    column.EditFormSettings.Visible = DefaultBoolean.False;
+        //});
+
+        //settings.Columns.Add(column =>
+        //{
+        //    column.Name = "EgkatastasiId";
+        //    column.Caption = "Εγκατάσταση";
+        //    column.FieldName = "EgkatastasiId"; // model (class) fieldname, binds to your model
+
+        //    // set the Column type to ComboBox
+        //    column.ColumnType = MVCxGridViewColumnType.ComboBox;
+
+        //    // define a variable of type ComboBoxProperties to access field properties (field editor)
+        //    var EgkatastasiIdComboBoxProperties = column.PropertiesEdit as ComboBoxProperties;
+
+        //    EgkatastasiIdComboBoxProperties.DataSource = EydapTickets.Models.IncidentsRoutingDAL.Get1022Egkatastasi();
+        //    EgkatastasiIdComboBoxProperties.TextField = "EgkatastasiDescription";
+        //    EgkatastasiIdComboBoxProperties.ValueField = "EgkatastasiId";
+        //    EgkatastasiIdComboBoxProperties.ValueType = typeof(int);
+
+        //    EgkatastasiIdComboBoxProperties.Width = 250;
+
+        //    EgkatastasiIdComboBoxProperties.ClientSideEvents.SelectedIndexChanged =
+        //        "EgkatastasiIdCombo_SelectedIndexChanged";
+        //});
+
+        //settings.Columns.Add(column =>
+        //{
+        //    column.Name = "EgkatastasiDescription";
+        //    column.Caption = "Όνομα Εγκατάστασης";
+        //    column.FieldName = "EgkatastasiDescription"; // model (class) fieldname, binds to your model
+
+        //    column.ReadOnly = true;
+
+        //    // set the Column type to TextBox
+        //    column.ColumnType = MVCxGridViewColumnType.TextBox;
+        //    // define a variable of type TextBoxProperties to access field properties (field editor)
+        //    var EgkatastasiDescriptionTextBoxProperties = column.PropertiesEdit as TextBoxProperties;
+        //    // set TextBox max length to 50 characters
+        //    EgkatastasiDescriptionTextBoxProperties.MaxLength = 50;
+
+        //    // hide column from GridView
+        //    column.Visible = false;
+
+        //    // hide column in edit form; but save it in database
+        //    column.EditFormSettings.Visible = DefaultBoolean.False;
+        //});
+
+        //settings.Columns.Add(column =>
+        //{
+        //    column.Name = "RoutingDepartmentId";
+        //    column.Caption = "Τμήμα";
+        //    column.FieldName = "RoutingDepartmentId"; // model (class) fieldname, binds to your model
+
+        //    // set the Column type to ComboBox
+        //    column.ColumnType = MVCxGridViewColumnType.ComboBox;
+        //    // define a variable of type ComboBoxProperties to access field properties (field editor)
+        //    var RoutingDepartmentComboBoxProperties = column.PropertiesEdit as ComboBoxProperties;
+
+        //    RoutingDepartmentComboBoxProperties.TextField = "DepartmentName";
+        //    RoutingDepartmentComboBoxProperties.ValueField = "DepartmentId";
+        //    RoutingDepartmentComboBoxProperties.ValueType = typeof(int);
+
+        //    RoutingDepartmentComboBoxProperties.ValidationSettings.RequiredField.IsRequired = true;
+
+        //    RoutingDepartmentComboBoxProperties.DataSource =
+        //        EydapTickets.Models.UsersDAL.GetDepartmentsForSector();
+
+        //    /* Edit Mode, when user edits the GridView row, either for Insert or Update */
+        //    /* this part of code is visited for every single column of the GridView and */
+        //    /* opens the Column's editor template */
+
+        //    column.SetEditItemTemplateContent(c =>
+        //    {
+        //        List<DepartmentsModel> RoutingDepartments = null;
+
+        //        var mSectorId = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, "RoutingSectorId");
+        //        var mDepartmentId = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, c.Column.FieldName);
+        //        ViewData["RoutingDepartmentId"] = mDepartmentId;
+
+        //        if (ViewData["ValidationFailed"] != null && (bool)ViewData["ValidationFailed"] == true)
+        //        {
+        //            EydapTickets.Models.IncidentsRoutingModel mModel = (IncidentsRoutingModel)ViewData["Passedmodel"];
+        //            mSectorId = mModel.RoutingSectorId;
+        //            mDepartmentId = mModel.RoutingDepartmentId;
+        //            RoutingDepartments = EydapTickets.Models.UsersDAL.GetDepartmentsForSector(Convert.ToInt32(mSectorId))
+        //                                as List<DepartmentsModel>;
+
+        //            if (RoutingDepartments.Any(dep => dep.DepartmentId == (int)mDepartmentId))
+        //            {
+        //                ViewData["DepartmentId"] = mDepartmentId;
+        //            }
+        //            else
+        //            {
+        //                ViewData["DepartmentId"] = null;
+        //            }
+        //        }
+
+        //        else
+        //        {
+        //            if (mSectorId == null)
+        //            {
+        //                //Departments = EydapTickets.Models.UsersDAL.GetDepartmentsForSector()
+        //                //              as List<DepartmentsModel>;
+
+        //                RoutingDepartments = new List<DepartmentsModel>();
+        //            }
+        //            else
+        //            {
+        //                RoutingDepartments = EydapTickets.Models.UsersDAL.GetDepartmentsForSector(Convert.ToInt32(mSectorId))
+        //                                as List<DepartmentsModel>;
+        //            }
+        //            // Server Side Validation
+        //        }
+        //        ViewData["SelectFirst"] = false;
+        //        if (c.Grid.IsNewRowEditing)
+        //        {
+        //            ViewData["SelectFirst"] = true;
+        //        }
+        //        //UserDepartmentComboBoxProperties.ValidationSettings.Assign(EydapTickets.Helpers.ValidationsHelper.DepartmentValidationSettings);
+
+        //        Html.RenderPartial("ComboBoxDepartmentsPartialRouting", RoutingDepartments);
+
+        //    });
+        //    /*Edit Mode*/
+
+
+        //    RoutingDepartmentComboBoxProperties.ClientSideEvents.SelectedIndexChanged = "DepartmentsCombo_SelectedIndexChangedIncidentsRouting";
+
+        //    RoutingDepartmentComboBoxProperties.Width = 250;
+
+        //});
+
+        //settings.Columns.Add(column =>
+        //{
+        //    column.Name = "RoutingDepartmentName";
+        //    column.Caption = "Oνομασία Τμήματος";
+        //    column.FieldName = "RoutingDepartmentName"; // model (class) fieldname, binds to your model
+
+        //    column.ReadOnly = true;
+
+        //    // set the Column type to TextBox
+        //    column.ColumnType = MVCxGridViewColumnType.TextBox;
+        //    // define a variable of type TextBoxProperties to access field properties (field editor)
+        //    var RoutingDepartmentNameTextBoxProperties = column.PropertiesEdit as TextBoxProperties;
+        //    // set TextBox max length to 50 characters
+        //    RoutingDepartmentNameTextBoxProperties.MaxLength = 50;
+
+        //    // hide column from GridView
+        //    column.Visible = false;
+
+        //    // hide column in edit form; but save it in database
+        //    column.EditFormSettings.Visible = DefaultBoolean.False;
+
+        //});
+
+        settings.Columns.Add(column =>
+        {
+            column.Name = "RoutingIsActive";
+            column.Caption = "Ενεργή Δρομολόγηση?";
+            column.FieldName = "RoutingIsActive"; // model (class) fieldname, binds to your model
+
+            // set the Column type to TextBox
+            column.ColumnType = MVCxGridViewColumnType.CheckBox;
+            // define a variable of type TextBoxProperties to access field properties (field editor)
+            var RoutingIsActiveCheckBoxProperties = column.PropertiesEdit as CheckBoxProperties;
+
+            // set the value type of the CheckBox, to be Int32
+            RoutingIsActiveCheckBoxProperties.ValueType = typeof(Byte);
+
+            // has to be checked or unchecked
+            RoutingIsActiveCheckBoxProperties.AllowGrayed = false;
+
+            // set the values taken when the CheckBox is checked or unchecked
+            RoutingIsActiveCheckBoxProperties.ValueChecked = 1;
+            RoutingIsActiveCheckBoxProperties.ValueUnchecked = 0;
+
+            RoutingIsActiveCheckBoxProperties.DisplayTextChecked = "Ενεργή";
+            RoutingIsActiveCheckBoxProperties.DisplayTextUnchecked = "Μη Ενεργή";
+
+            RoutingIsActiveCheckBoxProperties.EnableClientSideAPI = true;
+            RoutingIsActiveCheckBoxProperties.ClientInstanceName = "RoutingIsActive";
+            RoutingIsActiveCheckBoxProperties.ClientSideEvents.CheckedChanged = "RoutingIsActiveCheckBox_CheckedChanged";
+
+            RoutingIsActiveCheckBoxProperties.ValidationSettings.RequiredField.IsRequired = true;
+
+        });
+
+        //settings.PreRender = (sender, e) =>
+        //{
+        //    //((MVCxGridView)sender).DetailRows.ExpandRow(0);
+        //};
+
+        //settings.CellEditorInitialize = (s, e) =>
+        //{
+        //    if (e.Column.FieldName == "TTId")
+        //    {
+        //        e.Editor.Value = new Guid();
+        //    }
+        //    ASPxEdit editor = (ASPxEdit)e.Editor;
+        //    editor.ValidationSettings.Display = Display.Dynamic;
+        //};
+
+        // 23.05.2016; handels the case of inserting the very first row
+        // in the table
+        settings.DataBinding = (sender, e) =>
+        {
+            var grid1 = (MVCxGridView)sender;
+            grid1.ForceDataRowType(typeof(EydapTickets.Models.IncidentsRoutingModel));
+        };
+
+    });
+
+    //
+    // if an error was returned from SQL Server, notify user
+    //
+
+    if (ViewData["EditError"] != null)
+    {
+        grid.SetEditErrorText((string)ViewData["EditError"]);
+    }
+    //else
+    //{
+    //    grid.SetEditErrorText("Επιτυχής καταχώρηση.");
+    //}
+
+}
+@grid.Bind(Model).GetHtml()
+

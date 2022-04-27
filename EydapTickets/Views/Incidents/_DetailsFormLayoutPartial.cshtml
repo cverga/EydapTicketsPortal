@@ -1,0 +1,201 @@
+﻿@using EydapTickets.Models
+
+@model IncidentDetails
+
+<script type="text/javascript">
+    function CheckRelated(incidentId)
+    {
+        var correlateCode = t12.GetText();
+        if (correlateCode != "" && correlateCode != t2.GetText())
+        {
+            Correlate(incidentId, correlateCode);
+        }
+        else
+        {
+            detailspopup.Hide();
+        }
+    }
+
+    function Correlate(incidentId, correlateCode) {
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("Correlate", "Incidents")',
+            data: {
+                Id: incidentId,
+                CorrelateCode: correlateCode
+            },
+            success: function(response) {
+                if (response.success) {
+                    window.alert("Το περιστατικό συσχετίστηκε με επιτυχία.");
+                    detailspopup.Hide();
+                    IncidentGridView.Refresh();
+                } else {
+                    window.alert(response.responseText);
+                }
+            },
+            cache: false,
+            error: function(errordesc) {
+                if (response && response.responseText)
+                {
+                    window.alert(response.responseText);
+                }
+            }
+        });
+    }
+</script>
+
+@Html.DevExpress().FormLayout(settings =>
+{
+    settings.Name = "IncidentDetailsFormLayout";
+    settings.AlignItemCaptions = true;
+    settings.EncodeHtml = false;
+    settings.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.SingleColumnWindowLimit;
+    settings.SettingsAdaptivity.SwitchToSingleColumnAtWindowInnerWidth = 720;
+    settings.ShowItemCaptionColon = false;
+    settings.UseDefaultPaddings = false;
+    settings.Width = Unit.Percentage(100);
+
+    settings.Items.AddGroupItem(g =>
+    {
+        g.ColCount = 1;
+        g.GroupBoxDecoration = GroupBoxDecoration.None;
+        g.UseDefaultPaddings = false;
+
+        g.Items.Add(m => m.TicketTraceId, i =>
+        {
+            i.Name = "t1";
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.CustomerServiceId, i =>
+        {
+            i.Name = "t2";
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.AnnouncementDate, i =>
+        {
+            i.Name = "t3";
+            i.NestedExtension().DateEdit(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.AnnouncementTime, i =>
+        {
+            i.Name = "t4";
+            i.NestedExtension().TimeEdit(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.CallerFullName, i =>
+        {
+            i.Name = "t5";
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.CallerPhone, i =>
+        {
+            i.Name = "t51";
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.AM, i =>
+        {
+            i.Name = "t7";
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.CounterNumber, i =>
+        {
+            i.Name = "t8";
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.BillNumber, i =>
+        {
+            i.Name = "t9";
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.Cause, i =>
+        {
+            i.Name = "t10";
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.ProblemType, i =>
+        {
+            i.Name = "t6";
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = true;
+            });
+        });
+
+        g.Items.Add(m => m.Comments, i =>
+        {
+            i.Name = "t11";
+            i.NestedExtension().Memo(s =>
+            {
+                s.ReadOnly = true;
+                s.Height = Unit.Pixel(120);
+            });
+        });
+
+        g.Items.Add(m => m.CorrelatedIncident, i =>
+        {
+            i.Name = "t12";
+            i.NestedExtension().TextBox(s =>
+            {
+                s.ReadOnly = Model.Status != 1;
+                s.Enabled = Model.Status == 1;
+            });
+        });
+    });
+
+    settings.Items.Add(i =>
+    {
+        i.ShowCaption = DefaultBoolean.False;
+        i.ParentContainerStyle.Paddings.PaddingTop = 5;
+        i.ParentContainerStyle.Paddings.PaddingRight = 0;
+        i.HorizontalAlign = FormLayoutHorizontalAlign.Right;
+        i.Width = Unit.Pixel(70);
+        i.NestedExtension().Button(s =>
+        {
+            s.Name = "ButtonSaveRelated";
+            s.Text = "Συσχέτιση";
+            s.UseSubmitBehavior = false;
+            s.ClientSideEvents.Click = "function (s,e) { CheckRelated('" + Model.Id + "'); }";
+            s.Enabled = (Model.Status == 1);
+        });
+    });
+
+}).GetHtml()

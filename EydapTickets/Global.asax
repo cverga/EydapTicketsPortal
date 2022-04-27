@@ -1,0 +1,1 @@
+<%@ Application Codebehind="Global.asax.cs" Inherits="EydapTickets.MvcApplication" Language="C#" %>

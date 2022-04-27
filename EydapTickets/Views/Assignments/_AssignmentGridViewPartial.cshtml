@@ -1,0 +1,473 @@
+﻿@using System.Configuration
+@using EydapTickets.Helpers
+@using EydapTickets.Models
+
+@model IEnumerable<Assignment>
+
+@(Html.DevExpress().GridView<Assignment>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "AssignmentGridView_" + ViewBag.TaskId.ToString().Replace("-", "");
+    settings.CallbackRouteValues = new { Area = "", Controller = "Assignments", Action = "GridViewPartial" };
+
+    // Text configuration
+    settings.SettingsText.Title = "Αναθέσεις";
+
+    // Settings configuration
+    settings.Settings.ShowFilterRow = false;
+    settings.Settings.ShowGroupPanel = false;
+
+    // Style configuration
+    settings.ControlStyle.CssClass = "height-auto";
+
+    // Detail configuration
+    settings.SettingsDetail.MasterGridName = "TaskGridView_" + ViewBag.IncidentId.ToString().Replace("-", "");
+    settings.SettingsDetail.AllowOnlyOneMasterRowExpanded = true;
+
+    // Editing configuration
+    settings.SettingsEditing.AddNewRowRouteValues = new { Area = "", Controller = "Assignments", Action = "AddNewAssignmentPartial" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Area = "", Controller = "Assignments", Action = "UpdateAssignmentPartial" };
+    //settings.SettingsEditing.DeleteRowRouteValues = new { Area = "", Controller = "Assignments", Action = "DeleteAssignmentPartial" };
+
+    // 25.10.2018, Andreas Kasapleris & Ioannis Kappas
+    // In this case, you can use the EditFormLayoutProperties property to access and customize the edit form's settings.
+    // https://demos.devexpress.com/MVCxGridViewDemos/Editing/EditFormLayout
+    {
+        settings.EditFormLayoutProperties.ColCount = 2;
+
+        settings.EditFormLayoutProperties.Items.Add(m => m.DateOfAssignment);
+        settings.EditFormLayoutProperties.Items.Add(m => m.DateOfCompletion);
+        settings.EditFormLayoutProperties.Items.Add(m => m.Comments);
+        settings.EditFormLayoutProperties.Items.Add(m => m.Status);
+
+        settings.EditFormLayoutProperties.Items.AddCommandItem(itemSettings =>
+        {
+            itemSettings.ColumnSpan = 2;
+            itemSettings.HorizontalAlign = FormLayoutHorizontalAlign.Right;
+        });
+
+        settings.EditFormLayoutProperties.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.SingleColumnWindowLimit;
+        settings.EditFormLayoutProperties.SettingsAdaptivity.SwitchToSingleColumnAtWindowInnerWidth = 700;
+    }
+
+    settings.KeyFieldName = "AssignmentId";
+
+    settings.Columns.Add(m => m.AssignmentId).Visible = false;
+
+    settings.Columns.Add(m => m.DateOfAssignment, column =>
+    {
+        column.Caption = "Ημερ.Ανάθεσης";
+        column.EditorProperties().DateEdit(p =>
+        {
+            p.AllowUserInput = false;
+            p.CalendarProperties.ShowClearButton = false;
+            p.CalendarProperties.ShowTodayButton = false;
+            p.DisplayFormatString = "dd/MM/yyyy HH:mm";
+            p.EditFormat = EditFormat.Custom;
+            p.EditFormatString = "dd/MM/yyyy HH:mm";
+            p.TimeSectionProperties.Adaptive = true;
+            p.TimeSectionProperties.TimeEditProperties.EditFormat = EditFormat.Custom;
+            p.TimeSectionProperties.TimeEditProperties.EditFormatString = "HH:mm";
+            p.TimeSectionProperties.Visible = true;
+            p.UseMaskBehavior = false;
+            p.ValidationSettings.CausesValidation = true;
+            p.ValidationSettings.EnableCustomValidation = true;
+            p.ValidationSettings.ErrorText = "Ημ/νια προγενέστερη σήματος.";
+            p.ValidationSettings.RequiredField.ErrorText = "Το πεδίο Ημερ.Ανάθεσης είναι υποχρεωτικό.";
+            p.ValidationSettings.RequiredField.IsRequired = true;
+            p.ValidationSettings.ValidateOnLeave = true;
+
+            p.ClientSideEvents.Validation = @"
+                function (s, e) {
+                    var grid = " + settings.Name + @";
+                    var minDate = grid.GetEditor('DateOfAssignment').GetMinDate();
+                    if (e.value < minDate) {
+                        e.isValid = false;
+                        e.errorText = 'Ημ/νια προγενέστερη εργασίας.';
+                    }
+                }";
+        });
+    });
+
+    settings.Columns.Add(m => m.DateOfCompletion, column =>
+    {
+        column.Caption = "Ημερ.Ολοκλήρωσης";
+        column.EditorProperties().DateEdit(p =>
+        {
+            p.AllowUserInput = false;
+            p.CalendarProperties.ShowClearButton = false;
+            p.CalendarProperties.ShowTodayButton = false;
+            p.DisplayFormatString = "dd/MM/yyyy HH:mm";
+            p.EditFormat = EditFormat.Custom;
+            p.EditFormatString = "dd/MM/yyyy HH:mm";
+            p.TimeSectionProperties.Adaptive = true;
+            p.TimeSectionProperties.TimeEditProperties.EditFormat = EditFormat.Custom;
+            p.TimeSectionProperties.TimeEditProperties.EditFormatString = "HH:mm";
+            p.TimeSectionProperties.Visible = true;
+            p.UseMaskBehavior = false;
+            p.ValidationSettings.CausesValidation = true;
+            p.ValidationSettings.EnableCustomValidation = true;
+            p.ValidationSettings.RequiredField.IsRequired = false;
+            p.NullText = "(συμπληρώνετε κατα την ολοκλήρωση)";
+
+            p.ClientSideEvents.Validation = @"
+                function(s,e) {
+                    var grid = " + settings.Name + @";
+                    var status = grid.GetEditor('Status').GetValue();
+                    var assignmentDate = grid.GetEditor('DateOfAssignment').GetValue();
+                    if (status == 'Ανοιχτή') {
+                        // NOOP
+                    } else if (status == 'Ολοκληρωμένη') {
+                        if (e.value == null) {
+                            e.isValid = false;
+                            e.errorText = 'Λάθος Ημερομηνία Ολοκλήρωσης! (Κενή!)';
+                        } else if (e.value < assignmentDate ) {
+                            e.isValid = false;
+                            e.errorText = 'Λάθος Ημερομηνία Ολοκλήρωσης!';
+                        }
+                    }
+                }";
+        });
+    });
+
+    settings.Columns.Add(m => m.Comments, column =>
+    {
+        column.Caption = "Σχόλια";
+        column.EditorProperties().Memo(p =>
+        {
+            p.Height = Unit.Pixel(70);
+        });
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.ColumnType = MVCxGridViewColumnType.ButtonEdit;
+        column.Name = "btn";
+        column.Caption = "Φόρμα Ανάθεσης";
+        column.EditFormSettings.Visible = DefaultBoolean.False;
+
+        column.SetDataItemTemplateContent(c =>
+        {
+            Html.DevExpress().Button(settingsBtn =>
+            {
+                settingsBtn.Name = "btn" + c.KeyValue;
+                settingsBtn.Text = "Επεξ/σία Φόρμας";
+
+                var assignmentId = Guid.Parse(c.KeyValue.ToString());
+                var baseUrl = ConfigurationManager.AppSettings.Get("FormsLink");
+
+                // TODO: [BL] This should probably be based on CanUpdateAssignment permission
+                var targetUrl = ViewBag.CanAddNewAssignments
+                    ? string.Format(baseUrl + "Edit/{0}", assignmentId)
+                    : string.Format(baseUrl + "Details/{0}", assignmentId);
+
+                settingsBtn.ClientSideEvents.Click = "function(s, e) { window.open('" + targetUrl + "'); }";
+
+            }).Render();
+
+            Html.DevExpress().Button(settingsBtn =>
+            {
+                settingsBtn.Name = "btnprint" + c.KeyValue;
+                settingsBtn.Text = "Εκτύπωση Φόρμας";
+
+                var assignmentId = Guid.Parse(c.KeyValue.ToString());
+
+                //
+                // 02.07.2018, Andreas Kasapleris
+                // If not TaskTypeId of Chemeio, then print with the
+                // general form
+                // 04.07.2018, Andreas Kasapleris, code commented out;
+                // enable the 'if' if in future you want to use it!
+                // it will print form of Chemeio with \FormReports\FormReport1070
+                //
+                //if (Convert.ToInt32(ViewBag.TaskTypeId) != 1070)
+                //{
+                //string mUrl = System.Configuration.ConfigurationManager.AppSettings.Get("FormsLink");
+                //string functionstring = String.Format("window.open('" + mUrl + "Details/{0}');", keyvalue);
+
+                var baseUrl = ConfigurationManager.AppSettings.Get("GenericFormsPrintLink");
+
+                settingsBtn.ClientSideEvents.Click = "function(s, e) { window.open('" + baseUrl + assignmentId + "'); }";
+                //}
+                //else if (Convert.ToInt32(ViewBag.TaskTypeId) == 1070)
+                //{
+                //    string mUrl = System.Configuration.ConfigurationManager.AppSettings.Get("FormsLink");
+                //    string functionstring = String.Format("window.open('" + mUrl + "PrintForm1070/{0}');", keyvalue);
+                //    //string functionstring = String.Format("window.open()");
+                //    settingsBtn.ClientSideEvents.Click = "function(s, e) { " + functionstring + " }";
+                //}
+            }).Render();
+        });
+    });
+
+    settings.Columns.Add(m => m.Status, column =>
+    {
+        column.Caption = "Κατάσταση";
+        column.Width = 120;
+        column.EditorProperties().ComboBox(p =>
+        {
+            p.AllowUserInput = false;
+            p.DataSource = Constants.AssignmentStates;
+            p.EnableCallbackMode = true;
+            p.EnableClientSideAPI = true;
+            p.EnableSynchronization = DefaultBoolean.False;
+
+            p.ClientSideEvents.SelectedIndexChanged = @"
+                function(s, e) {
+                    var grid = " + settings.Name + @";
+                    var status = grid.GetEditor('Status').GetValue();
+                    var completionDateEditor = grid.GetEditor('DateOfCompletion');
+                    if (status == 'Ολοκληρωμένη') {
+                        var nowDate = new Date();
+                        var assignmentDate = new Date(grid.GetEditor('DateOfAssignment').GetValue());
+                        completionDateEditor.SetEnabled(true);
+                        completionDateEditor.SetMinDate(assignmentDate);
+                        completionDateEditor.SetValue(assignmentDate > nowDate ? assignmentDate : nowDate);
+                    } else {
+                        completionDateEditor.SetEnabled(false);
+                        completionDateEditor.SetValue(null);
+                    }
+                    completionDateEditor.Validate();
+                }";
+        });
+    });
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            .AddCustomCommand(c =>
+            {
+                c.Name = "CmdAddNewAssignment";
+                c.Text = "Προσθήκη";
+                c.Image.IconID = IconID.ActionsAdditem16x16office2013;
+                c.Enabled = ViewBag.CanAddNewAssignments;
+                c.ClientEnabled = false;
+            })
+            .AddCustomCommand(c =>
+            {
+                c.Name = "CmdEditAssignment";
+                c.Text = "Επεξεργασία";
+                c.Image.IconID = IconID.EditEdit16x16office2013;
+                c.Enabled = ViewBag.CanUpdateAssignments;
+                c.ClientEnabled = false;
+            })
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand();
+        //.AddExportCommandGroup();
+    });
+
+    settings.HtmlDataCellPrepared = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        switch (e.DataColumn.FieldName)
+        {
+            case "Status":
+                var statusValue = gridView.GetRowValues<string>(e.VisibleIndex, "Status");
+                switch (statusValue)
+                {
+                    case "Ανοιχτή":
+                        e.Cell.CssClass += " dx-status-open";
+                        break;
+                    case "Ολοκληρωμένη":
+                        e.Cell.CssClass += " dx-status-closed";
+                        break;
+                    case "Ακυρωμένη":
+                        e.Cell.CssClass += " dx-status-canceled";
+                        break;
+                }
+                break;
+        }
+    };
+
+    settings.InitNewRow = (s, e) =>
+    {
+        e.NewValues["Comments"] = string.Empty;
+        e.NewValues["Status"] = "Ανοιχτή";
+
+        var nowDate = DateTime.Now;
+        var minDate = (DateTime)ViewBag.MinDateConstraint;
+
+        // Requirement: Use parent task creation date if set in the future
+        e.NewValues["DateOfAssignment"] = nowDate < minDate ? minDate : nowDate;
+    };
+
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+
+        var gridView = (ASPxGridView)sender;
+
+        if (!gridView.IsEditing)
+        {
+            return;
+        }
+
+        e.Editor.ReadOnly = false;
+
+        if (gridView.IsNewRowEditing)
+        {
+            switch (e.Column.FieldName)
+            {
+                case "DateOfAssignment":
+
+                    // Requirement: Creation date cannot be set prior to the parent task creation date.
+                    ((ASPxDateEdit)e.Editor).MinDate = (DateTime)ViewBag.MinDateConstraint;
+
+                    break;
+
+                case "DateOfCompletion":
+
+                    // Requirement: Closing date cannot be set prior to the parent task creation date.
+                    ((ASPxDateEdit)e.Editor).MinDate = (DateTime)ViewBag.MinDateConstraint;
+
+                    // Default: Closing date is disabled for open state
+                    e.Editor.ClientEnabled = false;
+
+                    break;
+            }
+            e.Editor.ReadOnly = false;
+            return;
+        }
+
+        var assignmentModel = ViewBag.AssignmentModel as Assignment;
+
+        var rowValues = new
+        {
+            Status = assignmentModel.GetSafeValue(a => a.Status, gridView.GetRowValues<string>(e.VisibleIndex, "Status")),
+            CreationDate = assignmentModel.GetSafeValue(a => a.DateOfAssignment, gridView.GetRowValues<DateTime?>(e.VisibleIndex, "DateOfAssignment")),
+            ClosingDate = assignmentModel.GetSafeValue(a => a.DateOfCompletion, gridView.GetRowValues<DateTime?>(e.VisibleIndex, "DateOfCompletion"))
+        };
+
+        switch (e.Column.FieldName)
+        {
+
+            case "DateOfAssignment":
+
+
+                // Once created the assignment creation date can not be edited
+                e.Editor.ClientEnabled = false;
+
+                // Requirement: Creation date cannot be set prior to the parent task creation date.
+                ((ASPxDateEdit)e.Editor).MinDate = (DateTime)ViewBag.MinDateConstraint;
+
+                break;
+
+            case "DateOfCompletion":
+
+                e.Editor.ClientEnabled =
+
+                    // Assignment is complete
+                    rowValues.Status == "Ολοκληρωμένη"
+                    && (
+
+                        // Admin can always change assignment closing date
+                        ViewBag.IsAdmin
+
+                        // Department routers can always change assignment closing date
+                        || (ViewBag.DepartmentId == ViewBag.TaskDepartmentId && ViewBag.User.RoleId == 2)
+
+                    // Department users do not have permission to change assignment closing date once closed
+
+                    );
+
+                // Requirement: Close date cannot be set prior to the assignment creation date
+                ((ASPxDateEdit) e.Editor).MinDate = rowValues.CreationDate ?? DateTime.Now;
+
+                break;
+
+            case "Comments":
+
+                e.Editor.ClientEnabled =
+                (
+                    // Admin can always change assignment comments
+                    ViewBag.IsAdmin
+
+                    || ViewBag.DepartmentId == ViewBag.TaskDepartmentId
+                ); ;
+
+                break;
+
+            case "Status":
+
+                e.Editor.ClientEnabled =
+
+                (
+                    // Admin can always change assignment status
+                    ViewBag.IsAdmin
+
+                    // Department routers can always change assignment status
+                    || (ViewBag.DepartmentId == ViewBag.TaskDepartmentId && ViewBag.User.RoleId == 2)
+
+                    // Department users can change assignment status only when open
+                    || (ViewBag.DepartmentId == ViewBag.TaskDepartmentId && rowValues.Status == "Ανοιχτή")
+                );
+
+                break;
+
+            default:
+
+                // Security Fallback: All other/future fields should be read only.
+                e.Editor.ClientEnabled = false;
+
+                break;
+        }
+    };
+
+    settings.BeforeGetCallbackResult = (sender, e) =>
+    {
+        if (ViewBag.FocusedRowKey != null)
+        {
+            var gridView = (ASPxGridView)sender;
+
+            var focusedRowIndex = gridView.FindVisibleIndexByKeyValue(ViewBag.FocusedRowKey);
+            var visibleRowStartIndex = gridView.PageIndex * gridView.SettingsPager.PageSize;
+            var visibleRowEndIndex = Math.Min(gridView.VisibleRowCount, visibleRowStartIndex + gridView.SettingsPager.PageSize);
+
+            if (focusedRowIndex >= visibleRowStartIndex && focusedRowIndex < visibleRowEndIndex)
+            {
+                gridView.FocusedRowIndex = focusedRowIndex;
+            }
+            else
+            {
+                gridView.FocusedRowIndex = visibleRowStartIndex;
+            }
+        }
+    };
+
+    // Client side properties
+    settings.CustomJSProperties = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        var startIndex = gridView.PageIndex * gridView.SettingsPager.PageSize;
+        var endIndex = Math.Min(gridView.VisibleRowCount, startIndex + gridView.SettingsPager.PageSize);
+        var rowValues = new object[endIndex - startIndex];
+
+        for (var n = startIndex; n < endIndex; n++)
+        {
+            rowValues[n - startIndex] = gridView.GetRowValues(n, "AssignmentId", "DateOfAssignment", "DateOfCompletion", "Comments", "Status");
+        }
+
+        e.Properties["cpRowValues"] = rowValues;
+        e.Properties["cpFocusedRowIndex"] = gridView.FocusedRowIndex;
+        e.Properties["cpEditingRowVisibleIndex"] = gridView.EditingRowVisibleIndex;
+    };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "AssignmentGridView_Init";
+    settings.ClientSideEvents.BeginCallback = "AssignmentGridView_BeginCallback";
+    settings.ClientSideEvents.EndCallback = "AssignmentGridView_EndCallback";
+    settings.ClientSideEvents.DetailRowExpanding = "AssignmentGridView_DetailRowExpanding";
+    settings.ClientSideEvents.DetailRowCollapsing = "AssignmentGridView_DetailRowCollapsing";
+    settings.ClientSideEvents.ToolbarItemClick = "AssignmentGridView_ToolbarItemClick";
+    settings.ClientSideEvents.FocusedRowChanged = "AssignmentGridView_FocusedRowChanged";
+
+}).SetEditErrorText(ViewBag.EditError).Bind(Model).GetHtml())

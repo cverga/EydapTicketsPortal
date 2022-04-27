@@ -1,0 +1,96 @@
+﻿
+@{
+    ViewBag.Title = "UploadedFilesPartialView";
+}
+
+    @model IEnumerable<FileAttachment>
+    @using EydapTickets.Models;
+    @using System.Collections.Generic;
+
+    @Html.DevExpress().GridView(
+    settings =>
+    {
+        settings.Name = "InvestigationGridView" + ViewData["InvestigationsID"].ToString().Replace("-", "");
+        settings.SettingsDetail.MasterGridName = "InvestigationGridView";
+        settings.CallbackRouteValues = new { Controller = "Upload", Action = "GetFiles", aInvestigationId = ViewData["InvestigationsID"] };
+        settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Upload", Action = "DeleteFile", aInvestigationId = ViewData["InvestigationsID"] };
+        settings.Width = Unit.Percentage(100);
+        settings.Settings.ShowFilterRow = false;
+        settings.SettingsBehavior.ColumnResizeMode = ColumnResizeMode.NextColumn;
+        settings.KeyFieldName = "UniqueId";
+        settings.SettingsDetail.ShowDetailRow = false;
+        settings.SettingsCookies.StoreColumnsWidth = true;
+        settings.SettingsBehavior.ConfirmDelete = true;
+
+        settings.CommandColumn.Visible = true;
+        settings.CommandColumn.ShowNewButton = false;
+        settings.CommandColumn.ShowEditButton = false;
+        settings.CommandColumn.ShowDeleteButton= true;
+
+        //settings.SettingsCommandButton.CancelButton.Text = "Ακύρωση";
+        //settings.SettingsCommandButton.UpdateButton.Text = "Αποθήκευση";
+
+        settings.SettingsCommandButton.DeleteButton.ButtonType = GridCommandButtonRenderMode.Button;
+        settings.SettingsCommandButton.DeleteButton.Text = "Διαγραφή";
+
+        //settings.SettingsBehavior.AllowFocusedRow = true;
+        //settings.SettingsBehavior.AllowSelectByRowClick = true;
+        //settings.SettingsBehavior.AllowSelectSingleRowOnly = true;
+        //settings.SettingsBehavior.EnableRowHotTrack = true;
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "UniqueId";
+            column.Visible = true;
+            column.Caption = "ID";
+        });
+
+        //settings.Columns.Add(column =>
+        //{
+        //    column.FieldName = "FileName";
+        //    column.Visible = true;
+        //    column.Caption = "Αρχειο";
+        //});
+
+        settings.Columns.Add(lColumn =>
+        {
+            lColumn.Caption = "Αρχειο";
+            lColumn.FieldName = "FileName";
+            lColumn.SetDataItemTemplateContent(container =>
+            {
+                Html.DevExpress().HyperLink(hyperlink =>
+                {
+                    var keyValue = DataBinder.Eval(container.DataItem, "UniqueId");
+                    hyperlink.Name = "hl" + keyValue.ToString();
+                    hyperlink.Properties.Text = DataBinder.Eval(container.DataItem, "FileName").ToString();
+                    hyperlink.NavigateUrl = Url.Action("GetFile", "DownLoad", new { aGuid = keyValue });
+                }).Render();
+            });
+
+            //lColumn.ColumnType = MVCxGridViewColumnType.HyperLink;
+            //lColumn.Caption = "Αρχειο";
+            //lColumn.FieldName = "FileName";
+            //HyperLinkProperties properties = lColumn.PropertiesEdit as HyperLinkProperties;
+            //properties.NavigateUrlFormatString = Url.Action("GetFile", "DownLoad", new { aGuid = ViewData["InvestigationsID"] });
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "FileSize";
+            column.Caption = "Μεγεθος";
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "CreationDate";
+            column.Caption = "Ημερομηνια Αναρτησης";
+            //List<string> mStates = new List<string>();
+        });
+
+        settings.DataBinding = (sender, e) =>
+        {
+            var grid1 = (MVCxGridView)sender;
+            grid1.ForceDataRowType(typeof(EydapTickets.Models.FileAttachment));
+        };
+
+    }).Bind(Model).GetHtml()

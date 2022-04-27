@@ -1,0 +1,60 @@
+﻿
+@Html.DevExpress().PopupControl(
+            settings =>
+            {
+                //settings.Name = "pcFeatures" + ViewData["popup"].ToString();
+                settings.Name = "statepopup";
+                settings.Modal = true;
+
+                settings.MinHeight = 150;
+                settings.MinWidth = 400;
+
+
+                settings.Height = System.Web.UI.WebControls.Unit.Percentage(90);
+                settings.Width = System.Web.UI.WebControls.Unit.Percentage(90);
+
+                settings.CloseAction = CloseAction.CloseButton;
+                settings.ShowCloseButton = true;
+                settings.PreRender = (sender, e) =>
+                {
+
+                };
+                settings.ShowFooter = false;
+                settings.ShowHeader = true;
+                settings.HeaderText = "Αλλαγή Κατάστασης";
+                settings.PopupHorizontalAlign = PopupHorizontalAlign.WindowCenter;
+                settings.PopupVerticalAlign = PopupVerticalAlign.WindowCenter;
+                //settings.Opacity = (0 <= options.Opacity && options.Opacity < 100) ? options.Opacity : -1;
+                settings.PopupAnimationType = AnimationType.None;
+                //settings.CloseAnimationType = options.CloseAnimationType;
+                settings.AllowDragging = true;
+
+                settings.SetContent(() =>
+                {
+
+                    //id=\"statepopupdiv\"
+                    ViewContext.Writer.Write("<div><table align=\"center\"><tr><td id=\"statepopupdiv\">");
+
+                    ViewContext.Writer.Write("</td></tr></table></div>");
+                    ViewContext.Writer.Write("<div><table align=\"center\"><tr><td>");
+                    @Html.DevExpress().Button(settingsb =>
+                    {
+                        settingsb.Name = "SaveNewState";
+                        settingsb.Text = "Αποθήκευση";
+                        //settingsb.RouteValues = new { Controller = "Routing", Action = "Route" };
+                        settingsb.ClientSideEvents.Click = "SaveNewTicketState";
+                        settingsb.UseSubmitBehavior = false;
+                    }).GetHtml();
+                    ViewContext.Writer.Write("</td></tr></table></div>");
+                    //@Html.DevExpress().Button(settingsb =>
+                    //{
+                    //    settingsb.Name = "SaveNewCorrelated";
+                    //    settingsb.Text = "Αποθήκευση Σχετιζόμενου";
+                    //    //settingsb.RouteValues = new { Controller = "Routing", Action = "Route" };
+                    //    settingsb.ClientSideEvents.Click = "";
+                    //    settingsb.UseSubmitBehavior = false;
+                    //}).GetHtml();
+                });
+            }).GetHtml()
+
+

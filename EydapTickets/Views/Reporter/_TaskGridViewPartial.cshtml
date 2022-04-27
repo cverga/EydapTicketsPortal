@@ -1,0 +1,188 @@
+﻿@using EydapTickets.Helpers
+@using EydapTickets.Models;
+
+@model IEnumerable<Task>
+
+@(Html.DevExpress().GridView<Task>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    var viewMode = (ReporterGridViewMode)ViewBag.ViewMode;
+
+    settings.Name = "TasksGridViewReport";
+    settings.CallbackRouteValues = new { Controller = "Reporter", Action = "TaskGridViewPartial", ViewBag.CustomerServiceId, ViewBag.ViewMode };
+
+    // Text configuration
+    settings.SettingsText.Title = "Εργασίες";
+
+    // Settings configuration
+    settings.Settings.ShowFilterRow = false;
+    settings.Settings.ShowGroupPanel = false;
+
+    // Style configuration
+    settings.ControlStyle.CssClass = "height-auto";
+
+    // Behavior configuration
+    settings.SettingsBehavior.AllowFocusedRow = false;
+    settings.SettingsBehavior.AllowSelectByRowClick = false;
+
+    // Cookies configuration
+    settings.SettingsCookies.StoreColumnsWidth = true;
+
+    // Data Security configuration
+    settings.SettingsDataSecurity.AllowInsert = false;
+    settings.SettingsDataSecurity.AllowEdit = false;
+    settings.SettingsDataSecurity.AllowDelete = false;
+
+    // Detail configuration
+    settings.SettingsDetail.ShowDetailRow = (viewMode == ReporterGridViewMode.Supervisor);
+    settings.SettingsDetail.AllowOnlyOneMasterRowExpanded = true;
+
+    settings.SetDetailRowTemplateContent(c =>
+    {
+        ViewContext.Writer.Write("<div id=\"AssignmentGridViewContainer\" style=\"height:100%; width:100%\">");
+
+        var routeValues = new
+        {
+            Area = "",
+            TaskId = c.KeyValue,
+            IncidentId = DataBinder.Eval(c.DataItem, "IncidentId"),
+        };
+
+        Html.RenderAction("AssignmentGridViewPartial", "Reporter", routeValues);
+
+        ViewContext.Writer.Write("</div>");
+    });
+
+    settings.Init = (s, e) =>
+    {
+        var gridView = (ASPxGridView)s;
+        gridView.DetailRowGetButtonVisibility += (sender, args) =>
+        {
+            var detailRowHandlerGrid = (ASPxGridView)sender;
+            var detailRowValues = new
+            {
+                TaskTypeId = detailRowHandlerGrid.GetRowValuesByKeyValue<int>(args.KeyValue, "TaskTypeId"),
+                NrOfVisitsForTask = detailRowHandlerGrid.GetRowValuesByKeyValue<int>(args.KeyValue, "NrOfVisitsForTask")
+            };
+
+            if (Constants.AutomatedTaskTypes.Contains(detailRowValues.TaskTypeId) || detailRowValues.NrOfVisitsForTask == 0)
+            {
+                args.ButtonState = GridViewDetailRowButtonState.Hidden;
+            }
+        };
+    };
+
+    settings.KeyFieldName = "TaskId";
+
+    settings.Columns.Add(m => m.TaskId).Visible = false;
+    settings.Columns.Add(m => m.IncidentId).Visible = false;
+
+    settings.Columns.Add(m => m.DepartmentName, column =>
+    {
+        column.Caption = "Τμήμα";
+    });
+
+    settings.Columns.Add(m => m.TaskTypeId, column =>
+    {
+        column.Caption = "Εργασία";
+
+        column.EditorProperties().ComboBox(p =>
+        {
+            p.DataSource = IncidentProvider.GetTasksTypes();
+            p.TextField = "TaskTypeDescription";
+            p.ValueField = "TaskTypeId";
+            p.ValueType = typeof(int);
+
+            p.EnableSynchronization = DefaultBoolean.False;
+        });
+    });
+
+    settings.Columns.Add(m => m.CreationDate, column =>
+    {
+        column.Caption = "Ημερομηνία Δημιουργίας";
+        column.PropertiesEdit.DisplayFormatString = "dd/MM/yyyy HH:mm";
+    });
+
+    settings.Columns.Add(m => m.ClosingDate, column =>
+    {
+        column.Caption = "Ημερομηνία Ολοκλήρωσης";
+        column.PropertiesEdit.DisplayFormatString = "dd/MM/yyyy HH:mm";
+    });
+
+    settings.Columns.Add(m => m.Comments, column =>
+    {
+        column.Caption = "Σχόλια";
+    });
+
+    settings.Columns.Add(m => m.NrOfVisitsForTask, column =>
+    {
+        column.Caption = "Αναθέσεις";
+        column.Width = 120;
+        column.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
+        column.CellStyle.HorizontalAlign = HorizontalAlign.Center;
+    });
+
+    settings.Columns.Add(m => m.State, column =>
+    {
+        column.Caption = "Κατάσταση";
+        column.Width = 120;
+        column.EditorProperties().ComboBox(p =>
+        {
+            p.DataSource = Constants.TaskStates;
+            p.EnableSynchronization = DefaultBoolean.False;
+        });
+    });
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items.AddTitle(settings.SettingsText.Title);
+    });
+
+    settings.HtmlDataCellPrepared = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        var rowValues = new
+        {
+            TaskTypeId = gridView.GetRowValuesByKeyValue<int>(e.KeyValue, "TaskTypeId"),
+        };
+
+        switch (e.DataColumn.FieldName)
+        {
+            case "State":
+                var stateValue = gridView.GetRowValues(e.VisibleIndex, "State").ToString();
+                switch (stateValue)
+                {
+                    case "Ανοιχτή":
+                        e.Cell.CssClass += " dx-status-open";
+                        break;
+                    case "Ολοκληρωμένη":
+                        e.Cell.CssClass += " dx-status-closed";
+                        break;
+                    case "Ακυρωμένη":
+                        e.Cell.CssClass += " dx-status-canceled";
+                        break;
+                }
+                break;
+
+            case "ClosingDate":
+                if (e.CellValue == null)
+                {
+                    e.Cell.Text = HttpUtility.HtmlEncode("–");
+                }
+                break;
+
+            case "NrOfVisitsForTask":
+                if (Constants.AutomatedTaskTypes.Contains(rowValues.TaskTypeId))
+                {
+                    e.Cell.Text = HttpUtility.HtmlEncode("n/a");
+
+                }
+                break;
+        }
+    };
+
+}).Bind(Model).GetHtml())

@@ -1,0 +1,128 @@
+﻿@using EydapTickets.Models
+
+@model GenericFormModuleNameValue
+
+<style media="print" type="text/css">
+    #hideprint {
+        display: none;
+    }
+</style>
+
+@Html.DevExpress().GetStyleSheets(
+    new StyleSheet { ExtensionSuite = ExtensionSuite.NavigationAndLayout }
+)
+
+@Html.DevExpress().GetStyleSheets(
+    new StyleSheet { ExtensionSuite = ExtensionSuite.NavigationAndLayout, Theme = "Moderno" }
+)
+
+@Html.DevExpress().GetStyleSheets(
+    new StyleSheet { ExtensionSuite = ExtensionSuite.NavigationAndLayout, Theme = "Office2003Silver" }
+)
+
+@Html.DevExpress().GetScripts(
+    new Script { ExtensionSuite = ExtensionSuite.NavigationAndLayout }
+)
+
+@Html.DevExpress().FormLayout(settings =>
+{
+    settings.Name = "detailFormLayout";
+    //settings.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.Off;
+    //settings.SettingsAdaptivity.SwitchToSingleColumnAtWindowInnerWidth
+    settings.ControlStyle.CssClass = "formLayout";
+    settings.Width = Unit.Pixel(850);
+    //settings.
+    settings.Items.AddGroupItem(g =>
+    {
+        g.Caption = Model.mList[0].Value.ToString();
+        g.ColCount = Model.ColumnCount;
+        g.VisibleIndex = 0;
+        g.GroupBoxDecoration = GroupBoxDecoration.HeadingLine;
+        g.GroupBoxStyle.Caption.Font.Bold = true;
+        g.GroupBoxStyle.Caption.Font.Size = 16;
+
+        FieldConfig mFieldGui = null;
+        for (int n = 1; n < Model.mList.Count; n++)
+        {
+            Model.mListFieldConfig.TryGetValue(Model.mList[n].FieldId, out mFieldGui);
+
+            if (mFieldGui == null || (mFieldGui != null && !mFieldGui.IsGroup))
+            {
+                g.Items.Add(i =>
+                {
+                    i.NestedExtensionType = FormLayoutNestedExtensionItemType.TextBox;
+                    i.Caption = Model.mList[n].Name;
+                    //i.CaptionStyle.Border.BorderStyle = BorderStyle.Ridge;
+                    //i.CaptionStyle.BackColor = System.Drawing.Color.LightGray;
+                    //i.CaptionStyle.Border.BorderWidth = 1;
+                    i.CaptionStyle.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+
+                    i.Name = Model.mList[n].FieldId.ToString();
+                    i.NestedControlCellStyle.Border.BorderStyle = BorderStyle.Ridge;
+                    i.NestedControlCellStyle.Border.BorderWidth = 1;
+                    //i.ColSpan = 2;
+                    //i.NestedExtensionSettings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                    if (Model.mListFieldConfig.TryGetValue(Model.mList[n].FieldId, out mFieldGui))
+                    {
+                        if (mFieldGui.CoversAllRow)
+                        {
+                            i.ColSpan = Model.ColumnCount;
+                            i.NestedExtensionSettings.Name = Model.mList[n].FieldId.ToString();
+                            i.NestedExtensionSettings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                        }
+                    }
+                    i.SetNestedContent(Model.mList[n].Value.ToString());
+                    i.Visible = true;
+                });
+            }
+
+            //else if (mFieldGui != null && mFieldGui.IsGroup)
+            else //(mFieldGui != null && mFieldGui.IsGroup)
+            {
+                settings.Items.AddGroupItem((k) =>
+                {
+                    int index = n; // just to capture n lambda expression.........
+                    k.Caption = Model.mList[n].Name;
+                    k.ColCount = Model.ColumnCount;
+                    k.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                    k.Items.Add(l =>
+                    {
+                        l.Caption = "";
+                        //l.CaptionSettings.
+                        l.ColSpan = Model.ColumnCount;
+                        l.CaptionStyle.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                        l.SetNestedContent(Model.mList[n].Value.ToString());
+                        //l.Visible = true;
+                    });
+                });
+            }
+
+            //else
+            //{
+            //    int malakia = 09;
+            //}
+            //else
+            //{
+            //    g.Caption = Model.mList[n].Name;
+            //    g.ColCount = Model.ColumnCount;
+            //    g.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+            //    g.Items.Add(l =>
+            //    {
+            //        l.Caption = "";
+            //        //l.CaptionSettings.
+            //        l.ColSpan = Model.ColumnCount;
+            //        l.CaptionStyle.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+            //        l.SetNestedContent(Model.mList[n].Value.ToString());
+            //        //l.Visible = true;
+            //    });
+            //}
+        }
+    });
+
+
+
+
+
+}).GetHtml()
+
+<button id="hideprint" onclick="window.print()">Εκτύπωση</button>

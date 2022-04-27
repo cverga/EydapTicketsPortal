@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="aa97f997b9c24da5ba8da7668e9d9ac2" Name="Diagram1" ZoomLevel="103">
+        <EntityTypeShape EntityType="ExternalDBModel.Categories" Width="1.5" PointX="0.75" PointY="15.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.CategoriesFields" Width="1.5" PointX="3" PointY="12.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.CategoriesFieldsPerApplicationRole" Width="1.5" PointX="6" PointY="13.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.CategoriesFieldsPerTaskType" Width="2.125" PointX="9" PointY="13.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.CategoriesRoles" Width="1.5" PointX="3" PointY="33.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.DataSourceTypes" Width="1.5" PointX="0.75" PointY="12.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.Departments" Width="1.5" PointX="4.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.DepartmentsToTasks" Width="1.5" PointX="4.75" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.Fields" Width="1.5" PointX="0.75" PointY="19.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.FieldStates" Width="1.5" PointX="0.75" PointY="22.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.Incidents" Width="1.5" PointX="0.75" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.IncidentsRouting" Width="1.5" PointX="2.75" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.Roles" Width="1.5" PointX="6.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.Sectors" Width="1.5" PointX="4.75" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.Tasks" Width="1.5" PointX="9" PointY="4" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.TaskTypes" Width="1.5" PointX="6.75" PointY="10.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.Users" Width="1.5" PointX="11.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.VisitCrew" Width="1.5" PointX="8.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.VisitEquipment" Width="1.5" PointX="11.75" PointY="4.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="ExternalDBModel.vCategoriesHierarchy" Width="1.5" PointX="9.375" PointY="9.875" IsExpanded="true" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesFields_Categories" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesFieldsPerApplicationRole_Categories" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesFieldsPerTaskType_Categories" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesRoles_Categories" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesFields_DataSourceTypes" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesFields_Fields" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesFields_FieldStates1" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesFields_FieldStates2" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesFields_FieldStates3" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesFieldsPerApplicationRole_Fields" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesFieldsPerTaskType_Fields" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_CategoriesFieldsPerTaskType_TaskTypes" ManuallyRouted="false" />
+        <AssociationConnector Association="ExternalDBModel.FK_Tasks_TaskTypes" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="ExternalDBModel.Personnel" Width="1.5" PointX="14.375" PointY="0.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.Vehicles" Width="1.5" PointX="7.625" PointY="14.5" />
+        <EntityTypeShape EntityType="ExternalDBModel.C_VLAVESATH_TAitia" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.C_VLAVESATH_TEidos" Width="1.5" PointX="14.75" PointY="3.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.C_VLAVESATH_TWay" Width="1.5" PointX="14.75" PointY="6.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.AKLPositions" Width="1.5" PointX="14.75" PointY="9.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.Antliostasia" Width="1.5" PointX="14.75" PointY="12.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.VehicleTypes" Width="1.5" PointX="14.75" PointY="15.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.sysdiagrams" Width="1.5" PointX="16.375" PointY="0.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.RoutingHistory" Width="1.5" PointX="7.375" PointY="7.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.StatusDefinitions" Width="1.5" PointX="17.375" PointY="3.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.Dexamenes" Width="1.5" PointX="17.375" PointY="6.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.D04" Width="1.5" PointX="17.375" PointY="9.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.AitiaProblimatonPiesis" Width="1.5" PointX="0.75" PointY="3.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.Investigations" Width="1.5" PointX="17.375" PointY="12.75" />
+        <EntityTypeShape EntityType="ExternalDBModel.Visits" Width="3.25" PointX="11.25" PointY="6.75" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

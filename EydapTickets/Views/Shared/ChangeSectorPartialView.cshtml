@@ -1,0 +1,41 @@
+﻿
+@using EydapTickets.Models;
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    //
+    // your DevExpress ComboBox Control
+    //
+    settings.Name = "StateChangeComboSector";
+    settings.Properties.ClientInstanceName = "StateChangeComboSector";
+    settings.Properties.DataSource = SectorsDAL.GetSectors();
+
+    settings.Properties.TextField = "SectorDescription";
+    settings.Properties.ValueField = "SectorId";
+    settings.Properties.ValueType = typeof(int);
+
+    //settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.None;
+
+    //settings.Properties.ClientSideEvents.BeginCallback = "function(s,e){ debugger; e.customArgs['SelectedMunicipality'] = Municipality.GetText();}";
+
+}).GetHtml()
+
+
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    //
+    // your DevExpress ComboBox Control
+    //
+    settings.CallbackRouteValues = new { Controller = "Home", Action = "StreetsComboBoxPartial" };
+    settings.Name = "StateChangeComboDepartment";
+    settings.Properties.ClientInstanceName = "StateChangeComboDepartment";
+    settings.Properties.TextField = "SectorDescription";
+    settings.Properties.ValueField = "SectorId";
+    settings.Properties.ValueType = typeof(string);
+
+    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.None;
+
+    //settings.Properties.ClientSideEvents.BeginCallback = "function(s,e){ debugger; e.customArgs['SelectedMunicipality'] = Municipality.GetText();}";
+
+}).BindList(ViewData["Streets"]).GetHtml()

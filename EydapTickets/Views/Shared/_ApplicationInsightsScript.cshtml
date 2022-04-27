@@ -1,0 +1,16 @@
+﻿@using DM.App.Library.Core
+@if (!string.IsNullOrWhiteSpace(Configuration.Settings.ServicesAppInsights()))
+{
+    @Scripts.RenderFormat("<script id=\"ApplicationInsightsSDK\" src=\"{0}\"></script>", "~/Bundles/application-insights")
+    <script id="ApplicationInsightsConfig" type="text/javascript">
+        var snippet = {
+            config: {
+                enableDebug: @HttpContext.Current.IsDebuggingEnabled.ToString().ToLower(),
+                instrumentationKey:"@Configuration.Settings.ServicesAppInsights()"
+            }
+        };
+        var init = new Microsoft.ApplicationInsights.Initialization(snippet);
+        var appInsights = init.loadAppInsights();
+        appInsights.trackPageView();
+     </script>
+}

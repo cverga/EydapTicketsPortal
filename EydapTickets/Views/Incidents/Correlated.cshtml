@@ -1,0 +1,24 @@
+﻿@using Newtonsoft.Json
+
+@using (Html.BeginForm())
+{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    @Html.AntiForgeryToken();
+
+    Html.RenderAction("CorrelatedGridViewPartial", "Incidents", new { Area = "" });
+}
+@section HeadScripts {
+    @{
+        var appContext = new
+        {
+            ViewBag.IsAdmin,
+            ViewBag.DepartmentId
+        };
+    }
+    <script type="text/javascript">
+        AppContext = JSON.parse('@Html.Raw(JsonConvert.SerializeObject(appContext))');
+    </script>
+    @Scripts.Render("~/Bundles/CorrelatedGridView.Bundle")
+}

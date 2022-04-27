@@ -1,0 +1,1 @@
+wsdl.exe eydap1022Port.wsdl eydap1022Port.xsd /namespace:Eydap1022Port

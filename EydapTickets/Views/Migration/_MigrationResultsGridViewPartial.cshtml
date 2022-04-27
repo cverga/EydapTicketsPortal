@@ -1,0 +1,201 @@
+﻿@using EydapTickets.Helpers
+@using EydapTickets.Models
+
+@model MigrationSearchQueryResults
+
+@(Html.DevExpress().GridView<MigrationResultsModel>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "MigrationResultsPartialView";
+    settings.SettingsText.Title = "Παλαία Σήματα Βλαβών";
+
+    settings.CallbackRouteValues = new
+    {
+        Area = "",
+        Controller = "Migration",
+        Action = "GridViewPartial",
+        Model.Criteria.Sector,
+        Model.Criteria.DateFrom,
+        Model.Criteria.DateTo,
+        Model.Criteria.Municipality,
+        Model.Criteria.StreetName,
+        Model.Criteria.StreetNumber,
+    };
+
+    // in case user leaves open the pop up detail form when he/she asks for previous/next page,
+    // hide it
+    settings.ClientSideEvents.BeginCallback = "function(s, e) { MigrationDetailsPopUp.Hide(); }";
+
+    settings.SettingsPager.Visible = true;
+    settings.Settings.ShowGroupPanel = true;
+    settings.Settings.ShowFilterRow = true;
+    settings.SettingsBehavior.AllowSelectByRowClick = true;
+
+    settings.SettingsAdaptivity.AdaptivityMode = GridViewAdaptivityMode.Off;
+    settings.SettingsAdaptivity.AdaptiveColumnPosition = GridViewAdaptiveColumnPosition.Right;
+    settings.SettingsAdaptivity.AdaptiveDetailColumnCount = 1;
+    settings.SettingsAdaptivity.AllowOnlyOneAdaptiveDetailExpanded = false;
+    settings.SettingsAdaptivity.HideDataCellsAtWindowInnerWidth = 0;
+
+    settings.KeyFieldName = "mCodikos";
+
+    settings.Columns.Add(column =>
+    {
+        // define an unbound column in DataGridView
+        // need to put the button of details
+
+        column.FieldName = "";
+        column.Caption = "";
+        column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+        column.EditFormSettings.Visible = DevExpress.Utils.DefaultBoolean.False;
+        //column.Width = Unit.Percentage(10);
+        column.Width = System.Web.UI.WebControls.Unit.Pixel(80);
+        column.Settings.AllowDragDrop = DefaultBoolean.False;
+
+        // customize the button of details, i.e. what to do etc.
+        column.SetDataItemTemplateContent((c) =>
+        {
+            Html.DevExpress().Button(b =>
+            {
+                b.Name = "ButtonDetails" + c.KeyValue.ToString().Replace("-", "");
+                b.Text = "Λεπτομέρειες";
+                b.Width = System.Web.UI.WebControls.Unit.Pixel(80);
+
+                // this JavaScript code for Client side event is placed in Index.cshtml
+                b.ClientSideEvents.Click = String.Format("function(s, e) {{ MigrationDetailsPopUp.Show(); ShowAjaxMigrationDetailsPopUp('{0}', '{1}'); }}", Model.Criteria.Sector, c.KeyValue.ToString());
+
+            }).GetHtml();
+
+            //ViewData["popup"] = "ButtonRoute" + ca.KeyValue.ToString().Replace("-", "");
+        });
+    });
+
+    settings.Columns.Add(m => m.mCodikos, column =>
+    {
+        column.Caption = "Κωδικός Βλάβης";
+        // set the Column type to TextBox
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+    });
+
+    //
+    // 30.05.2018, Andreas Kasapleris, adding column
+    // mCode_1202 defined in your data model class
+    //
+
+    settings.Columns.Add(column =>
+    {
+        column.Caption = "Κωδ. 1202";
+        column.FieldName = "mCode_1202";
+        // set the Column type to TextBox
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.Caption = "Τομέας";
+        column.FieldName = "mYphr";
+        // set the Column type to TextBox
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.Caption = "Τμήμα";
+        column.FieldName = "mTmhma";
+        // set the Column type to TextBox
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.Caption = "Δήμος";
+        column.FieldName = "mDhmos";
+        // set the Column type to TextBox
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.Caption = "Περιοχή";
+        column.FieldName = "mArea";
+        // set the Column type to TextBox
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.Caption = "Οδός";
+        column.FieldName = "mStreet";
+        // set the Column type to TextBox
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.Caption = "Αριθμός";
+        column.FieldName = "mArith";
+        // set the Column type to TextBox
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+    });
+
+    //
+    // 30.05.2018, Andreas Kasapleris, adding column
+    // mStreet2 defined in your data model class
+    //
+    settings.Columns.Add(column =>
+    {
+        column.Caption = "Οδός 2";
+        column.FieldName = "mStreet2";
+        // set the Column type to TextBox
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+    });
+
+    //
+    // 30.05.2018, Andreas Kasapleris, adding column
+    // mKod_sysx defined in your data model class
+    //
+
+    settings.Columns.Add(column =>
+    {
+        column.Caption = "Κωδ.Σχετιζομένου";
+        column.FieldName = "mKod_sysx";
+        // set the Column type to TextBox
+        column.ColumnType = MVCxGridViewColumnType.TextBox;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.Caption = "Ημ.Ειδοποίησης";
+        column.FieldName = "mXdate";
+        // set the Column type to TextBox
+        column.ColumnType = MVCxGridViewColumnType.DateEdit;
+        column.EditorProperties().DateEdit(p =>
+        {
+            p.DisplayFormatString = "dd/MM/yyyy hh:mm tt";
+        });
+    });
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            //.AddNewRowCommand()
+            //.AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+    settings.ClientSideEvents.Init = @"
+        function(s,e) {
+            window.GlobalGridView_Init(s, e);
+            window.GlobalGridView_AdjustSize(s);
+        }";
+
+    settings.ClientSideEvents.EndCallback = "window.GlobalGridView_AdjustSize";
+
+}).SetEditErrorText(ViewBag.EditError).Bind(Model.Results).GetHtml())

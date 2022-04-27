@@ -1,0 +1,718 @@
+﻿@{ Layout = "~/Views/Shared/_rootLayout.cshtml"; }
+@if (IsSectionDefined("HeadScripts"))
+{
+    DefineSection("HeadScripts", () => Write(RenderSection("HeadScripts")));
+}
+@if (IsSectionDefined("scripts"))
+{
+    DefineSection("scripts", () => Write(RenderSection("scripts")));
+}
+
+<style type="text/css">
+    .redButton {
+        background: red;
+        color: black;
+    }
+
+    .sekectedMenu {
+        background: red;
+        color: black;
+    }
+
+    .padding {
+        padding-top: 5px;
+        padding-right: 10px;
+        padding-bottom: 5px;
+        padding-left: 2px;
+    }
+</style>
+
+<script type="text/javascript">
+    //var commandName;
+    //var municipality;
+    //var streetname;
+    //function MainGridEndCallBack(s, e)
+    //{
+
+    //    Menu.GetItemByName('incidents_open').SetText('ΒΛΑΒΕΣ ΑΝΟΙΧΤΕΣ ( ' + s.cpTotalIncidents + ' )')
+    //    if (commandName ==  'APPLYCOLUMNFILTER')
+    //    {
+    //        //StreetNameIncidents.PerformCallback();
+    //    }
+    //}
+
+    function StateComboChanged()
+    {
+        if (statecombo.GetValue() == 7)
+        {
+            SectorCombo.SetVisible(true);
+            DepstsCombo.SetVisible(true);
+            UpdateSectorSelectionForRerouting();
+        }
+        else if (statecombo.GetValue() == 5)
+        {
+            StateComments.SetVisible(true);
+        }
+        else
+        {
+            SectorCombo.ClearItems();
+            DepstsCombo.ClearItems();
+            SectorCombo.SetVisible(false);
+            DepstsCombo.SetVisible(false);
+            StateComments.SetVisible(false);
+        }
+    }
+
+    function SectorComboChanged() {
+        var sectorId = SectorCombo.GetValue();
+        UpdateDepartmentSelection(sectorId);
+    }
+
+    function MunicipalitiesCombo_SelectedIndexChanged(s, e)
+    {
+        StreetNameIncidents.PerformCallback();
+    }
+
+    function MunicipalitiesCombo_SelectedIndexChangedInvestigations(s, e)
+    {
+        if (typeof (Fakelos_Odos) != 'undefined') {
+            Fakelos_Odos.PerformCallback();
+        }
+    }
+
+    function StreetsComboInvestigations_BeginCallback(s, e)
+    {
+        //debugger;
+        e.customArgs.SelectedMunicipality = InvestigationGridView.GetEditor('Fakelos_Municipality').GetText();
+    }
+
+    function StreetsCombo_BeginCallback(s, e)
+    {
+        //debugger;
+        e.customArgs.SelectedMunicipality = AppContext.MasterGrid.GetEditor('Municipality').GetText();
+    }
+
+    function SaveNewComment(s,e)
+    {
+        SaveNewTicketComment(window['CommentTT'],  NewCommentMemo.GetText());
+    }
+
+    function SaveNewTicketComment(aparameter, saveparam)
+    {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("SaveComment", "IncidentComments")",
+            data: {
+                "aparameter": aparameter,
+                "anewcomment": saveparam,
+            },
+            //dataType: "json",
+            success: function (response) {
+                commentpopup.Hide();
+                AppContext.MasterGrid.Refresh();
+            },
+            cache : false,
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+    function FindRoutedDepartments(s,e)
+    {
+        var lSelectedIds;
+        var lCheckedItems = $(".dxWeb_edtCheckBoxChecked_Office365");
+
+        $(lCheckedItems).each(function (index) {
+
+            var lId = $(this).find("input").attr("name");
+
+            var lIndex = lId.lastIndexOf("_") + 1;
+
+            lId = lId.substring(lIndex);
+            //lSelectedIds.push(lId);
+
+            if (typeof (lSelectedIds) != "undefined")
+            {
+                lSelectedIds = lSelectedIds + ',' + lId;
+            }
+            else
+            {
+                lSelectedIds = lId;
+            }
+        });
+
+        //alert("Selected ids: " + JSON.stringify(lSelectedIds));
+        RouteTicket(lSelectedIds, window['RTT']);
+    }
+
+    function SaveNewTicketState(state)
+    {
+        if (statecombo.GetValue() == '5')
+        {
+            StateComments.Validate();
+            if (StateComments.GetIsValid()) {
+                AjaxSaveTicketState(window['StateTT'], statecombo.GetValue(), StateComments.GetText(), "", "");
+            }
+            else {
+                StateComments.SetErrorText('Παρακαλώ εισάγετε σχόλια');
+                StateComments.SetIsValid(false);
+            }
+        }
+        else if (statecombo.GetValue() == '7')
+        {
+            SectorCombo.Validate();
+            DepstsCombo.Validate();
+            if (SectorCombo.GetIsValid() && DepstsCombo.GetIsValid())
+            {
+                AjaxSaveTicketState(window['StateTT'], statecombo.GetValue(), StateComments.GetText(), SectorCombo.GetValue(), DepstsCombo.GetValue());
+            }
+        }
+        else {
+            AjaxSaveTicketState(window['StateTT'], statecombo.GetValue(), StateComments.GetText(), "", "");
+        }
+    }
+
+    function AjaxSaveTicketState(param, saveparam, comment, anewsectorid, anewdeptid) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("SaveIncidentState", "Home")",
+            data: {
+                "aparameter": param,
+                "anewstate": saveparam,
+                "acomment": comment,
+                "anewsectorid": anewsectorid,
+                "anewdeptid": anewdeptid,
+            },
+            //dataType: "json",
+            success: function (response) {
+                statepopup.Hide();
+                window['StateTT'] = null;
+                AppContext.MasterGrid.Refresh();
+            },
+            cache : false,
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+    function RouteTicket(param, routeparam) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("Route", "Routing")",
+            data: {
+                "aparameter": param,
+                "aRRT": routeparam,
+            },
+            //dataType: "json",
+            success: function (response) {
+                alert('Η δρομολόγηση έγινε με επιτυχία')
+                routepopup.Hide();
+            },
+            cache : false,
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+    function RejectTicket(routeparam) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("RejectTicket", "Routing")",
+            data: {
+                "aRRT": routeparam,
+            },
+            success: function (response) {
+                routepopup.Hide();
+                AppContext.MasterGrid.Refresh();
+            },
+            cache : false,
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+    function UnrouteTicket(routeparam) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("UnrouteTicket", "Routing")",
+            data: {
+                "aRRT": routeparam,
+            },
+            success: function (response) {
+                switch(response) {
+                    case '1': //cannot uroute only one department - route to other first
+                        alert('Η δρομολόγηση ΔΕΝ ΗΤΑΝ ΕΠΙΤΥΧΗΜΕΝΗ !  Πρέπει να δρομολογήσετε την βλάβη σε άλλο τμήμα πριν την ακυρώσετε')
+                        break;
+                    case '2': // cannot unroute has tasks
+                        alert('Η δρομολόγηση ΔΕΝ ΗΤΑΝ ΕΠΙΤΥΧΗΜΕΝΗ !  Έχετε ήδη ανατεθειμένες εργασίες')
+                        break;
+                    case '0': //ok
+                        alert('Η Ακύρωση δρομολόγησης έγινε με επιτυχία')
+                        break;
+                }
+
+
+                routepopup.Hide();
+                AppContext.MasterGrid.Refresh();
+            },
+            cache : false,
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+    function ShowAjaxCommentsPopUp(param) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("AjaxCommentsPartial", "IncidentComments")",
+            data: {
+                "aparameter": param,
+                },
+        //dataType: "json",
+        success: function (response) {
+            $("#commentspopupdiv").html(response);
+            SaveNewCommentButton.SetVisible(true);
+            NewCommentMemo.SetVisible(true);
+        },
+        cache: false,
+        error: function (errordesc) {
+            debugger;
+        }
+    })
+    }
+
+
+    function ShowAjaxTTInfoPopUp(param) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("AjaxTTInfoPartial", "Home")",
+            data: {
+                "aparameter": param,
+                },
+        //dataType: "json",
+            success: function (response) {
+            $("#ttinfopopupdiv").html(response);
+            //SaveNewCommentButton.SetVisible(true);
+            //NewCommentMemo.SetVisible(true);
+        },
+        cache: false,
+        error: function (errordesc) {
+            debugger;
+        }
+    })
+    }
+
+    function ShowAjaxCommentsPopUpReadOnly(param) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("AjaxCommentsPartial", "IncidentComments")",
+            data: {
+                "aparameter": param,
+            },
+            //dataType: "json",
+            success: function (response) {
+                $("#commentspopupdiv").html(response);
+                SaveNewCommentButton.SetVisible(false);
+                NewCommentMemo.SetVisible(false);
+
+            },
+            cache: false,
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+    function ShowAjaxRoutingPopUp(param) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("AjaxRoutingPartial", "Routing")",
+            data: {
+                "aparameter": param,
+            },
+            //dataType: "json",
+            success: function (response) {
+                $("#popupdiv").html(response);
+            },
+            cache: false,
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+    function ShowAjaxStatePopUp(param) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("IncidentState", "Home")",
+            data: {
+                "aparameter": param,
+            },
+            //dataType: "json",
+            success: function (response) {
+                $("#statepopupdiv").html(response);
+            },
+            cache: false,
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+    function ShowAjaxDetailsPopUp(incidentId) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("Details", "Incidents")",
+            data: {
+                "Id": incidentId,
+            },
+            //dataType: "json",
+            success: function (response) {
+                $("#detailspopupdiv").html(response);
+            },
+            cache: false,
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+    function FormsAjaxCall(param) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("GetAllAssignmentComments", "Home")",
+            data: {
+                "aTaskId": param,
+            },
+            dataType: "html",
+            success: function (response) {
+                $("#formpopupdiv").html(response);
+            },
+            cache: false,
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+    function ClearTTCorrelation(incidentId) {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("ClearCorrelation", "Incidents")",
+            data: {
+                Id: incidentId,
+            },
+            dataType: "html",
+            success: function (response) {
+                CorrelatedGridView.Refresh();
+            },
+            cache: false,
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+    function AjaxCallSaveAssignment(apassedmodel) {
+
+        var lPostTxt = JSON.stringify(apassedmodel);
+
+        alert("About to post:" + lPostTxt);
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("VisitDetailsSave", "Home")",
+            data: {
+                "aModel": apassedmodel,
+            },
+            dataType: "html",
+            success: function (response) {
+                $("#visitdiv").html(response);
+            },
+            error: function (errordesc) {
+                debugger;
+            }
+        })
+    }
+
+</script>
+
+<script type="text/javascript">
+
+    //
+    // Search : devexpress mvc extensions client side model validation
+    // https://documentation.devexpress.com/#AspNet/CustomDocument12059
+    // For more advanced Model validations see
+    // https://demos.devexpress.com/MVCxDataEditorsDemos/Common/BuiltInValidation
+    // http://demos.devexpress.com/MVCxDataEditorsDemos/Common/ModelValidation
+    //
+
+    var tabName;
+    function OnTabClick(s, e) {
+        tabName = e.tab.name;
+    }
+    function OnBeginCallback(s, e) {
+        e.customArgs['tabName'] = tabName;
+    }
+
+    //
+    // 23/07/2016, changed by Andreas Kasapleris
+    // IncidentsRouting, Διαχειριστικό Πίνακα Δρομολόγησης
+    // Related View : IncidentsRoutingMainGridPartialView
+    //
+
+    function ComesFromTTSectorNameCombo_SelectedIndexChanged(s, e) {
+        // debugger;
+
+        // once Sector is selected, description column (field) is updated;
+        // comment out following 2 lines of code; description fields will no
+        // more be used
+        // var RoutingSectorDescription = IncidentsRoutingMainGridPartialView.GetEditor('RoutingSectorId').GetText();
+        // IncidentsRoutingMainGridPartialView.GetEditor('RoutingSectorName').SetText(RoutingSectorDescription);
+
+        ComesFromTTDeptName.PerformCallback(); // ComesFromTTDeptName is the .Name programmatic identifier of
+        // the ComboBox (PartialView) rendered
+
+        // 26.09.2016, Andreas Kasapleris, when selected Sector is changed
+        RouteToDepartmentId.PerformCallback(); // RouteToDepartmentId is the .Name programmatic identifier of
+        // the ComboBox (PartialView) rendered
+    }
+
+    //
+    // 23/07/2016, changed by Andreas Kasapleris
+    // IncidentsRouting, Διαχειριστικό Πίνακα Δρομολόγησης
+    //
+
+    function ComesFromTTDeptNameCombo_BeginCallbackIncidentsRouting(s, e) {
+        // debugger;
+        // just define and set a custom argument named 'SectorId' here;
+        // when this callback is finished, the Controller Action ComboBoxDepartmentsPartialRouting()
+        // defined in the CheckBox control will use it to fetch Departments for the
+        // Sector selected. (see Controller IncidentsRoutingController.cs)
+        // set also the .Name of your GridView, here is IncidentsRoutingMainGridPartialView
+        e.customArgs['SectorName'] = IncidentsRoutingMainGridPartialView.GetEditor('ComesFromTTSectorName').GetValue();
+        // alert('Selected SectorName = ' + e.customArgs['SectorName']);
+    }
+
+    //
+    // 23/07/2016, changed by Andreas Kasapleris
+    // IncidentsRouting, Διαχειριστικό Πίνακα Δρομολόγησης
+    // for the moment, is not used
+    //
+
+    function ComesFromTTDeptNameCombo_SelectedIndexChangedIncidentsRouting(s, e) {
+        // debugger;
+        var ComesFromTTDepartmentName = s.GetText();
+
+        // column must be visible in GridView to be able to set its' text! so comment out line below
+        // IncidentsRoutingMainGridPartialView.GetEditor('RoutingDepartmentName').SetText(RoutingDepartmentName);
+
+        // sender s is the DevExpress ComboBox; get selected value
+        // alert('Selected RoutingDepartmentName = ' + RoutingDepartmentName);
+    }
+
+    //
+    // 26/09/2016, added by Andreas Kasapleris
+    // IncidentsRouting, Διαχειριστικό Πίνακα Δρομολόγησης
+    //
+
+    function RouteToDepartmentId_BeginCallbackIncidentsRouting(s, e) {
+        // debugger;
+        // just define and set a custom argument named 'SectorId' here;
+        // when this callback is finished, the Controller Action ComboBoxDepartmentsPartialRouting()
+        // defined in the CheckBox control will use it to fetch Departments for the
+        // Sector selected. (see Controller IncidentsRoutingController.cs)
+        // set also the .Name of your GridView, here is IncidentsRoutingMainGridPartialView
+        e.customArgs['SectorName'] = IncidentsRoutingMainGridPartialView.GetEditor('ComesFromTTSectorName').GetValue();
+        // alert('Selected SectorName = ' + e.customArgs['SectorName']);
+    }
+
+    //
+    // 23/09/2016, added by Andreas Kasapleris
+    // IncidentsRouting, Διαχειριστικό Πίνακα Δρομολόγησης
+    //
+
+    function RouteToDepartmentId_SelectedIndexChangedIncidentsRouting(s, e) {
+        // debugger;
+        var RouteToDepartmentId = s.GetText();
+
+        // column must be visible in GridView to be able to set its' text! so comment out line below
+        // IncidentsRoutingMainGridPartialView.GetEditor('RoutingDepartmentName').SetText(RoutingDepartmentName);
+
+        // sender s is the DevExpress ComboBox; get selected value
+        // alert('Selected RoutingDepartmentName = ' + RoutingDepartmentName);
+    }
+
+    //
+    // 29.03.2017, added by Andreas Kasapleris
+    // Combobox with .Name "DepartmentName". ClientSideEvent is
+    // defined/placed in Views\Home\TasksPartialView.cshtml file
+    // event handler; fires every time a department selection is done
+    // from this Combobox column
+    //
+
+    function TasksPartialViewSelectedDepartment_SelectedIndexChanged(s, e) {
+        // debugger;
+        // when the selection of ComboBox of Departments is changed;
+        // store selected department name in the property MyParam of window object
+        window.MyParam = s.GetValue();
+        // when performing a .PerformCallback() for the ComboBox of Departments
+        // this automatically goes to server-side code (Tasks, Action ComboBoxTaskTypes);
+        // (which is placed in TaskTypesComboBoxPartial.cshtml)
+        // passes the variable department name selected which is stored in
+        // object window (window.MyParam); and fetches the data for the partial view
+        // of Task Types Combo box for the selected department
+        // (see HomeController, ComboBoxTaskTypes action)
+        TaskTypeId.PerformCallback();
+    }
+
+    //
+    // 29.03.2017, added by Andreas Kasapleris
+    // this BeginCallback is placed in TaskTypesComboBoxPartial.cshtml
+    //
+
+    function TasksPartialViewTaskTypeDescription_BeginCallback(s, e) {
+        // debugger;
+        // define a custom argument 'DeptName' and assign it the value
+        // of the Combo box editor value of 'DepartmentName'
+        e.customArgs['DeptId'] = window.MyParam;
+        // e.customArgs['DeptName'] = "ΕΝΑ ΤΜΗΜΑ";
+        // window.alert("Department: " + e.customArgs['DeptName']);
+    }
+
+    function IsActiveCheckBox_CheckedChanged(s, e) {
+        // debugger;
+        checkedValue = s.GetValue();
+        // alert('Is Active = ' + checkedValue);
+        function AdminTabChanged(s, e) {
+            @*switch(s.GetActiveTab().index)
+        {
+            case 1:
+                $.ajax({
+                    type: "GET",
+                    url: "@Url.Action("Index", "Departments")",
+                    //data: {
+                    //    "aparameter": param,
+                    //    },
+                dataType: "html",
+                success: function (response) {
+                    $("#departmentsdiv").html(response);
+                },
+                error: function(errordesc) {
+                    debugger;
+                }
+                })
+                break;
+        }*@
+        }
+    }
+
+    function UpdateSectorSelectionForRerouting() {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("GetSectorsForReroutingJson", "Sectors", new { Area = "Admin" })",
+            cache : false,
+            success: function (response) {
+                SectorCombo.AddItem('', 0);
+                SectorCombo.ClearItems();
+                var item;
+                for (i = 0; i < response.length; i++) {
+                    item = response[i];
+                    SectorCombo.AddItem(item.SectorDescription, item.SectorId);
+                }
+            },
+            error: function (errordesc) {
+                debugger;
+            }
+        });
+    }
+
+    function UpdateDepartmentSelection(sectorId) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("GetDepartmentsJson", "Sectors", new { Area = "Admin" })",
+            data: {
+                "sectorId": sectorId,
+            },
+            cache: true,
+            success: function (response) {
+                DepstsCombo.ClearItems();
+                var item;
+                for (i = 0; i < response.length; i++) {
+                    item = response[i];
+                    DepstsCombo.AddItem(item.DepartmentName, item.DepartmentId);
+                }
+            },
+            error: function (errordesc) {
+                debugger;
+            }
+        });
+    }
+
+</script>
+
+<script type="text/javascript">
+
+    // when you are POSTing to Controller, in the signatue of Controller's
+    // action method (namely AddNewScheduledTask), an 'argument' with name 'State'
+    // will be also 'posted'. It's value will be taken from 'e.cpState'.
+    // The value of this 'argument' is set in NewScheduledTasksPartialView.cshtml
+    // settings.CustomJSProperties ...
+    //
+    function passValuesToActionAddNewScheduledTask(s, e) {
+        if (s.cpState)
+            e.customArgs['State'] = s.cpState;
+    }
+
+    function MunicipalitiesCombo_SelectedIndexChangedNewScheduledTasks(s, e) {
+        if (typeof (StreetName) != 'undefined') {
+            StreetName.PerformCallback();
+        }
+        if (typeof (Odos2) != 'undefined') {
+            Odos2.PerformCallback();
+        }
+    }
+
+    function StreetsComboNewScheduledTasks_BeginCallback(s, e) {
+        //debugger;
+        e.customArgs['SelectedMunicipality'] = NewScheduledTasksGridView.GetEditor('Municipality').GetText();
+    }
+
+    function Odos2ComboNewScheduledTasks_BeginCallback(s, e) {
+        //debugger;
+        e.customArgs['SelectedMunicipality'] = NewScheduledTasksGridView.GetEditor('Municipality').GetText();
+    }
+</script>
+
+<script type="text/javascript">
+
+    //
+    // 07.11.2108, Andreas Kasapleris
+    // 'sectorDescription' is an 'object' passed (in this case is a string)
+    //
+    function setSectorDescriptionForErgolavos(sectorDescription)
+    {
+        //
+        // 07.11.2108, Andreas Kasapleris
+        // 'SectorDescription' is the .Name of the property participating in the model
+        // use 'SetText' to set it's text;
+        // see Views/Ergolavoi/ErgolavoiPartialGridView.cshtml
+        //
+        SectorDescriptionCIN.SetText(sectorDescription);
+        window.alert('(JavaScript) -> Ονομασία Τομέα => ' + sectorDescription)
+    }
+
+</script>
+
+<div class="layout-content">
+    <div class="view-content">
+        @RenderBody()
+    </div>
+</div>
+
+@*@RenderSection("scripts", required: false)*@

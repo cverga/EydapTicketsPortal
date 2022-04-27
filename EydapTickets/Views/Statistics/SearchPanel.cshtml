@@ -1,0 +1,240 @@
+﻿@using EydapTickets.Models
+
+@model EydapTickets.Models.StatisticsCreteriaModel
+@{
+    //Html.EnableClientValidation();
+}
+
+<script type="text/javascript">
+
+    function AjaxreportCall()
+    {
+        //var model = { Id: TextBox1.GetText(), MainFloorPlanId: TextBox2.GetText(), ImageDirectory: TextBox3.GetText(), ThumbnailDirectory: TextBox4.GetText(), IconsDirectory: TextBox4.GetText() };
+        //var aMunicipalityStatistics = MunicipalityStatistics;
+        //var aStreetNameStatistics = StreetNameStatistics;
+        //var astatfrom = statfrom;
+        //var astatstreetnnumber = statstreetnnumber;
+        //var astatto = statto;
+
+        //ValidateForm();
+
+        var isformvalid = ASPxClientEdit.ValidateGroup('statisticspanel');
+
+        if (isformvalid)
+        {
+            Post(MunicipalityStatistics.GetText(), StreetNameStatistics.GetText(), FromStatistics.GetText(), ToStatistics.GetText(), StreetNumberStatistics.GetText(), ReportType.GetValue(), SectorsStatistics.GetValue());
+        }
+    }
+
+    //function ValidateForm()
+    //{
+    //    if (FromStatistics.GetText() == '')
+    //    {
+    //        FromStatistics.SetIsValid(false);
+    //    }
+
+    //    if (ToStatistics.GetText() == '')
+    //    {
+    //        ToStatistics.SetIsValid(false);
+    //    }
+
+    //    if (MunicipalityStatistics.GetText() == '') {
+    //        MunicipalityStatistics.SetIsValid(false);
+    //    }
+
+
+
+    //}
+
+
+    function Post(MunicipalityStatistics, aStreetNameStatistics, aStatfrom, aStatto, aStatstreetnnumber, aReport, aSector) {
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("UpdateTestPartialView", "Statistics")",
+            data: {
+                "aMunicipality": MunicipalityStatistics,
+                "aStreetName": aStreetNameStatistics,
+                "aFrom": aStatfrom,
+                "aTo": aStatto,
+                "aStreetNumber": aStatstreetnnumber,
+                "aReport": aReport,
+                "aSector": aSector,
+                },
+            success: function (response) {
+                $("#statisticsresultsdiv").html(response);
+            },
+        cache : false,
+        error: function (errordesc) {
+            debugger;
+        }
+    })
+    }
+</script>
+
+@using (Html.BeginForm("ExportTo", "Statistics", FormMethod.Post))
+{
+    <table cellpadding="300" cellspacing="300" class="SearchTable">
+        <tr>
+            <td>
+                @Html.LabelFor(model => model.MunicipalityStatistics, htmlAttributes: new { @class = "control-label col-md-2" })
+            </td>
+            <td>
+                @Html.Partial("Municipalities", Model)
+            </td>
+            <td>
+                @Html.LabelFor(model => model.StreetNameStatistics, htmlAttributes: new { @class = "control-label col-md-2" })
+            </td>
+            <td>
+                @Html.Partial("Streetnames", Model)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.LabelFor(model => model.FromStatistics, htmlAttributes: new { @class = "control-label col-md-2" })
+            </td>
+            <td>
+                @Html.DevExpress().DateEdit(settings =>
+               {
+                   settings.Name = "FromStatistics";
+                   settings.Properties.ValidationSettings.RequiredField.IsRequired = true;
+                   settings.Properties.ValidationSettings.ValidationGroup = "statisticspanel";
+                   settings.Properties.EnableClientSideAPI = true;
+                   settings.Properties.ValidationSettings.EnableCustomValidation = false;
+                   settings.Properties.ValidationSettings.CausesValidation = true;
+                   settings.Properties.ClientSideEvents.Validation = "function(s,e){ if (s.GetText() == '') {e.isValid = false;} else {e.isValid = true;} }";
+               }).Bind(Model.FromStatistics).GetHtml()
+
+
+
+                @*@Html.DevExpress().DateEditFor(m => m.FromStatistics, settings =>
+               {
+                   settings.Name = "FromStatistics";
+                   settings.Properties.ValidationSettings.RequiredField.IsRequired = true;
+                   settings.Properties.ValidationSettings.ValidationGroup = "statisticspanel";
+                   settings.Properties.EnableClientSideAPI = true;
+                   settings.ShowModelErrors = true;
+                   settings.Properties.ValidationSettings.EnableCustomValidation = false;
+                   settings.Properties.ValidationSettings.CausesValidation = true;
+                   settings.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithText;
+               }).GetHtml()*@
+            </td>
+            <td>
+                @Html.LabelFor(model => model.StreetNumberStatistics, htmlAttributes: new { @class = "control-label col-md-2" })
+            </td>
+            <td>
+                @*@Html.EditorFor(model => model.StreetNumber, new { htmlAttributes = new { @class = "form-control", id = "statstreetnnumber" } })*@
+
+                @Html.DevExpress().TextBoxFor(m => m.StreetNumberStatistics, settings =>
+               {
+                   settings.Name = "StreetNumberStatistics";
+               }).GetHtml()
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.LabelFor(model => model.ToStatistics, htmlAttributes: new { @class = "control-label col-md-2" })
+            </td>
+            <td>
+                @Html.DevExpress().DateEditFor(m => m.ToStatistics, settings =>
+               {
+                   settings.Name = "ToStatistics";
+                   settings.Properties.ValidationSettings.RequiredField.IsRequired = true;
+                   //settings.Properties.ValidationSettings.ValidationGroup = "statisticspanel";
+                   settings.Properties.EnableClientSideAPI = true;
+                   settings.Properties.ValidationSettings.CausesValidation = true;
+                   settings.Properties.ValidationSettings.ValidationGroup = "statisticspanel";
+                   settings.Properties.ValidationSettings.EnableCustomValidation = false;
+                   settings.Properties.ClientSideEvents.Validation = "function(s,e){ if (s.GetText() == '') {e.isValid = false;} else {e.isValid = true;} }";
+               }).GetHtml()
+            </td>
+            <td>
+                Τομέας
+            </td>
+            <td>
+                @Html.Partial("SectorsPartialView", Model)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Αναφορά
+            </td>
+            <td>
+                @Html.Partial("ReportTypesPartialView", Model.ReportTypes)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                @*<input type="submit" value="Αναζήτηση" name="Search" class="btn btn-default" />*@
+                @Html.DevExpress().Button(settings =>
+           {
+               settings.Name = "CallReport";
+               settings.Text = "Αναζήτηση";
+               settings.UseSubmitBehavior = false;
+               settings.ClientEnabled = true;
+               settings.ValidationGroup = "statisticspanel";
+               settings.ClientSideEvents.Click = "AjaxreportCall";
+           }).GetHtml()
+            </td>
+
+            <td>
+
+        @*<div>
+            <table align="center">
+                <tr>
+                    <td align="center" id="statisticsresultsdiv">
+                        @Html.Partial("ResultsPartialView", new BasicStatisticsModel(new List<string>(), new List<BasciValuesModel>()))
+                    </td>
+                </tr>
+            </table>
+        </div>*@
+
+            </td>
+        </tr>
+    </table>
+
+    <table align="center" style="padding-top: 5px; padding-bottom: 5px;">
+        <tr>
+            <td>
+                @Html.DevExpress().Button(btn =>
+            {
+                btn.Name = "btnExportToCSV";
+                btn.Attributes["OutputFormatAttribute"] = "CSV";
+                btn.Text = "CSV";
+                btn.UseSubmitBehavior = true;
+                btn.ClientSideEvents.Click = "OnClick";
+            }).GetHtml()
+            </td>
+            <td>
+                @Html.DevExpress().Button(btn =>
+            {
+                btn.Name = "btnExportToPDF";
+                btn.Attributes["OutputFormatAttribute"] = "PDF";
+                btn.Text = "PDF";
+                btn.UseSubmitBehavior = true;
+                btn.ClientSideEvents.Click = "OnClick";
+            }).GetHtml()
+            </td>
+            <td>
+                @Html.DevExpress().Button(btn =>
+            {
+                btn.Name = "btnExportToXLS";
+                btn.Attributes["OutputFormatAttribute"] = "XLS";
+                btn.Text = "XLS";
+                btn.UseSubmitBehavior = true;
+                btn.ClientSideEvents.Click = "OnClick";
+            }).GetHtml()
+            </td>
+            <td>
+                @Html.DevExpress().Button(btn =>
+            {
+                btn.Name = "btnExportToXLSX";
+                btn.Attributes["OutputFormatAttribute"] = "XLSX";
+                btn.Text = "XLSX";
+                btn.UseSubmitBehavior = true;
+                btn.ClientSideEvents.Click = "OnClick";
+            }).GetHtml()
+            </td>
+        </tr>
+    </table>
+}

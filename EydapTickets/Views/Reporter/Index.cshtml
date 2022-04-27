@@ -1,0 +1,29 @@
+﻿@using EydapTickets.Models
+@using Newtonsoft.Json
+
+@{ Layout = "~/Views/Shared/_contentLayout.cshtml"; }
+
+@{
+    Html.RenderAction("TaskGridViewPartial", "Reporter", new { Area = "", ViewBag.CustomerServiceId, ViewBag.ViewMode });
+}
+
+@section HeadScripts
+{
+    @{
+        var appContext = new
+        {
+            ViewBag.IsAdmin,
+            ViewBag.DepartmentId,
+            ViewBag.PrintIncidentUrl,
+            ViewBag.LocateIncidentUrl
+        };
+    }
+    <script type="text/javascript">
+        AppContext = JSON.parse('@Html.Raw(JsonConvert.SerializeObject(appContext))');
+    </script>
+
+    @Scripts.Render(
+        //"~/Bundles/IncidentGridView.Bundle",
+        //"~/Bundles/TaskGridView.Bundle",
+        "~/Bundles/AssignmentGridView.Bundle")
+}

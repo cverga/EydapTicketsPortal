@@ -1,0 +1,125 @@
+﻿@* DXCOMMENT: Configure GridView *@
+
+@using EydapTickets.Models;
+@using System.Diagnostics;
+@{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    GridViewExtension grid = Html.DevExpress().GridView(
+    settings =>
+    {
+        settings.Name = "TTInfoGridView";
+        settings.CallbackRouteValues = new { Controller = "Home", Action = "AjaxTTInfoPartial", aparameter = ViewBag.IncidentId };
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+        settings.SettingsPager.PageSize = 15;
+        settings.ControlStyle.Paddings.Padding = System.Web.UI.WebControls.Unit.Pixel(0);
+        settings.ControlStyle.Border.BorderWidth = System.Web.UI.WebControls.Unit.Pixel(0);
+        settings.ControlStyle.BorderBottom.BorderWidth = System.Web.UI.WebControls.Unit.Pixel(1);
+        settings.SettingsBehavior.AllowGroup = true;
+        settings.SettingsBehavior.AllowSort = true;
+        settings.Settings.ShowGroupPanel = false;
+        settings.SettingsCookies.StoreColumnsWidth = true;
+        settings.SettingsBehavior.AllowFocusedRow = false;
+        settings.SettingsBehavior.AllowSelectByRowClick = false;
+        settings.SettingsBehavior.AllowSelectSingleRowOnly = true;
+        settings.Settings.ShowGroupPanel = false;
+        settings.SettingsCookies.Enabled = true;
+
+        // DXCOMMENT: Specify the grid's key field name and define grid columns in accordance with data model fields
+        settings.KeyFieldName = "Id";
+        settings.Settings.ShowFilterRow = false;
+        settings.SettingsBehavior.ColumnResizeMode = ColumnResizeMode.NextColumn;
+        settings.SettingsDetail.ShowDetailRow = false;
+        settings.SettingsDetail.AllowOnlyOneMasterRowExpanded = false;
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "TTId";
+            column.ReadOnly = true;
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "ID1022";
+            column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "DateTime";
+            column.Caption = "Ημερομηνία";
+            column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "Sector";
+            column.Caption = "Τομέας";
+            column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "Department";
+            column.Caption = "Τμήμα";
+            column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "Action";
+            column.Caption = "Ενέργεια";
+            column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "User";
+            column.Caption = "Χρήστης";
+            column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+        });
+
+
+        settings.HtmlRowPrepared = (sender, e) =>
+        {
+            if (e.RowType == GridViewRowType.Data)
+            {
+                var gv = sender as MVCxGridView;
+                //string comments = gv.GetRowValues(e.VisibleIndex, "CommentCount").ToString();
+                //if (comments != "0")
+                {
+                    //e.Row.BackColor = System.Drawing.Color.Red;
+                }
+            }
+        };
+
+        settings.HtmlDataCellPrepared = (sender, e) =>
+        {
+            //if (e.DataColumn.FieldName == "TTId")
+            //{
+            //    e.Cell.Text = e.KeyValue.ToString().Substring(0, 5);
+            //}
+
+            //if (e.DataColumn.FieldName == "Status")
+            //{
+            //    var gv = sender as MVCxGridView;
+            //    string text = gv.GetRowValues(e.VisibleIndex, "Status").ToString();
+            //    switch (text)
+            //    {
+            //        case "1":
+            //            e.Cell.BackColor = System.Drawing.Color.LightSkyBlue;
+            //            break;
+            //        case "3":
+            //            e.Cell.BackColor = System.Drawing.Color.LightSlateGray;
+            //            break;
+            //    }
+            //}
+        };
+    });
+}
+@grid.Bind(Model).GetHtml()
+
+
+

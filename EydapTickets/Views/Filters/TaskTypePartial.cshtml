@@ -1,0 +1,30 @@
+﻿@model SelectList
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    settings.Name = "TaskType";
+    settings.CallbackRouteValues = new { Area = "", Controller = "Filters", Action = "TaskTypePartial" };
+    settings.Properties.CallbackPageSize = 10;
+    settings.Properties.ClearButton.DisplayMode = ClearButtonDisplayMode.Always;
+    settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+    settings.Properties.ValidationSettings.Display = Display.Dynamic;
+    settings.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+    settings.ShowModelErrors = true;
+    settings.Width = Unit.Percentage(100);
+
+    settings.Properties.ClientSideEvents.SelectedIndexChanged = @"
+        function(s, e) {
+            if (typeof window.TaskType_SelectedIndexChanged === 'function') {
+                window.TaskType_SelectedIndexChanged.apply(this, [s, e]);
+            }
+        }";
+
+    settings.Properties.ClientSideEvents.BeginCallback = @"
+        function(s, e) {
+            if (typeof window.TaskType_BeginCallback === 'function') {
+                window.TaskType_BeginCallback.apply(this, [s, e]);
+            }
+        }";
+
+}).BindList(Model.Items).Bind(Model.SelectedValue).GetHtml()

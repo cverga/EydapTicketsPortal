@@ -1,0 +1,134 @@
+﻿@using System.Configuration
+@using EydapTickets.Helpers
+@using EydapTickets.Models
+
+@model IEnumerable<Assignment>
+
+@(Html.DevExpress().GridView<Assignment>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "AssignmentGridView_" + ViewBag.TaskId.ToString().Replace("-", "");
+    settings.CallbackRouteValues = new { Controller = "Reporter", Action = "AssignmentGridViewPartial", ViewBag.TaskId, ViewBag.IncidentId };
+
+    // Text configuration
+    settings.SettingsText.Title = "Αναθέσεις";
+
+    // Settings configuration
+    settings.Settings.ShowFilterRow = false;
+    settings.Settings.ShowGroupPanel = false;
+
+    // Style configuration
+    settings.ControlStyle.CssClass = "height-auto";
+
+    // Behavior configuration
+    settings.SettingsBehavior.AllowFocusedRow = false;
+    settings.SettingsBehavior.AllowSelectByRowClick = false;
+
+    // Cookies configuration
+    settings.SettingsCookies.StoreColumnsWidth = true;
+
+    // Data Security configuration
+    settings.SettingsDataSecurity.AllowInsert = false;
+    settings.SettingsDataSecurity.AllowEdit = false;
+    settings.SettingsDataSecurity.AllowDelete = false;
+
+    // Detail configuration
+    settings.SettingsDetail.MasterGridName = "TaskGridViewReport";
+    settings.SettingsDetail.ShowDetailRow = false;
+
+    settings.KeyFieldName = "AssignmentId";
+
+    settings.Columns.Add(m => m.AssignmentId).Visible = false;
+
+    settings.Columns.Add(m => m.DateOfAssignment, column =>
+    {
+        column.Caption = "Ημερομηνία Ανάθεσης";
+        column.PropertiesEdit.DisplayFormatString = "dd/MM/yyyy HH:mm";
+    });
+
+    settings.Columns.Add(m => m.DateOfCompletion, column =>
+    {
+        column.Caption = "Ημερομηνία Ολοκλήρωσης";
+        column.PropertiesEdit.DisplayFormatString = "dd/MM/yyyy HH:mm";
+    });
+
+    settings.Columns.Add(m => m.Comments, column =>
+    {
+        column.Caption = "Σχόλια";
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.ColumnType = MVCxGridViewColumnType.ButtonEdit;
+        column.Name = "btn";
+        column.Caption = "Φόρμα Ανάθεσης";
+        column.EditFormSettings.Visible = DefaultBoolean.False;
+
+        column.SetDataItemTemplateContent(c =>
+        {
+            Html.DevExpress().Button(settingsBtn =>
+            {
+                settingsBtn.Name = "btn" + c.KeyValue;
+                settingsBtn.Text = "Προβολή Φόρμας";
+
+                var assignmentId = Guid.Parse(c.KeyValue.ToString());
+                var baseUrl = ConfigurationManager.AppSettings.Get("FormsLink");
+                var targetUrl = string.Format(baseUrl + "Details/{0}", assignmentId);
+
+                settingsBtn.ClientSideEvents.Click = "function(s, e) { window.open('" + targetUrl + "'); }";
+
+            }).Render();
+        });
+    });
+
+    settings.Columns.Add(m => m.Status, column =>
+    {
+        column.Caption = "Κατάσταση";
+        column.Width = 120;
+        column.EditorProperties().ComboBox(p =>
+        {
+            p.DataSource = Constants.AssignmentStates;
+            p.EnableSynchronization = DefaultBoolean.False;
+        });
+    });
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items.AddTitle(settings.SettingsText.Title);
+    });
+
+    settings.HtmlDataCellPrepared = (sender, e) =>
+    {
+        var gridView = (ASPxGridView)sender;
+
+        switch (e.DataColumn.FieldName)
+        {
+            case "Status":
+                var statusValue = gridView.GetRowValues<string>(e.VisibleIndex, "Status");
+                switch (statusValue)
+                {
+                    case "Ανοιχτή":
+                        e.Cell.CssClass += " dx-status-open";
+                        break;
+                    case "Ολοκληρωμένη":
+                        e.Cell.CssClass += " dx-status-closed";
+                        break;
+                    case "Ακυρωμένη":
+                        e.Cell.CssClass += " dx-status-canceled";
+                        break;
+                }
+                break;
+
+            case "DateOfCompletion":
+                if (e.CellValue == null)
+                {
+                    e.Cell.Text = HttpUtility.HtmlEncode("–");
+                }
+                break;
+        }
+    };
+
+}).Bind(Model).GetHtml())

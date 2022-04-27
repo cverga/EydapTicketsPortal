@@ -1,0 +1,19 @@
+﻿@using EydapTickets.Models
+
+@model IncidentSearchCriteria
+
+@Html.DevExpress().RoundPanel(settings =>
+{
+    settings.Name = "CriteriaPanel";
+    settings.HeaderText = "Κριτήρια Αναζήτησης";
+
+    settings.AllowCollapsingByHeaderClick = false;
+    settings.ClientSideEvents.CollapsedChanged = "function(s,e) { window.triggerResize(); }";
+    settings.EnableAnimation = false;
+    settings.ShowCollapseButton = true;
+    settings.ShowHeader = true;
+    settings.Width = Unit.Percentage(100);
+
+    settings.SetContent(() => Html.RenderPartial("_CriteriaFormLayoutPartial", Model));
+
+}).GetHtml()

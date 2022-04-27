@@ -1,0 +1,200 @@
+﻿@using EydapTickets.Areas.Reporting.Models
+@using EydapTickets.Helpers
+
+@model IEnumerable<Report0700Result>
+
+@(Html.DevExpress().GridView<Report0700Result>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "Report0700ResultsGridView";
+    settings.SettingsText.Title = "Κατάσταση Αναθέσεων Ελέγχου Ποιότητας Ύδατος";
+
+    //
+    // when you need data ... call Controller - Action
+    // with variables
+    //
+    settings.CallbackRouteValues = new
+    {
+        Controller = "Report0700",
+        Action = "GridViewCallback",
+        ViewBag.CriteriaModel.SectorId,
+        ViewBag.CriteriaModel.DateFrom,
+        ViewBag.CriteriaModel.DateTo,
+        ViewBag.CriteriaModel.Municipality,
+        ViewBag.CriteriaModel.StreetName,
+        ViewBag.CriteriaModel.StreetNumber,
+        ViewBag.CriteriaModel.TaskType,
+        ViewBag.CriteriaModel.TaskState
+    };
+
+    settings.KeyFieldName = "AssignmentId";
+
+    //settings.Settings.ShowTitlePanel = false;
+    //settings.SettingsPager.Visible = true;
+
+    //settings.Settings.ShowGroupPanel = true;
+    //settings.Settings.ShowFilterRow = true;
+    //settings.SettingsBehavior.AllowSelectByRowClick = true;
+
+    // 09.05.2018, Andreas Kasapleris
+    settings.SettingsLoadingPanel.Mode = GridViewLoadingPanelMode.ShowAsPopup;
+    settings.SettingsLoadingPanel.Text = "Παρακαλώ περιμένετε ... ";
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+    // 09.05.2018, Andreas Kasapleris, export settings
+    settings.SettingsExport.EnableClientSideExportAPI = true;
+    settings.SettingsExport.ExcelExportMode = DevExpress.Export.ExportType.DataAware;
+    settings.SettingsExport.PaperKind = System.Drawing.Printing.PaperKind.A4;
+    settings.SettingsExport.Landscape = true;
+
+    // settings.SettingsExport.ReportHeader = "ΚΑΤΑΣΤΑΣΗ ΑΝΑΤΕΘΕΙΜΕΝΩΝ ΕΡΓΑΣΙΩΝ";
+    // settings.SettingsExport.TopMargin    = 10;
+    // settings.SettingsExport.BottomMargin = 10;
+
+    // 09.05.2018, Andreas Kasapleris, not used in this report
+    // string ErgName = ViewBag.CriteriaModel.ErgName;
+
+    //if (String.IsNullOrEmpty(ErgName))
+    //{
+    //    settings.SettingsExport.FileName = "Report_0700_" + System.DateTime.Now.ToShortDateString();
+    //    settings.SettingsExport.PageHeader.Center =
+    //     String.Format("ΚΑΤΑΣΤΑΣΗ ΑΝΑΘΕΣΕΩΝ ΕΛΕΓΧΟΥ ΠΟΙΟΤΗΤΑΣ ΥΔΑΤΟΣ" + " ΗΜΕΡ/ΝΙΑ: {0} ",
+    //     System.DateTime.Now.ToString());
+    //}
+    //else
+    //{
+
+    settings.SettingsExport.FileName =
+        string.Format("Report_0700_{0}", DateTime.Now.ToShortDateString());
+    settings.SettingsExport.PageHeader.Center =
+        string.Format("ΚΑΤΑΣΤΑΣΗ ΑΝΑΘΕΣΕΩΝ ΕΛΕΓΧΟΥ ΠΟΙΟΤΗΤΑΣ ΥΔΑΤΟΣ ΗΜΕΡ/ΝΙΑ: {0}", DateTime.Now.ToString());
+
+    //}
+
+    settings.SettingsExport.PageFooter.Center = " Ημερομηνία: " + DateTime.Now.ToString();
+
+    settings.SettingsExport.BeforeExport = (sender, e) => {
+        var gridView = (MVCxGridView)sender;
+        if (sender == null) return;
+
+        gridView.Columns["ID1022"].ExportWidth = 40;
+
+        // gridView.Columns["SectorId"].Visible = false;
+        gridView.Columns["DepartmentId"].Visible = false;
+        gridView.Columns["TaskTypeId"].Visible = false;
+
+        gridView.Columns["Perioxi"].ExportWidth = 80;
+        gridView.Columns["Municipality"].ExportWidth = 80;
+        gridView.Columns["Street_Name"].ExportWidth = 100;
+        gridView.Columns["Odos2"].ExportWidth = 80;
+        gridView.Columns["Street_Number"].ExportWidth = 20;
+        gridView.Columns["Task_Description"].ExportWidth = 100;
+        gridView.Columns["State"].ExportWidth = 70;
+        gridView.Columns["DateOfAssignment"].ExportWidth = 80;
+        gridView.Columns["DateOfCompletion"].ExportWidth = 80;
+        gridView.Columns["Remarks"].ExportWidth = 135;
+        gridView.Columns["HmerominiaAnagelias"].ExportWidth = 80;
+        gridView.Columns["Energeies"].ExportWidth = 135;
+        gridView.Columns["ProblemDescription"].ExportWidth = 135;
+        gridView.Columns["EidosProblimatosDescription"].ExportWidth = 135;
+        gridView.Columns["Diagnosis"].ExportWidth = 400;
+        gridView.Columns["Conclusion"].ExportWidth = 400;
+        gridView.Columns["AssignmentId"].Visible = false;
+    };
+
+    // 09.05.2018, Andreas Kasapleris, export settings
+    settings.SettingsExport.RenderBrick = (sender, e) =>
+    {
+        if (e.RowType == GridViewRowType.Data && e.VisibleIndex % 2 == 0)
+            e.BrickStyle.BackColor = System.Drawing.Color.FromArgb(0xEE, 0xEE, 0xEE);
+    };
+
+    settings.SettingsAdaptivity.AdaptivityMode = GridViewAdaptivityMode.Off;
+    settings.SettingsAdaptivity.AdaptiveColumnPosition = GridViewAdaptiveColumnPosition.Right;
+    settings.SettingsAdaptivity.AdaptiveDetailColumnCount = 1;
+    settings.SettingsAdaptivity.AllowOnlyOneAdaptiveDetailExpanded = false;
+    settings.SettingsAdaptivity.HideDataCellsAtWindowInnerWidth = 0;
+
+    //settings.Columns.Add(m => m.SectorId).Visible = false;
+    settings.Columns.Add(m => m.DepartmentId).Visible = false;
+    settings.Columns.Add(m => m.TaskTypeId).Visible = false;
+    settings.Columns.Add(m => m.AssignmentId).Visible = false;
+    settings.Columns.Add(m => m.ID1022);
+    settings.Columns.Add(m => m.Perioxi);
+    settings.Columns.Add(m => m.Municipality);
+    settings.Columns.Add(m => m.Street_Name);
+    settings.Columns.Add(m => m.Odos2);
+    settings.Columns.Add(m => m.Street_Number);
+    settings.Columns.Add(m => m.Task_Description);
+    settings.Columns.Add(m => m.State);
+    settings.Columns.Add(m => m.DateOfAssignment).ColumnType = MVCxGridViewColumnType.DateEdit;
+    settings.Columns.Add(m => m.DateOfCompletion).ColumnType = MVCxGridViewColumnType.DateEdit;
+
+    settings.Columns.Add(m => m.Remarks, c =>
+    {
+        c.ColumnType = MVCxGridViewColumnType.Memo;
+        c.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+    });
+
+    settings.Columns.Add(m => m.HmerominiaAnagelias).ColumnType = MVCxGridViewColumnType.DateEdit;
+
+    settings.Columns.Add(m => m.Energeies, c =>
+    {
+        c.ColumnType = MVCxGridViewColumnType.Memo;
+        c.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+    });
+
+    settings.Columns.Add(m => m.ProblemDescription, c =>
+    {
+        c.ColumnType = MVCxGridViewColumnType.Memo;
+        c.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+    });
+
+    settings.Columns.Add(m => m.EidosProblimatosDescription, c =>
+    {
+        c.ColumnType = MVCxGridViewColumnType.Memo;
+        c.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+    });
+
+    settings.Columns.Add(m => m.Diagnosis, c =>
+    {
+        c.ColumnType = MVCxGridViewColumnType.Memo;
+        c.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+    });
+
+    settings.Columns.Add(m => m.Conclusion, c =>
+    {
+        c.ColumnType = MVCxGridViewColumnType.Memo;
+        c.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+    });
+
+    var richTextFields = new[] {"Conclusion", "Diagnosis", "Remarks", "Energeies"};
+    settings.CustomColumnDisplayText = (s, e) =>
+    {
+        if (richTextFields.Contains(e.Column.FieldName))
+        {
+            e.EncodeHtml = false;
+            e.DisplayText = e.Value.ToString();
+        }
+    };
+
+    settings.ClientSideEvents.Init = @"
+        function(s,e) {
+            window.GlobalGridView_Init(s, e);
+            window.GlobalGridView_AdjustSize(s);
+        }";
+
+    settings.ClientSideEvents.EndCallback = "window.GlobalGridView_AdjustSize";
+
+}).SetEditErrorText(ViewBag.EditError).Bind(Model).GetHtml())

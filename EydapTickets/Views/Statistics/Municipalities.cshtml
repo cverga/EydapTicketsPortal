@@ -1,0 +1,24 @@
+﻿
+@model EydapTickets.Models.StatisticsCreteriaModel
+
+@Html.DevExpress().ComboBox(
+    settings =>
+    {
+        settings.Name = "MunicipalityStatistics";
+        settings.Width = Unit.Percentage(100);
+        settings.SelectedIndex = 0;
+        settings.CallbackRouteValues = new { Controller = "Statistics", Action = "Municipalities" };
+        settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+        settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+
+        settings.Properties.ValueType = typeof(string);
+        settings.Properties.TextField = "Text";
+        settings.Properties.ValueField = "Value";
+
+        //settings.Properties.ClientSideEvents.ValueChanged = "function( s, e ){ FillStreetNames(s.GetText()); }";
+        //settings.Properties.ClientSideEvents.SelectedIndexChanged = "function( s, e ){ FillStreetNames(s.GetText()); }";
+
+        settings.Properties.CallbackPageSize = 100;
+        settings.Properties.ClientSideEvents.SelectedIndexChanged = "function(s, e) { StreetNameStatistics.PerformCallback(); }";
+    }
+    ).BindList(Model.Municipalities).Bind(Model.MunicipalityStatistics).GetHtml()

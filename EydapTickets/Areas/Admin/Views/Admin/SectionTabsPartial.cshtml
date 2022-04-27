@@ -1,0 +1,84 @@
+﻿@Html.DevExpress().PageControl(settings =>
+{
+    settings.Name = "SectionTabs";
+    settings.CallbackRouteValues = new { Controller = "Admin", Action = "SectionTabsPartial" };
+    settings.Width = Unit.Percentage(100);
+
+    // Basic configuration
+    settings.EnableTheming = true;
+    settings.EnableCallbackAnimation = false;
+    settings.EnableClientSideAPI = true;
+    settings.SettingsLoadingPanel.Enabled = false;
+
+    settings.TabPosition = TabPosition.Left;
+    settings.TabAlign = TabAlign.Left;
+
+    // Styles configuration
+    settings.Styles.Tab.HorizontalAlign = HorizontalAlign.Right;
+
+    // Client side events configuration
+    settings.ClientSideEvents.ActiveTabChanging = @"
+        function (s,e) {
+            e.reloadContentOnCallback = true;
+        }";
+
+    settings.ClientSideEvents.BeginCallback = @"
+        function(s, e) {
+            LoadingPanel.Show();
+        }";
+
+    settings.ClientSideEvents.EndCallback = @"
+        function(s, e) {
+            LoadingPanel.Hide();
+            window.triggerResize();
+        }";
+
+    settings.ClientSideEvents.Init = @"
+        function(s, e) {
+            window.triggerResize();
+        }";
+
+    settings.ClientSideEvents.TabClick = "OnTabClick";
+
+    // Tab page configuration
+    settings.TabPages
+        .Add("Τομείς", "Sectors")
+        .SetContent(() => Html.RenderAction("GridViewPartial", "Sectors"));
+
+    settings.TabPages
+        .Add("Τμήματα", "Departments")
+        .SetContent(() => Html.RenderAction("GridViewPartial", "Departments"));
+
+    settings.TabPages
+        .Add("Χρήστες", "Users")
+        .SetContent(() => Html.RenderAction("GridViewPartial", "Users"));
+
+    //settings.TabPages
+    //    .Add("Ρόλοι", "Roles")
+    //    .SetContent(() => Html.RenderAction("GridViewPartial", "Roles"));
+
+    settings.TabPages
+        .Add("Οχήματα", "Vehicles")
+        .SetContent(() => Html.RenderAction("GridViewPartial", "Vehicles"));
+
+    settings.TabPages
+        .Add("Προσωπικό", "Personnel")
+        .SetContent(() => Html.RenderAction("GridViewPartial", "Personnel"));
+
+    settings.TabPages
+        .Add("Τύποι Εργασιών", "TaskTypes")
+        .SetContent(() => Html.RenderAction("GridViewPartial", "TaskTypes"));
+
+    settings.TabPages
+        .Add("Εργασίες Τμημάτων", "DepartmentTasks")
+        .SetContent(() => Html.RenderAction("GridViewPartial", "DepartmentTasks"));
+
+    settings.TabPages
+        .Add("Εργολαβίες", "Contractors")
+        .SetContent(() => Html.RenderAction("GridViewPartial", "Contractors"));
+
+    //settings.TabPages
+    //    .Add("Πίνακας Δρομολόγησης", "IncidentsRouting")
+    //    .SetContent(() => Html.RenderAction("GridViewPartial", "IncidentsRouting"));
+
+}).GetHtml()

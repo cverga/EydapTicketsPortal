@@ -1,0 +1,157 @@
+﻿@*@using EydapTickets.Models
+@Html.DevExpress().Button(settings =>
+{
+    settings.ClientSideEvents.Click = "function(s, e) { IncidentGridView.AddNewRow();}";
+    settings.Name = "ButtonNew" + Guid.NewGuid().ToString();
+    settings.Text = "Εισαγωγή Νέας Βλάβης";
+    settings.UseSubmitBehavior = false;
+    settings.Styles.Style.Font.Size = System.Web.UI.WebControls.FontUnit.Medium;
+    settings.ClientVisible = ((IncidentGridViewMode)ViewBag.ViewMode == IncidentGridViewMode.Open)
+}).GetHtml()*@
+
+@Html.DevExpress().Button(settings =>
+{
+    settings.ClientSideEvents.Click = "function(s, e) { getSelectedIncidentId();}";
+    settings.Name = "ButtonChangeState" + Guid.NewGuid().ToString();
+    settings.Text = "Αλλαγή Κατάστασης";
+    settings.UseSubmitBehavior = false;
+    settings.Styles.Style.Font.Size = FontUnit.Medium;
+    //settings.Width = System.Web.UI.WebControls.Unit.Pixel(50);
+}).GetHtml()
+
+@Html.DevExpress().Button( settings =>
+{
+    settings.ClientSideEvents.Click = "function(s, e) { GetCommentSelectedIncidentId();}";
+    settings.Name = "ButtonIncidentComment" + Guid.NewGuid().ToString();
+    settings.Text = "Ανάρτηση Επισήμανσης";
+    settings.UseSubmitBehavior = false;
+    settings.Styles.Style.Font.Size = FontUnit.Medium;
+}).GetHtml()
+
+@Html.DevExpress().Button(settings =>
+{
+    settings.ClientSideEvents.Click = "function(s, e) { GetShowCommentSelectedIncidentId();}";
+    settings.Name = "ButtonShowIncidentComment" + Guid.NewGuid().ToString();
+    settings.Text = "Προβολή Επισήμανσης";
+    settings.UseSubmitBehavior = false;
+    settings.Styles.Style.Font.Size = FontUnit.Medium;
+}).GetHtml()
+
+@Html.DevExpress().Button( settings =>
+{
+    settings.ClientSideEvents.Click = "function(s, e) { GetTTInfoIncidentId(); }";
+    settings.Name = "ButtonTTInfo" + Guid.NewGuid().ToString();
+    settings.Text = "Πληροφοριες Σήματος";
+    settings.UseSubmitBehavior = false;
+    settings.Styles.Style.Font.Size = FontUnit.Medium;
+}).GetHtml()
+
+@Html.DevExpress().Button(settings =>
+{
+    settings.ClientSideEvents.Click = "function(s, e) { GetTTInfoIncidentId1022();}";
+    settings.Name = "ButtonTTInfo1022" + Guid.NewGuid().ToString();
+    settings.Text = "Ιστορικό Σήματος 1022";
+    settings.UseSubmitBehavior = false;
+    settings.Styles.Style.Font.Size = FontUnit.Medium;
+}).GetHtml()
+
+@Html.DevExpress().Button(settings =>
+{
+    settings.ClientSideEvents.Click = "function(s, e) { FilterMyTTs(s);}";
+    settings.Name = "ButtonTTFilterMine" + Guid.NewGuid().ToString();
+    settings.Text = "Εμφάνιση: Όλα";
+    settings.UseSubmitBehavior = false;
+    settings.Styles.Style.Font.Size = FontUnit.Medium;
+}).GetHtml()
+
+<script type="text/javascript">
+
+    function getSelectedIncidentId() {
+        IncidentGridView.GetSelectedFieldValues('TTId', GetSelectedFieldValuesCallback);
+    }
+
+    function GetSelectedFieldValuesCallback(values) {
+        //Capture all selected keys
+        if (typeof (values[0]) != "undefined") {
+            statepopup.Show();
+            window['StateTT'] = values[0];
+            ShowAjaxStatePopUp(values[0]);
+        }
+        else {
+            alert("Παρακαλώ επιλέξτε μια Βλάβη");
+        }
+    }
+
+    function FilterMyTTs(s) {
+        AppContext.FilterTTs = !AppContext.FilterTTs;
+        if (AppContext.FilterTTs)
+        {
+            s.SetText("Εμφάνιση: Με Εκκρεμείς Εργασίες");
+        }
+        else
+        {
+            s.SetText("Εμφάνιση: Όλα")
+        }
+        AppContext.MasterGrid.Refresh();
+    }
+
+    function GetTTInfoIncidentId1022() {
+        AppContext.MasterGrid.GetSelectedFieldValues('ID1022', GetID1022SelectedFieldValuesCallback);
+    }
+
+    function GetID1022SelectedFieldValuesCallback(values)
+    {
+        window.open('http://dominosrv2.eydap.gr/eydap/1022/ProblemRegistration.nsf/dlgWzardHistory?OpenForm&docid=' + values);
+    }
+
+    function GetTTInfoIncidentId()
+    {
+        AppContext.MasterGrid.GetSelectedFieldValues('TTId', GetTTInfoSelectedFieldValuesCallback);
+    }
+
+    function GetTTInfoSelectedFieldValuesCallback(values)
+    {
+        //Capture all selected keys
+        if (typeof (values[0]) != "undefined") {
+            ttinfopopup.Show();
+            window['StateTT'] = values[0];
+            ShowAjaxTTInfoPopUp(values[0]);
+        }
+        else {
+            alert("Παρακαλώ επιλέξτε μια Βλάβη");
+        }
+    }
+
+    function GetCommentSelectedIncidentId() {
+        AppContext.MasterGrid.GetSelectedFieldValues('TTId', GetCommentSelectedFieldValuesCallback);
+    }
+
+    function GetCommentSelectedFieldValuesCallback(values) {
+        //Capture all selected keys
+        if (typeof (values[0]) != "undefined") {
+            commentpopup.Show();
+            window['CommentTT'] = values[0];
+            ShowAjaxCommentsPopUp(values[0]);
+        }
+        else {
+            alert("Παρακαλώ επιλέξτε μια Βλάβη");
+        }
+    }
+
+    function GetShowCommentSelectedIncidentId() {
+        AppContext.MasterGrid.GetSelectedFieldValues('TTId', GetShowCommentSelectedFieldValuesCallback);
+    }
+
+    function GetShowCommentSelectedFieldValuesCallback(values) {
+        //Capture all selected keys
+        if (typeof (values[0]) != "undefined") {
+            commentpopup.Show();
+            window['CommentTT'] = values[0];
+            ShowAjaxCommentsPopUpReadOnly(values[0]);
+        }
+        else {
+            alert("Παρακαλώ επιλέξτε μια Βλάβη");
+        }
+    }
+
+</script>

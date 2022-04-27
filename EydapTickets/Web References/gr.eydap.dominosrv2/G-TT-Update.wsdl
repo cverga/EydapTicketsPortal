@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:intf="urn:TTUpdate" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:impl="urn:TTUpdate" xmlns="http://schemas.xmlsoap.org/wsdl/" targetNamespace="urn:TTUpdate" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:TTUpdate">
+      <xsd:import namespace="http://schemas.xmlsoap.org/soap/encoding/" />
+      <xsd:complexType name="RESPONSE">
+        <xsd:sequence>
+          <xsd:element name="SUCCESS" type="xsd:boolean" />
+          <xsd:element name="REASON" type="xsd:string" />
+          <xsd:element name="ERRORTYPE" type="xsd:string" />
+          <xsd:element name="ERRORCODE" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="UPDATEWATERSUPPLYTTRequest">
+    <wsdl:part name="TICKETTRACEID" type="xsd:string" />
+    <wsdl:part name="STATUS" type="xsd:string" />
+    <wsdl:part name="COMPLETIONDATE" type="xsd:string" />
+    <wsdl:part name="COMMENTS" type="xsd:string" />
+  </wsdl:message>
+  <wsdl:message name="UPDATEWATERSUPPLYTTResponse">
+    <wsdl:part name="UPDATEWATERSUPPLYTTReturn" type="impl:RESPONSE" />
+  </wsdl:message>
+  <wsdl:message name="UPDATEDRAINSTTResponse">
+    <wsdl:part name="UPDATEDRAINSTTReturn" type="impl:RESPONSE" />
+  </wsdl:message>
+  <wsdl:message name="UPDATEDRAINSTTRequest">
+    <wsdl:part name="TICKETTRACEID" type="xsd:string" />
+    <wsdl:part name="STATUS" type="xsd:string" />
+    <wsdl:part name="COMPLETIONDATE" type="xsd:string" />
+    <wsdl:part name="COMMENTS" type="xsd:string" />
+  </wsdl:message>
+  <wsdl:portType name="TTUpdate">
+    <wsdl:operation name="UPDATEDRAINSTT" parameterOrder="TICKETTRACEID STATUS COMPLETIONDATE COMMENTS">
+      <wsdl:input name="UPDATEDRAINSTTRequest" message="impl:UPDATEDRAINSTTRequest" />
+      <wsdl:output name="UPDATEDRAINSTTResponse" message="impl:UPDATEDRAINSTTResponse" />
+    </wsdl:operation>
+    <wsdl:operation name="UPDATEWATERSUPPLYTT" parameterOrder="TICKETTRACEID STATUS COMPLETIONDATE COMMENTS">
+      <wsdl:input name="UPDATEWATERSUPPLYTTRequest" message="impl:UPDATEWATERSUPPLYTTRequest" />
+      <wsdl:output name="UPDATEWATERSUPPLYTTResponse" message="impl:UPDATEWATERSUPPLYTTResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="DominoSoapBinding" type="impl:TTUpdate">
+    <wsdlsoap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc" />
+    <wsdl:operation name="UPDATEDRAINSTT">
+      <wsdlsoap:operation soapAction="" />
+      <wsdl:input name="UPDATEDRAINSTTRequest">
+        <wsdlsoap:body use="encoded" namespace="urn:TTUpdate" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:input>
+      <wsdl:output name="UPDATEDRAINSTTResponse">
+        <wsdlsoap:body use="encoded" namespace="urn:TTUpdate" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UPDATEWATERSUPPLYTT">
+      <wsdlsoap:operation soapAction="" />
+      <wsdl:input name="UPDATEWATERSUPPLYTTRequest">
+        <wsdlsoap:body use="encoded" namespace="urn:TTUpdate" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:input>
+      <wsdl:output name="UPDATEWATERSUPPLYTTResponse">
+        <wsdlsoap:body use="encoded" namespace="urn:TTUpdate" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="TTUpdateService">
+    <wsdl:port name="Domino" binding="impl:DominoSoapBinding">
+      <wsdlsoap:address location="http://dominosrv2.eydap.gr:80/EYDAP/TicketTrace/TicketTrace.nsf/G-TT-Update?OpenWebService" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

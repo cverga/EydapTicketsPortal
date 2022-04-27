@@ -1,0 +1,40 @@
+﻿@{
+//
+// 02.07.2018, Andreas Kasapleris
+// use below as a model the generic Class 'XtraReport'
+//
+}
+
+@model DevExpress.XtraReports.UI.XtraReport
+
+@*@{
+    // Parameters passed with ViewBag
+
+    System.Int32? aTaskId;
+    System.Guid? aAssignmentId;
+
+    if (ViewBag.TaskId != null)
+    {
+        aTaskId = ViewBag.TaskId;
+    }
+    else
+    {
+        aTaskId = 0;
+    }
+
+    if (ViewBag.AssignmentId != null)
+    {
+        aAssignmentId = ViewBag.AssignmentId;
+    }
+    else
+    {
+        aAssignmentId = new Guid();
+    }
+
+}*@
+
+@Html.DevExpress().WebDocumentViewer(settings =>
+{
+    settings.Name = "Form1070WebDocumentViewer";
+    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+}).Bind(Model).GetHtml();

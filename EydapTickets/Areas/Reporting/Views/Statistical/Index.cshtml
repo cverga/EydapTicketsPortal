@@ -1,0 +1,22 @@
+﻿@using EydapTickets.Areas.Reporting.Models
+
+@{
+    ViewBag.ShowMainButtonStrip = false;
+
+    ViewBag.Title = "Στατιστικά";
+}
+
+@model IEnumerable<Report>
+
+<h2 style="padding: 0 1em;">@ViewBag.Title</h2>
+
+<hr/>
+
+<ul>
+    @foreach (var report in Model)
+    {
+        <li style="padding: .5em;">
+            <a href="@Url.Content(report.Url)" style="font-size: 1.2em;">@Html.DisplayFor(m => report.Name)</a>
+        </li>
+    }
+</ul>

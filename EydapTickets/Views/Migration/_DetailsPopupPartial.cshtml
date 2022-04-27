@@ -1,0 +1,84 @@
+﻿
+@Html.DevExpress().PopupControl(settings =>
+{
+    //settings.Name = "pcFeatures" + ViewData["popup"].ToString();
+    settings.Name = "MigrationDetailsPopUp";
+    //settings.PopupElementID = ViewData["popup"].ToString();
+    //switch (options.ScrollBars)
+    //{
+    //    case ScrollBars.Horizontal:
+    //        settings.Width = 150;
+    //        break;
+    //    case ScrollBars.Vertical:
+    //        settings.Width = 372;
+    //        break;
+    //    default:
+    //        settings.Width = 330;
+    //        break;
+    //}
+    settings.Height = 250;
+    settings.MinHeight = 150;
+    settings.MinWidth = 400;
+    settings.MaxHeight = 800;
+    settings.MaxWidth = 800;
+    settings.CloseAction = CloseAction.CloseButton;
+    settings.ShowCloseButton = true;
+    settings.PreRender = (sender, e) =>
+    {
+
+    };
+    settings.ShowFooter = false;
+    settings.ShowHeader = true;
+    settings.HeaderText = "Λοιπά Στοιχεία Βλάβης";
+    settings.PopupHorizontalAlign = PopupHorizontalAlign.WindowCenter;
+    settings.PopupVerticalAlign = PopupVerticalAlign.WindowCenter;
+    //settings.Opacity = (0 <= options.Opacity && options.Opacity < 100) ? options.Opacity : -1;
+    settings.PopupAnimationType = AnimationType.None;
+    //settings.CloseAnimationType = options.CloseAnimationType;
+    settings.AllowDragging = true;
+
+    settings.SetContent(() =>
+    {
+        //@Html.BeginForm();
+        ViewContext.Writer.Write(
+            /*"<table>" +
+                "<tr>" +
+                    "<td>" +
+                        "<img src=\"" + Url.Content("~/Content/PopupControl/Features/CountriesArea.png") + "\" alt=\"Area of Countries\" />" +
+                    "</td>" +
+                "</tr>" +
+                "<tr>" +
+                    "<td style=\"vertical-align: top; color: #666666;font-family: Tahoma; font-size: 10px;\">" +
+                            "This is the Pie 3D series view, which is useful when it's necessary to compare the percentage" +
+                            "values of different point arguments in the same series, and to show these values as easy" +
+                            "to understand pie slices." +
+                    "</td>" +
+                "</tr>" +
+            "</table>"*/
+                "<div id=\"migrationdetailspopupdiv\"></div>"
+        );
+
+        @Html.DevExpress().Button(settings1 =>
+        {
+            settings1.Name = "ButtonOK";
+            settings1.Text = "OK";
+            settings1.UseSubmitBehavior = false;
+
+            //string functionstring = String.Format("window.open('" + mUrl + "Details/{0}');", keyvalue);
+
+            //settingsBtn.ClientSideEvents.Click = "function(s, e) { " + functionstring + " }";
+            //string fn = String.Format("function (s,e) {{ CheckRelated('{0}'); }}", Model.TTId.ToString());
+            //settings.ClientSideEvents.Click = fn;
+
+            // execute JavaScript function to hide pop up
+            string fn = "function (s,e) { MigrationDetailsPopUp.Hide(); }";
+            settings1.ClientSideEvents.Click = fn;
+
+            //settings.ClientSideEvents.Click = String.Format("function(s, e) {{ CheckRelated('{0}');}}", Model.TTId.ToString());
+
+        }).GetHtml();
+
+    });
+    settings.ClientSideEvents.CloseUp = "function(s, e) {  }";
+    settings.ClientSideEvents.PopUp = "function(s, e) {  }";
+}).GetHtml()

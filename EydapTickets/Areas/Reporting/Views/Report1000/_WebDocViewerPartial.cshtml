@@ -1,0 +1,12 @@
+﻿@using EydapTickets.Areas.Reporting.Models
+
+@model ReportCommonSearchModel
+
+@if (Model.ShowReport)
+{
+    @Html.DevExpress().WebDocumentViewer(settings =>
+    {
+        settings.Name = "WebDocumentViewer";
+        settings.Width = Unit.Percentage(100);
+    }).Bind((Report1000)ViewData["Report1000"]).GetHtml();
+}

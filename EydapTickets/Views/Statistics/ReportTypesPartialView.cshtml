@@ -1,0 +1,48 @@
+﻿@using EydapTickets.Models;
+
+@model  IEnumerable<ReportType>
+
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    //
+    // your DevExpress ComboBox Control
+    //
+    settings.CallbackRouteValues = new { Controller = "Statistics", Action = "GetReportTypes" };
+
+    settings.ReadOnly = false;
+    settings.Enabled = true;
+    settings.ShowModelErrors = true;
+
+    settings.Name = "ReportType"; // BEAWARE !!! the .Name property of the ComboBox
+                                    // should be same as .ValueField!
+
+    settings.Properties.TextField  = "ReportDescription";
+    settings.Properties.ValueField = "StoredProcedure";
+    settings.Properties.ValueType  = typeof(string);
+
+    //settings.Properties.EnableSynchronization = DefaultBoolean.True;
+    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.None;
+
+    //settings.Properties.ClientSideEvents.BeginCallback = "DepartmentsCombo_BeginCallback";
+    //settings.Properties.ClientSideEvents.SelectedIndexChanged = "DepartmentsCombo_SelectedIndexChanged";
+
+    settings.Properties.ValidationSettings.EnableCustomValidation = false;
+    settings.Properties.ValidationSettings.RequiredField.IsRequired = true;
+    settings.Properties.ValidationSettings.ValidationGroup = "statisticspanel";
+    //settings.Properties.ValidationSettings.Assign(EydapTickets.Helpers.ValidationsHelper.DepartmentValidationSettings);
+
+    settings.PreRender = (sender, e) =>
+    {
+        //if ((bool)ViewData["SelectFirst"] == true)
+        {
+            //settings.SelectedIndex = 0;
+        }
+    };
+
+    // ViewData["DepartmentId"] is set in the main page;
+    // you are saying here to this ComboBox Control; bind to
+    // the Model passed (namely 'Departments') binding on the
+    // column 'DeprtmentId'
+    //BindList(Model).Bind(ViewData["DepartmentId"]).GetHtml()
+}).BindList(Model).GetHtml()

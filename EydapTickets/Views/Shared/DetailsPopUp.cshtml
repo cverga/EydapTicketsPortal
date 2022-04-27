@@ -1,0 +1,23 @@
+﻿@Html.DevExpress().PopupControl(settings =>
+{
+    settings.Name = "detailspopup";
+    settings.HeaderText = "Λεπτομέρειες Περιστατικού";
+
+    settings.MinWidth = Unit.Pixel(560);
+    settings.MinHeight = Unit.Pixel(560);
+
+    settings.AllowDragging = true;
+    settings.CloseAction = CloseAction.CloseButton;
+    settings.PopupAnimationType = AnimationType.None;
+    settings.PopupHorizontalAlign = PopupHorizontalAlign.WindowCenter;
+    settings.PopupVerticalAlign = PopupVerticalAlign.WindowCenter;
+    settings.ShowCloseButton = true;
+    settings.ShowFooter = false;
+    settings.ShowHeader = true;
+
+    settings.SetContent(() =>
+    {
+        ViewContext.Writer.Write("<div id=\"detailspopupdiv\"><!-- AJAX Content --></div>");
+    });
+
+}).GetHtml()

@@ -1,0 +1,190 @@
+﻿@using System.Drawing.Printing
+@using EydapTickets.Helpers
+@using EydapTickets.Models;
+
+@model IEnumerable<Personnel>
+
+@(Html.DevExpress().GridView<Personnel>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "PersonnelGridView";
+    settings.CallbackRouteValues = new { Controller = "Personnel", Action = "GridViewPartial" };
+
+    // Text configuration
+    settings.SettingsText.Title = "Προσωπικό";
+
+    // Editing configuration
+    settings.SettingsEditing.EditFormColumnCount = 2;
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Personnel", Action = "AddNewRow" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Personnel", Action = "UpdateRow" };
+    // settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Personnel", Action = "DeleteRow" };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "GlobalGridView_Init";
+    settings.ClientSideEvents.EndCallback = "GlobalGridView_EndCallback";
+
+    // Column configuration
+    {
+        settings.KeyFieldName = "PersonnelID";
+
+        settings.Columns.Add(m => m.PersonnelID, column =>
+        {
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(m => m.PersonnelSectorId, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = UsersDAL.GetSectors();
+                p.TextField = "SectorDescription";
+                p.ValueField = "SectorId";
+                p.ValueType = typeof(int);
+                p.ValidationSettings.RequiredField.IsRequired = true;
+                p.EnableSynchronization = DefaultBoolean.False;
+                p.IncrementalFilteringMode = IncrementalFilteringMode.None;
+                p.ClientSideEvents.SelectedIndexChanged = @"
+                    function(s, e) {
+                        var editorDepartmentId = PersonnelGridView.GetEditor('PersonnelDepartmentID');
+                        if (editorDepartmentId) {
+                            editorDepartmentId.PerformCallback();
+                        }
+                    }
+                ";
+            });
+        });
+
+        settings.Columns.Add(m => m.PersonnelDepartmentID, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = DepartmentsDAL.GetAllDepartments();
+                p.TextField = "DepartmentName";
+                p.ValueField = "DepartmentId";
+                p.ValueType = typeof(int);
+                p.CallbackRouteValues = new { Controller = "Sectors", Action = "GetDepartments" };
+                p.ClientSideEvents.BeginCallback = @"
+                    function(s, e) {
+                        var editorSectorId = PersonnelGridView.GetEditor('PersonnelSectorId');
+                        if (editorSectorId) {
+                            e.customArgs['sectorId'] = editorSectorId.GetValue();
+                        }
+                    }";
+                p.ValidationSettings.RequiredField.IsRequired = true;
+            });
+        });
+
+        settings.Columns.Add(m => m.PersonnelName, column =>
+        {
+            column.EditorProperties().TextBox(p =>
+            {
+                p.ValidationSettings.RequiredField.IsRequired = true;
+            });
+        });
+
+        settings.Columns.Add(m => m.PersonnelSurName, column =>
+        {
+            column.EditorProperties().TextBox(p =>
+            {
+                p.ValidationSettings.RequiredField.IsRequired = true;
+            });
+        });
+
+        settings.Columns.Add(m => m.PersonnelType, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = IncidentProvider.GetPersonnelTypes();
+                p.TextField = "PersonnelTypeDescription";
+                p.ValueField = "PersonnelTypeId";
+                p.ValueType = typeof(int);
+
+                p.ValidationSettings.RequiredField.IsRequired = true;
+            });
+        });
+
+        settings.Columns.Add(m => m.PersonnelAM, column =>
+        {
+            column.EditorProperties().TextBox(p =>
+            {
+                p.ValidationSettings.RequiredField.IsRequired = true;
+            });
+        });
+
+        settings.Columns.Add(m => m.IsActive, column =>
+        {
+            column.EditorProperties().CheckBox(p =>
+            {
+                p.AllowGrayed = false;
+                p.ValueType = typeof(bool);
+                p.ValueChecked = true;
+                p.ValueUnchecked = false;
+                p.DisplayTextChecked = "Ενεργός";
+                p.DisplayTextUnchecked = "Μη Ενεργός";
+
+                p.ValidationSettings.RequiredField.IsRequired = true;
+            });
+        });
+    }
+
+    // Initialize cell editor
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+
+        var gridView = (MVCxGridView)sender;
+
+        // Requirement: Filter departments on sector.
+        if (e.Column.FieldName == "PersonnelDepartmentID")
+        {
+            var sectorId = gridView.GetRowValues(gridView.EditingRowVisibleIndex, "PersonnelSectorId") as int?;
+            var cmb = (MVCxComboBox)e.Editor;
+            cmb.DataSource = UsersDAL.GetDepartmentsForSector(sectorId ?? -1);
+            cmb.DataBind();
+        }
+    };
+
+    // Export configuration
+    {
+        settings.SettingsExport.EnableClientSideExportAPI = true;
+        settings.SettingsExport.ExcelExportMode = DevExpress.Export.ExportType.DataAware;
+        settings.SettingsExport.PaperKind = PaperKind.A4;
+        settings.SettingsExport.Landscape = true;
+
+        settings.SettingsExport.FileName = "Προσωπικό_" + DateTime.Now.ToShortDateString();
+        settings.SettingsExport.ReportHeader = "Προσωπικό";
+        settings.SettingsExport.PageFooter.Center = " Ημερομηνία: " + DateTime.Now.ToString();
+
+        settings.SettingsExport.BeforeExport = (sender, e) =>
+        {
+            var gridView = (MVCxGridView)sender;
+
+            gridView.Columns["PersonnelID"].Visible = false;
+            gridView.Columns["PersonnelSectorId"].ExportWidth = 140;
+            gridView.Columns["PersonnelDepartmentID"].ExportWidth = 260;
+            gridView.Columns["PersonnelName"].ExportWidth = 150;
+            gridView.Columns["PersonnelSurName"].ExportWidth = 150;
+            gridView.Columns["PersonnelType"].ExportWidth = 100;
+            gridView.Columns["PersonnelAM"].ExportWidth = 80;
+            gridView.Columns["IsActive"].ExportWidth = 80;
+        };
+    }
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            .AddNewRowCommand()
+            .AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+}).SetEditErrorText(ViewData["EditError"] as string).Bind(Model).GetHtml())

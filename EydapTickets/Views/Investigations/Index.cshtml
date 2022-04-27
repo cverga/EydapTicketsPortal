@@ -1,0 +1,25 @@
+﻿@using EydapTickets.Models;
+
+@model IEnumerable<Investigation>
+@{
+    ViewBag.Title = "Πραγματογνωμοσύνες";
+}
+
+@*@Html.DevExpress().Button(settings =>
+{
+    settings.ClientSideEvents.Click = "function(s,e){ InvestigationGridView.AddNewRow(); }";
+    settings.Name = "ButtonNewInvestigation";
+    settings.Text = "Νέα Πραγματογνωμοσύνη";
+}).GetHtml()*@
+
+@using (Html.BeginForm())
+{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    @Html.AntiForgeryToken()
+
+    Html.RenderAction("InvestigationGridViewPartial", "Investigations", new { Area = "" });
+
+    Html.RenderPartial("UploadPopUpPartial");
+}

@@ -1,0 +1,227 @@
+﻿@using System.Configuration;
+@using EydapTickets.Helpers;
+@using EydapTickets.Models;
+
+@model IEnumerable<Investigation>
+
+@(Html.DevExpress().GridView<Investigation>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "InvestigationGridView";
+    settings.SettingsText.Title = "Πραγματογνωμοσύνες";
+
+    settings.CallbackRouteValues = new { Controller = "Investigations", Action = "InvestigationGridViewPartial" };
+
+    settings.Width = Unit.Percentage(100);
+
+    settings.SettingsPager.PageSize = 10;
+
+    settings.SettingsBehavior.AllowGroup = true;
+    settings.SettingsBehavior.AllowSort = true;
+    settings.Settings.ShowGroupPanel = false;
+    settings.SettingsCookies.StoreColumnsWidth = true;
+    settings.SettingsBehavior.AllowFocusedRow = false;
+    settings.SettingsBehavior.AllowSelectByRowClick = false;
+    settings.SettingsBehavior.AllowSelectSingleRowOnly = false;
+    settings.SettingsCookies.Enabled = true;
+    //settings.SettingsBehavior.EnableRowHotTrack = true;
+
+    settings.CommandColumn.Visible = true;
+    settings.CommandColumn.ShowEditButton = true;
+
+    settings.SettingsEditing.AddNewRowRouteValues = new { Area = "", Controller = "Investigations", Action = "AddNewInvestigationPartial" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Area = "", Controller = "Investigations", Action = "UpdateInvestigationPartial" };
+
+    settings.SettingsEditing.Mode = GridViewEditingMode.EditFormAndDisplayRow;
+
+    // DXCOMMENT: Specify the grid's key field name and define grid columns in accordance with data model fields
+    settings.Settings.ShowFilterRow = true;
+    settings.SettingsBehavior.ColumnResizeMode = ColumnResizeMode.NextColumn;
+    settings.SettingsDetail.ShowDetailRow = true;
+    settings.SettingsDetail.AllowOnlyOneMasterRowExpanded = true;
+
+    settings.KeyFieldName = "InvestigationsId";
+
+    settings.Columns.Add(m => m.InvestigationsId, column =>
+    {
+        column.ReadOnly = true;
+        column.Visible = false;
+    });
+
+    settings.Columns.Add(m => m.FakelosId, column =>
+    {
+        column.Caption = "Κωδικός Φακέλου";
+    });
+
+    settings.Columns.Add(m => m.ID1022, column =>
+    {
+        column.Caption = "Κωδικός 1022";
+        column.ReadOnly = false;
+    });
+
+    settings.Columns.Add(m => m.Fakelos_Municipality, column =>
+    {
+        column.Caption = "Δήμος";
+        column.ColumnType = MVCxGridViewColumnType.ComboBox;
+        column.EditorProperties().ComboBox(c =>
+        {
+            c.DataSource = IncidentProvider.GetMunicipalities();
+            c.TextField = "MunicipalityName";
+            c.ValueField = "MunicipalityName";
+            c.ValueType = typeof(string);
+
+            c.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+
+            c.EnableSynchronization = DefaultBoolean.False;
+            c.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+
+            c.ClientSideEvents.SelectedIndexChanged = "MunicipalitiesCombo_SelectedIndexChangedInvestigations";
+        });
+    });
+
+    settings.Columns.Add(m => m.Fakelos_Odos, column =>
+    {
+        column.Caption = "Οδός";
+        column.ColumnType = MVCxGridViewColumnType.ComboBox;
+        ComboBoxProperties propertiesComboBox = column.PropertiesEdit as ComboBoxProperties;
+        propertiesComboBox.DataSource = IncidentProvider.GetStreetsForMunicipality("");
+        propertiesComboBox.TextField = "Fakelos_Odos";
+        propertiesComboBox.ValueField = "Fakelos_Odos";
+        propertiesComboBox.ValueType = typeof(string);
+        column.SetEditItemTemplateContent(c =>
+        {
+            var rowValues = new
+            {
+                Municipality = c.Grid.GetRowValues<string>(c.Grid.EditingRowVisibleIndex, "Fakelos_Municipality"),
+                Street = c.Grid.GetRowValues<string>(c.Grid.EditingRowVisibleIndex, c.Column.FieldName)
+            };
+
+            Html.RenderAction("StreetsComboBoxPartial", "Investigations", new { Area = "", Municipality = rowValues.Municipality ?? string.Empty, SelectedValue = rowValues.Street ?? string.Empty });
+        });
+    });
+
+    settings.Columns.Add(m => m.Fakelos_Arithmos, column =>
+    {
+        column.Caption = "Αριθμός";
+    });
+
+    settings.Columns.Add(m => m.CreationDate, column =>
+    {
+        column.Caption = "Ημ/νια Δημιουργιας";
+        column.ReadOnly = true;
+        column.EditFormSettings.Visible = DefaultBoolean.False;
+    });
+
+    settings.Columns.Add(column =>
+    {
+        column.ColumnType = MVCxGridViewColumnType.ButtonEdit;
+        column.Name = "btn";
+        column.Caption = "Φόρμα Ανάθεσης";
+        column.EditFormSettings.Visible = DefaultBoolean.False;
+
+        column.SetDataItemTemplateContent(c =>
+        {
+            Html.DevExpress().Button(b =>
+            {
+                b.Name = "btn" + c.KeyValue;
+                b.Text = "Επεξ/σία Φόρμας";
+
+                var keyValue = c.KeyValue.ToString();
+                var baseUrl = ConfigurationManager.AppSettings.Get("InvestigationsFormsLink");
+                var targetUrl = string.Format(baseUrl + "Edit/{0}", keyValue);
+
+                b.ClientSideEvents.Click = "function(s, e) { window.open('" + targetUrl + "'); }";
+            }).Render();
+
+            Html.DevExpress().Button(b =>
+            {
+                b.Name = "btnprint" + c.KeyValue;
+                b.Text = "Εκτύπωση Φόρμας";
+
+                var keyValue = c.KeyValue.ToString();
+                var baseUrl = ConfigurationManager.AppSettings.Get("InvestigationsFormsLink");
+                var targetUrl = string.Format(baseUrl + "Details/{0}", keyValue);
+
+                b.ClientSideEvents.Click = "function(s, e) { window.open('" + targetUrl + "'); }";
+            }).Render();
+        });
+    });
+
+    settings.HtmlDataCellPrepared = (sender, e) =>
+    {
+        if (e.DataColumn.FieldName == "InvestigationsId")
+        {
+            e.Cell.Text = e.KeyValue.ToString().Substring(0, 5);
+        }
+    };
+
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+
+        if (e.Column.FieldName == "InvestigationsId")
+        {
+            e.Editor.Value = new Guid();
+        }
+    };
+
+    settings.SetDetailRowTemplateContent(c =>
+    {
+        Html.DevExpress().Button(settingsBtn =>
+        {
+            settingsBtn.Name = "upload" + c.KeyValue;
+            settingsBtn.Text = "Επισύναψη";
+            settingsBtn.ClientSideEvents.Click = string.Format("function(s, e) {{ window['InvestigationId'] ='{0}'; uploadpopup.Show();}}", c.KeyValue);
+        }).Render();
+
+        ViewBag.InvestigationsID = c.KeyValue;
+
+        Html.RenderAction("GetFiles", "Upload", new { aInvestigationId = ViewData["InvestigationsID"] });
+
+        //Html.DevExpress().RoundPanel(settingsRoundPanel =>
+        //{
+        //    settingsRoundPanel.Name = "roundPanel";
+        //    settingsRoundPanel.AllowCollapsingByHeaderClick = false;
+        //    settingsRoundPanel.ShowCollapseButton = false;
+        //    settingsRoundPanel.ShowHeader = true;
+        //    settingsRoundPanel.View = DevExpress.Web.View.Standard;
+        //    settingsRoundPanel.EnableAnimation = false;
+
+        //    //settingsRoundPanel.Width = 270;
+        //    settingsRoundPanel.Styles.Header.Font.Size = System.Web.UI.WebControls.FontUnit.Large;
+        //    settingsRoundPanel.HeaderText = "Εργασίες";
+        //    settingsRoundPanel.SetContent(() =>
+        //    {
+        //        //ViewContext.Writer.Write("<h1>Εργασίες<br /><br />");
+        //        Html.RenderPartial("DetailButtonStripView", ViewData);
+        //        Html.RenderAction("TasksPartialView", new { aTTId = c.KeyValue });
+        //    });
+        //}).GetHtml();
+    });
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            .AddNewRowCommand()
+            //.AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+    settings.ClientSideEvents.Init = @"
+        function(s,e) {
+            window.GlobalGridView_Init(s, e);
+            window.GlobalGridView_AdjustSize(s);
+        }";
+
+    settings.ClientSideEvents.EndCallback = "window.GlobalGridView_AdjustSize";
+
+}).SetEditErrorText(ViewBag.EditError).Bind(Model).GetHtml())

@@ -1,0 +1,49 @@
+﻿@using System.Collections.Generic;
+@using EydapTickets.Models;
+
+@model IEnumerable<EydapTickets.Models.RouteDepartment>
+
+<table>
+
+            @{
+                int count = 0;
+                foreach (RouteDepartment rd in Model)
+                {
+                    count++;
+                    if (count == 1)
+                    {
+                        @Html.Raw("<tr>");
+                    }
+                    if (count <= 2)
+                    {
+                        @Html.Raw("<td>");
+                    }
+                       @Html.DevExpress().CheckBox(settings1 =>
+                       {
+                           settings1.Name = "depcheckbox_" + rd.DepartmentId.ToString();
+                           settings1.Text = rd.DepartmentDescription;
+                           //settings1.Properties.ClientSideEvents.ValueChanged = "RoutingValueChanged";
+                           settings1.Checked = rd.IsRouted;
+                           settings1.Enabled = !rd.IsRouted;
+                           //settings1.Enabled = !rd.IsRouted || rd.DepartmentId == (int)ViewData["UserDepartment"];
+                           //settings1.Properties.ClientSideEvents.CheckedChanged = "function(s,e) {  }";
+                           settings1.PreRender = (sender, e) =>
+                           {
+
+                           };
+                       }).GetHtml()
+                    if (count <= 2)
+                    {
+                        @Html.Raw("</td>");
+                    }
+
+                    if (count == 2)
+                    {
+                        count = 0;
+                        @Html.Raw("</tr>");
+                    }
+                }
+
+            }
+</table>
+

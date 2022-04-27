@@ -1,0 +1,12 @@
+﻿@model string
+
+@Html.DevExpress().TextBox(settings =>
+{
+    settings.Name = "StreetNumber";
+
+    settings.Properties.ValidationSettings.Display = Display.Dynamic;
+    settings.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+    settings.ShowModelErrors = true;
+    settings.Width = Unit.Percentage(100);
+
+}).Bind(Model).GetHtml()

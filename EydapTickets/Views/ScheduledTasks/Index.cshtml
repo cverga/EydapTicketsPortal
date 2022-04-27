@@ -1,0 +1,11 @@
+﻿@model System.Collections.IEnumerable
+
+@Html.DevExpress().Button( settings =>
+{
+    settings.ClientSideEvents.Click = "function(s, e) { ScheduledTasksGrid.AddNewRow();}";
+    settings.Name = "ButtonNewScheduledTask";
+    settings.Text = "Εισαγωγή Νέας Προγραμματισμένης Εργασίας";
+}).GetHtml()
+
+@Html.Partial("ScheduledTasksPartialView", Model)
+@Html.Partial("PopUpsPartialView")

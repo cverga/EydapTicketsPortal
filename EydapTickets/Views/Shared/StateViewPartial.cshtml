@@ -1,0 +1,92 @@
+﻿@using EydapTickets.Models
+
+@model IEnumerable<StatusDefinition>
+
+@{
+    var statusValue = Model.FirstOrDefault(m => m.StatusDescription == (string) ViewData["IncidentState"]);
+}
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    settings.Name = "statecombo";
+    settings.Properties.ClientInstanceName = "statecombo";
+    settings.Width = 180;
+    //settings.SelectedIndex = 0;
+    //settings.CallbackRouteValues = new { Controller = "Editors", Action = "ComboBoxPartial" };
+    settings.Properties.CallbackPageSize = 15;
+    settings.Properties.TextField = "StatusDescription";
+    settings.Properties.ValueField = "StatusId";
+    settings.Properties.ValueType = typeof(int);
+    settings.Properties.ClearButton.DisplayMode = ClearButtonDisplayMode.OnHover;
+    //22.01.2018, Andreas Kasapleris, προσθήκη status 7 = 'Επαναδρομολόγηση'
+    settings.Properties.ClientSideEvents.SelectedIndexChanged = "StateComboChanged";
+
+}).BindList(Model).Bind(statusValue != null ? statusValue.StatusId : 1).GetHtml()
+
+@Html.DevExpress().Memo(settings =>
+{
+    //settings.Text = Model.Comments;
+    settings.Name = "StateComments";
+    settings.Properties.ValidationSettings.RequiredField.IsRequired = true;
+    settings.ClientVisible = false;
+    settings.Width = 400;
+    settings.Height = 120;
+
+}).GetHtml()
+
+@*@Html.DevExpress().ComboBox(settings =>
+{
+    settings.Name = "SectorCombo";
+    settings.CallbackRouteValues = new { Controller = "Home", Action = "GetMunicipalities" };
+    settings.Properties.ValueType = typeof(int);
+    settings.Properties.TextField = "Name";
+    settings.Properties.ValueField = "ID";
+    settings.Properties.CallbackPageSize = 20;
+    settings.Properties.ClientSideEvents.SelectedIndexChanged = "function(s, e) { City.PerformCallback(); }";
+
+}).GetHtml()*@
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    //
+    // your DevExpress ComboBox Control
+    //
+    settings.Name = "SectorCombo";
+    settings.Properties.ClientInstanceName = "SectorCombo";
+    settings.ClientVisible = false;
+    settings.Properties.ValidationSettings.RequiredField.IsRequired = true;
+    settings.Properties.TextField = "SectorDescription";
+    settings.Properties.ValueField = "SectorId";
+    settings.Properties.ValueType = typeof(int);
+    settings.Properties.ClientSideEvents.SelectedIndexChanged = "SectorComboChanged";
+
+}).GetHtml()
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    //
+    // your DevExpress ComboBox Control
+    //
+
+    settings.Name = "DepstsCombo";
+    settings.Properties.ClientInstanceName = "DepstsCombo";
+    settings.ClientVisible = false;
+    settings.Properties.ValidationSettings.RequiredField.IsRequired = true;
+    settings.Properties.TextField = "SectorDescription";
+    settings.Properties.ValueField = "SectorId";
+    settings.Properties.ValueType = typeof(string);
+
+    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.None;
+
+}).GetHtml()
+
+@*@Html.DevExpress().Panel(settings =>
+{
+    settings.Name = "ChangeSector";
+    settings.Collapsible = false;
+    settings.ClientVisible = true;
+    settings.SetContent(() =>
+    {
+        Html.RenderPartial("ChangeSectorPartialView", HeaderViewRenderMode.Full);
+    });
+}).GetHtml()*@

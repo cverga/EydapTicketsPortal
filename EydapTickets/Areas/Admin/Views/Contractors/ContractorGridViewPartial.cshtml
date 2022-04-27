@@ -1,0 +1,130 @@
+﻿@using System.Drawing.Printing
+@using EydapTickets.Helpers
+@using EydapTickets.Models;
+
+@model IEnumerable<Ergolavoi>
+
+@(Html.DevExpress().GridView<Ergolavoi>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "ContractorGridView";
+    settings.CallbackRouteValues = new { Controller = "Contractors", Action = "GridViewPartial" };
+
+    // Text configuration
+    settings.SettingsText.Title = "Εργολαβίες";
+
+    // Editing configuration
+    //settings.SettingsEditing.EditFormColumnCount = 2;
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Contractors", Action = "AddNewRow" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Contractors", Action = "UpdateRow" };
+    //settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Contractors", Action = "DeleteRow" };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "GlobalGridView_Init";
+    settings.ClientSideEvents.EndCallback = "GlobalGridView_EndCallback";
+
+    // Column configuration
+    {
+        settings.KeyFieldName = "ErgolavosID";
+
+        settings.Columns.Add(m => m.ErgolavosID, column =>
+        {
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(m => m.SectorId, column =>
+        {
+            column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+            column.Settings.FilterMode = ColumnFilterMode.DisplayText;
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = UsersDAL.GetSectors();
+                p.TextField = "SectorDescription";
+                p.ValueField = "SectorId";
+                p.ValueType = typeof(int);
+                p.DropDownStyle = DropDownStyle.DropDown;
+            });
+        });
+
+        settings.Columns.Add(m => m.ErgCode);
+
+        settings.Columns.Add(m => m.ErgName);
+
+        settings.Columns.Add(m => m.ErgolavosIsActive, column =>
+        {
+            column.EditorProperties().CheckBox(p =>
+            {
+                p.AllowGrayed = false;
+                p.ValueType = typeof(bool);
+                p.ValueChecked = true;
+                p.ValueUnchecked = false;
+                p.DisplayTextChecked = "Ενεργός";
+                p.DisplayTextUnchecked = "Μη Ενεργός";
+            });
+        });
+    }
+
+    // Initialize new row values
+    settings.InitNewRow = (s, e) =>
+    {
+        e.NewValues["ErgolavosIsActive"] = true;
+    };
+
+    // Initialize cell editor
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+
+        var gridView = (MVCxGridView)sender;
+        if (!gridView.IsNewRowEditing && gridView.IsEditing)
+        {
+            // Requirement: disallow changing SectorId after insertion
+            if (e.Column.FieldName == "SectorId")
+            {
+                e.Editor.ReadOnly = true;
+                e.Column.ReadOnly = true;
+            }
+        }
+    };
+
+    // Export Support
+    {
+        settings.SettingsExport.EnableClientSideExportAPI = true;
+        settings.SettingsExport.ExcelExportMode = DevExpress.Export.ExportType.DataAware;
+        settings.SettingsExport.PaperKind = PaperKind.A4;
+        settings.SettingsExport.Landscape = true;
+
+        settings.SettingsExport.FileName = "Εργολαβίες_" + DateTime.Now.ToShortDateString();
+        settings.SettingsExport.ReportHeader = "Εργολαβίες";
+        settings.SettingsExport.PageFooter.Center = " Ημερομηνία: " + DateTime.Now.ToString();
+
+        settings.SettingsExport.BeforeExport = (sender, e) =>
+        {
+            var gridView = (MVCxGridView)sender;
+
+            gridView.Columns["ErgolavosID"].Visible = false;
+            gridView.Columns["SectorId"].ExportWidth = 360;
+            gridView.Columns["ErgCode"].ExportWidth = 200;
+            gridView.Columns["ErgName"].ExportWidth = 360;
+            gridView.Columns["ErgolavosIsActive"].ExportWidth = 80;
+        };
+    }
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            .AddNewRowCommand()
+            .AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+}).SetEditErrorText(ViewData["EditError"] as string).Bind(Model).GetHtml())

@@ -1,0 +1,121 @@
+﻿@using System.Drawing.Printing
+@using EydapTickets.Helpers
+@using EydapTickets.Models;
+
+@model IEnumerable<DepartmentsModel>
+
+@(Html.DevExpress().GridView<DepartmentsModel>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "DepartmentGridView";
+    settings.CallbackRouteValues = new { Controller = "Departments", Action = "GridViewPartial" };
+
+    // Text configuration
+    settings.SettingsText.Title = "Τμήματα";
+
+    // Editing configuration
+    //settings.SettingsEditing.EditFormColumnCount = 2;
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Departments", Action = "AddNewRow" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Departments", Action = "UpdateRow" };
+    //settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Departments", Action = "DeleteRow" };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "GlobalGridView_Init";
+    settings.ClientSideEvents.EndCallback = "GlobalGridView_EndCallback";
+
+    // Column configuration
+    {
+        settings.KeyFieldName = "DepartmentId";
+
+        settings.Columns.Add(m => m.DepartmentId, column =>
+        {
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(m => m.SectorId, column =>
+        {
+            column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+            column.Settings.FilterMode = ColumnFilterMode.DisplayText;
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = UsersDAL.GetSectors();
+                p.TextField = "SectorDescription";
+                p.ValueField = "SectorId";
+                p.ValueType = typeof(int);
+                p.DropDownStyle = DropDownStyle.DropDown;
+            });
+        });
+
+        settings.Columns.Add(m => m.DepartmentCode);
+
+        settings.Columns.Add(m => m.DepartmentName);
+
+        settings.Columns.Add(m => m.FriendlyName);
+    }
+
+    // Initialize cell editor
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+
+        var gridView = (MVCxGridView)sender;
+        if (gridView.IsEditing && !gridView.IsNewRowEditing)
+        {
+            // Requirement: disallow changing SectorId after insertion
+            if (e.Column.FieldName == "SectorId")
+            {
+                e.Editor.ReadOnly = true;
+                e.Column.ReadOnly = true;
+            }
+
+            // Requirement: disallow changing DepartmentName after insertion
+            if (e.Column.FieldName == "DepartmentName")
+            {
+                e.Editor.ReadOnly = true;
+                e.Column.ReadOnly = true;
+            }
+        }
+    };
+
+    // Export Support
+    {
+        settings.SettingsExport.EnableClientSideExportAPI = true;
+        settings.SettingsExport.ExcelExportMode = DevExpress.Export.ExportType.DataAware;
+        settings.SettingsExport.PaperKind = PaperKind.A4;
+        settings.SettingsExport.Landscape = true;
+
+        settings.SettingsExport.FileName = "Τμήματα_" + DateTime.Now.ToShortDateString();
+        settings.SettingsExport.ReportHeader = "Τμήματα";
+        settings.SettingsExport.PageFooter.Center = " Ημερομηνία: " + DateTime.Now.ToString();
+
+        settings.SettingsExport.BeforeExport = (sender, e) =>
+        {
+            var gridView = (MVCxGridView)sender;
+
+            gridView.Columns["DepartmentId"].Visible = false;
+            gridView.Columns["SectorId"].ExportWidth = 360;
+            gridView.Columns["DepartmentCode"].ExportWidth = 200;
+            gridView.Columns["DepartmentName"].ExportWidth = 360;
+            gridView.Columns["FriendlyName"].ExportWidth = 360;
+        };
+    }
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            //.AddNewRowCommand()
+            .AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+}).SetEditErrorText(ViewData["EditError"] as string).Bind(Model).GetHtml())

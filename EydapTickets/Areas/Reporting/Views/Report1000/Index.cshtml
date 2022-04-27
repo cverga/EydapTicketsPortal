@@ -1,0 +1,78 @@
+﻿@using EydapTickets.Areas.Reporting.Models
+
+@model ReportCommonSearchModel
+
+@{
+    ViewBag.Title = "Καρτέλες Ανάδρασής Βλάβών Από Backend";
+    ViewBag.CriteriaModel = Model;
+    ViewBag.ShowMainButtonStrip = false;
+
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+}
+
+<script type="text/javascript">
+    (function ( $ ) {
+        'use strict';
+
+        window.ProvisionsSplitter_Init = function (s, e) {
+            var splitter = s;
+            $(window).resize($.throttle(100, function() {
+                ProvisionsSplitter_AdjustSize(splitter);
+            }));
+            ProvisionsSplitter_AdjustSize(splitter);
+        }
+
+        window.ProvisionsSplitter_AdjustSize = function(splitter) {
+
+            // Start with the client height
+            var targetHeight = document.documentElement.clientHeight;
+
+            // Account for header pane
+            var headerPane = window.HeaderPane;
+            if (typeof(headerPane) !== 'undefined') {
+                targetHeight -= headerPane.GetHeight();
+            }
+
+            // Account for criteria panel
+            var criteriaPanel = window.CriteriaPanel;
+            if (typeof(criteriaPanel) !== "undefined") {
+                targetHeight -= criteriaPanel.GetHeight();
+            }
+
+            // Update height if changed
+            var originalHeight = splitter.GetHeight();
+            if  (originalHeight !== targetHeight) {
+                splitter.SetHeight(-1); // Use this to force the update
+                splitter.SetHeight(targetHeight);
+            }
+        }
+
+    }( jQuery ));
+</script>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    @Html.DevExpress().RoundPanel(settings =>
+    {
+        settings.Name = "CriteriaPanel";
+
+        settings.AllowCollapsingByHeaderClick = false;
+        settings.ShowCollapseButton = true;
+        settings.ShowHeader = true;
+        settings.View = DevExpress.Web.View.Standard;
+        settings.EnableAnimation = false;
+        settings.Width = Unit.Percentage(100);
+        settings.HeaderText = ViewBag.Title;
+
+        settings.SetContent(() =>
+        {
+            Html.RenderPartial("_CriteriaFormLayoutPartial", Model);
+        });
+
+    }).GetHtml()
+
+    Html.RenderAction("WebDocViewerPartial", Model);
+}

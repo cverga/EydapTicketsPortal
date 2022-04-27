@@ -1,0 +1,26 @@
+﻿@model SelectList
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    settings.Name = "Municipality";
+    settings.CallbackRouteValues = new { Area = "", Controller = "Migration", Action = "MunicipalityComboBoxPartial" };
+
+    settings.Properties.CallbackPageSize = 100;
+    settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+    settings.Properties.ValidationSettings.Display = Display.Dynamic;
+    settings.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+    settings.ShowModelErrors = true;
+    settings.Width = Unit.Percentage(100);
+
+    settings.Properties.ClientSideEvents.SelectedIndexChanged = @"
+        function(s, e) {
+            StreetName.PerformCallback();
+        }";
+
+    settings.Properties.ClientSideEvents.BeginCallback = @"
+        function(s, e) {
+            e.customArgs.Sector = Sector.GetValue(); 
+        }";
+
+}).BindList(Model.Items).Bind(Model.SelectedValue).GetHtml()

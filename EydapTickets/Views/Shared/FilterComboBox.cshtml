@@ -1,0 +1,32 @@
+﻿
+@Html.DevExpress().ComboBox(settings =>
+{
+    //
+    // your DevExpress ComboBox Control
+    //
+    settings.CallbackRouteValues = new { Controller = "Home", Action = "StreetsComboBoxPartial" };
+    settings.Name = "StreetName";
+    settings.Properties.ClientInstanceName = "StreetNameIncidents";
+    settings.Properties.TextField = "Text";
+    settings.Properties.ValueField = "Value";
+    settings.Properties.ValueType = typeof(string);
+
+    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.None;
+
+    settings.Properties.ClientSideEvents.BeginCallback = "function(s,e){ debugger; e.customArgs['SelectedMunicipality'] = Municipality.GetText();}";
+
+}).BindList(ViewData["Streets"]).GetHtml()
+@*BindList(ViewData["StreetName"]).Bind(ViewData["StreetName"]).GetHtml()*@
+
+
+
+
+
+
+
+
+
+
+
+
+

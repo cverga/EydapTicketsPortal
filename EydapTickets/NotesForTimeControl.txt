@@ -1,0 +1,9 @@
+﻿In order to use the TimeField:
+
+1. ValidationJSScript = 'function CustomValidate[[FIELDNAME]]() { var isValid = true; var control = $("#[[FIELDNAME]]"); var patt = new RegExp("^([01]?[0-9]|2[0-3]):[0-5][0-9]$"); isValid = patt.test(control.val()); if (!isValid) return "Σωστή μορφή ώρας HH:mm (24H)."; return "";}'
+2. Field on db must be datetime
+3. we need step 1 in order to override default jQuery validation
+4. The field on CategoriesFields must have
+	a. ControlType in View,Edit,New of value 'time'
+	b. FieldExtension1 HH:mm
+	c. FieldExtension2 {0:HH:mm}

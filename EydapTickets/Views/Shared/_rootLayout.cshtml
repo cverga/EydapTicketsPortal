@@ -1,0 +1,92 @@
+﻿@using DM.App.Library.Core
+@using EydapTickets.Models
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0" />
+        <title>@ViewBag.Title</title>
+        <link href="@Url.Content("~/favicon.ico")" rel="shortcut icon" type="image/x-icon" />
+
+        @Html.DevExpress().GetStyleSheets(
+            new StyleSheet { ExtensionSuite = ExtensionSuite.NavigationAndLayout, Theme = "Office365" },
+            new StyleSheet { ExtensionSuite = ExtensionSuite.Editors, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.HtmlEditor, Theme = "Office365" },
+            new StyleSheet { ExtensionSuite = ExtensionSuite.GridView, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.PivotGrid, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.Chart, Theme = "Office365" },
+            new StyleSheet { ExtensionSuite = ExtensionSuite.Report, Theme = "Office365" }
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.Scheduler, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.TreeList, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.RichEdit, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.Spreadsheet, Theme = "Office365" },
+            //new StyleSheet { ExtensionSuite = ExtensionSuite.SpellChecker, Theme = "Office365" },
+        )
+
+        @{ Html.RenderPartial("_ApplicationInsightsScript"); }
+
+        @Html.DevExpress().GetScripts(
+            new Script { ExtensionSuite = ExtensionSuite.NavigationAndLayout },
+            //new Script { ExtensionSuite = ExtensionSuite.HtmlEditor },
+            new Script { ExtensionSuite = ExtensionSuite.GridView },
+            // 23.03.2018, Andreas Kasapleris, added to support MVC Extentions Reporting System
+            new Script { ExtensionSuite = ExtensionSuite.Editors },
+            new Script { ExtensionSuite = ExtensionSuite.Report }
+            //new Script { ExtensionSuite = ExtensionSuite.PivotGrid },
+            //new Script { ExtensionSuite = ExtensionSuite.Editors },
+            //new Script { ExtensionSuite = ExtensionSuite.Chart },
+            //new Script { ExtensionSuite = ExtensionSuite.Report },
+            //new Script { ExtensionSuite = ExtensionSuite.Scheduler },
+            //new Script { ExtensionSuite = ExtensionSuite.TreeList },
+            //new Script { ExtensionSuite = ExtensionSuite.RichEdit },
+            //new Script { ExtensionSuite = ExtensionSuite.Spreadsheet },
+            //new Script { ExtensionSuite = ExtensionSuite.SpellChecker }
+        )
+
+        @Scripts.Render("~/Bundles/jQueryExtensions.Bundle")
+        @Styles.Render("~/Bundles/MainStyle.Bundle")
+        @RenderSection("HeadScripts", required:false)
+    </head>
+    <body class="defaultFont">
+        @Html.DevExpress().Panel(settings =>
+        {
+            settings.Name = "HeaderPane";
+            settings.FixedPosition = PanelFixedPosition.WindowTop;
+            settings.Collapsible = true;
+            settings.SettingsAdaptivity.CollapseAtWindowInnerWidth = 500;
+            settings.ControlStyle.CssClass = "headerPane";
+            settings.Styles.Panel.CssClass = "panel";
+            settings.Styles.ExpandedPanel.CssClass = "expandedPanel";
+            settings.Styles.ExpandBar.CssClass = "bar";
+            settings.SetContent(() =>
+            {
+                Html.RenderPartial("HeaderPartialView", HeaderViewRenderMode.Full);
+            });
+            settings.SetExpandBarTemplateContent((c) =>
+            {
+                Html.RenderPartial("HeaderPartialView", HeaderViewRenderMode.Title);
+            });
+        }).GetHtml()
+
+        <script type="text/javascript">
+            function updateHeaderMenuOrientation() {
+                var orientation = HeaderPane.IsExpandable() ? 'Vertical' : 'Horizontal';
+                if (orientation !== HeaderMenu.GetOrientation())
+                    HeaderMenu.SetOrientation(orientation);
+            }
+            var collection = ASPxClientControl.GetControlCollection();
+            //collection.ControlsInitialized.AddHandler(updateHeaderMenuOrientation);
+            //collection.BrowserWindowResized.AddHandler(updateHeaderMenuOrientation);
+        </script>
+
+        @Scripts.Render("~/Bundles/GlobalGridView.Bundle")
+
+        @Html.DevExpress().Panel(settings =>
+        {
+            settings.Name = "MainPane";
+            settings.ControlStyle.CssClass = "mainContentPane";
+            settings.SetContent(RenderBody().ToHtmlString());
+        }).GetHtml()
+
+    </body>
+</html>

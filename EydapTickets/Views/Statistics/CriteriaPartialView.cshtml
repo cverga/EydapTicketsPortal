@@ -1,0 +1,27 @@
+﻿@using EydapTickets.Models
+@model StatisticsCreteriaModel
+
+<div style="padding: 10px 0px 10px 0px; ">
+    <table align="center">
+        <tr>
+            <td align="center">
+                @Html.DevExpress().RoundPanel(settings =>
+                {
+                    settings.Name = "StatisticsPanel";
+                    settings.Name = "roundPanel";
+                    settings.AllowCollapsingByHeaderClick = false;
+                    settings.ShowCollapseButton = false;
+                    settings.ShowHeader = true;
+                    settings.View = DevExpress.Web.View.GroupBox;
+                    settings.EnableAnimation = false;
+                    settings.HeaderText = "ΚΡΙΤΗΡΙΑ ΕΠΙΛΟΓΗΣ ΣΤΑΤΙΣΤΙΚΩΝ";
+                    //settings.Styles.Header.
+                    settings.SetContent(() =>
+                    {
+                        @Html.RenderPartial("SearchPanel", Model);
+                    });
+            }).GetHtml()
+            </td>
+        </tr>
+    </table>
+</div>

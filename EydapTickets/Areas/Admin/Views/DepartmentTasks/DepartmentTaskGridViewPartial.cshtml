@@ -1,0 +1,164 @@
+﻿@using System.Drawing.Printing
+@using EydapTickets.Helpers
+@using EydapTickets.Models;
+
+@model IEnumerable<DepartmentsToTasksModel>
+
+@(Html.DevExpress().GridView<DepartmentsToTasksModel>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "DepartmentTaskGridView";
+    settings.CallbackRouteValues = new { Controller = "DepartmentTasks", Action = "GridViewPartial" };
+
+    // Text configuration
+    settings.SettingsText.Title = "Εργασίες Τμημάτων";
+
+    // Editing configuration
+    settings.SettingsEditing.EditFormColumnCount = 2;
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "DepartmentTasks", Action = "AddNewRow" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "DepartmentTasks", Action = "UpdateRow" };
+    // settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "DepartmentTasks", Action = "DeleteRow" };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "GlobalGridView_Init";
+    settings.ClientSideEvents.EndCallback = "GlobalGridView_EndCallback";
+
+    // Column configuration
+    {
+        settings.KeyFieldName = "ID";
+
+        settings.Columns.Add(m => m.ID, column =>
+        {
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(m => m.DDTSectorID, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = UsersDAL.GetSectors();
+                p.TextField = "SectorDescription";
+                p.ValueField = "SectorId";
+                p.ValueType = typeof(int);
+
+                p.ValidationSettings.RequiredField.IsRequired = true;
+                p.EnableSynchronization = DefaultBoolean.False;
+                p.IncrementalFilteringMode = IncrementalFilteringMode.None;
+
+                p.ClientSideEvents.SelectedIndexChanged = @"
+                    function(s, e) {
+                        var editorDepartmentId = DepartmentTaskGridView.GetEditor('DDTDepartmentID');
+                        if (editorDepartmentId) {
+                            editorDepartmentId.PerformCallback();
+                        }
+                    }
+                ";
+            });
+        });
+
+        settings.Columns.Add(m => m.DDTDepartmentID, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = DepartmentsDAL.GetAllDepartments();
+                p.TextField = "DepartmentName";
+                p.ValueField = "DepartmentId";
+                p.ValueType = typeof(int);
+                p.CallbackRouteValues = new { Controller = "Sectors", Action = "GetDepartments" };
+
+                p.ClientSideEvents.BeginCallback = @"
+                    function(s, e) {
+                        var editorSectorId = DepartmentTaskGridView.GetEditor('DDTSectorID');
+                        if (editorSectorId) {
+                            e.customArgs['sectorId'] = editorSectorId.GetValue();
+                        }
+                    }";
+                p.ValidationSettings.RequiredField.IsRequired = true;
+            });
+        });
+
+        settings.Columns.Add(m => m.DDTTaskId, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = TaskTypeProvider.GetAllTaskTypes();
+                p.TextField = "Description";
+                p.ValueField = "Id";
+                p.ValueType = typeof(int);
+
+                p.ValidationSettings.RequiredField.IsRequired = true;
+            });
+        });
+
+        settings.Columns.Add(m => m.DDTIsActive, column =>
+        {
+            column.EditorProperties().CheckBox(p =>
+            {
+                p.AllowGrayed = false;
+                p.ValueType = typeof(int);
+                p.ValueChecked = 1;
+                p.ValueUnchecked = 0;
+                p.DisplayTextChecked = "Ναί";
+                p.DisplayTextUnchecked = "Όχι";
+            });
+        });
+    }
+
+    // Initialize cell editor
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+
+        var gridView = (MVCxGridView)sender;
+
+        // Requirement: Filter departments on sector.
+        if (e.Column.FieldName == "DDTDepartmentID")
+        {
+            var sectorId = gridView.GetRowValues(gridView.EditingRowVisibleIndex, "DDTSectorID") as int?;
+            var cmb = (MVCxComboBox)e.Editor;
+            cmb.DataSource = UsersDAL.GetDepartmentsForSector(sectorId ?? -1);
+            cmb.DataBind();
+        }
+    };
+
+    // Export configuration
+    {
+        settings.SettingsExport.EnableClientSideExportAPI = true;
+        settings.SettingsExport.ExcelExportMode = DevExpress.Export.ExportType.DataAware;
+        settings.SettingsExport.PaperKind = PaperKind.A4;
+        settings.SettingsExport.Landscape = true;
+
+        settings.SettingsExport.FileName = "Εργασίες_Τμήμάτων_" + DateTime.Now.ToShortDateString();
+        settings.SettingsExport.ReportHeader = "Εργασίες Τμημάτων";
+        settings.SettingsExport.PageFooter.Center = " Ημερομηνία: " + DateTime.Now.ToString();
+
+        settings.SettingsExport.BeforeExport = (sender, e) =>
+        {
+            var gridView = (MVCxGridView)sender;
+
+            gridView.Columns["ID"].Visible = false;
+            gridView.Columns["DDTSectorID"].ExportWidth = 360;
+            gridView.Columns["DDTDepartmentID"].ExportWidth = 360;
+            gridView.Columns["DDTTaskId"].ExportWidth = 360;
+            gridView.Columns["DDTIsActive"].ExportWidth = 100;
+        };
+    }
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            .AddNewRowCommand()
+            .AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+}).SetEditErrorText(ViewData["EditError"] as string).Bind(Model).GetHtml())

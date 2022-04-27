@@ -1,0 +1,23 @@
+﻿
+@Html.DevExpress().ComboBox(settings =>
+{
+    settings.Name = "Odos2";
+    settings.CallbackRouteValues = new { Controller = "NewScheduledTasks", Action = "Odos2ComboBoxPartial" };
+
+    settings.Properties.TextField = "StreetName";
+    settings.Properties.ValueField = "StreetName";
+    settings.Properties.ValueType = typeof(string);
+
+    settings.Properties.CallbackPageSize = 10;
+    settings.Properties.ClearButton.DisplayMode = ClearButtonDisplayMode.Always;
+    settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+    settings.Properties.ValidationSettings.Display = Display.Dynamic;
+    settings.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+    settings.ShowModelErrors = true;
+    settings.Width = Unit.Percentage(100);
+
+    settings.Properties.EnableSynchronization = DefaultBoolean.False;
+    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+    settings.Properties.ClientSideEvents.BeginCallback = "Odos2ComboNewScheduledTasks_BeginCallback";
+
+}).BindList(ViewData["Streets"]).Bind(ViewData["Street"]).GetHtml()

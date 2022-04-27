@@ -1,0 +1,109 @@
+﻿@using System.Drawing
+@using EydapTickets.Models
+
+@model IEnumerable<RouteDepartment>
+
+<style type="text/css">
+    .routingButtonsContainer
+    {
+        padding: 12px 0;
+        float: right;
+    }
+    .routingButton.routingRoute
+    .routingButton.routingCancel
+    {
+        margin-bottom: 12px;
+    }
+    .routingButton.routingCancel
+    {
+        margin-left: 8px;
+    }
+    .routingClearPaddings
+    {
+        padding: 0;
+    }
+</style>
+
+@Html.DevExpress().PopupControl(settings =>
+{
+    settings.Name = "routepopup";
+    settings.HeaderText = "Τμήματα για Δρομολόγηση Βλάβης";
+
+    settings.MinWidth = 700;
+    settings.MaxWidth = 800;
+    settings.MinHeight = 400;
+    settings.MaxHeight = 800;
+
+    settings.CloseAction = CloseAction.CloseButton;
+    settings.ShowCloseButton = true;
+    settings.ShowFooter = true;
+    settings.ShowHeader = true;
+
+    settings.PopupHorizontalAlign = PopupHorizontalAlign.WindowCenter;
+    settings.PopupVerticalAlign = PopupVerticalAlign.WindowCenter;
+    settings.PopupAnimationType = AnimationType.None;
+    settings.AllowDragging = true;
+
+    settings.SetContent(() =>
+    {
+        ViewContext.Writer.Write("<div id=\"popupdiv\"></div>");
+    });
+
+    settings.SetFooterTemplateContent(c => {
+        Html.DevExpress().FormLayout(fl => {
+            fl.Name = "footerFormLayout";
+            fl.Width = Unit.Percentage(100);
+            fl.ControlStyle.CssClass = "routingClearPaddings";
+            fl.Styles.LayoutItem.CssClass = "routingClearPaddings";
+            fl.Styles.LayoutGroup.CssClass = "routingClearPaddings";
+            fl.Items.AddGroupItem(g => {
+                g.GroupBoxDecoration = GroupBoxDecoration.None;
+                g.Paddings.Padding = Unit.Pixel(0);
+                g.Items.Add(i => {
+                    i.ShowCaption = DefaultBoolean.False;
+                }).SetNestedContent(() => {
+                    ViewContext.Writer.Write("<div class='routingButtonsContainer'>");
+
+                    Html.DevExpress().Button(b =>
+                    {
+                        b.Name = "RoutingRoute";
+                        b.Text = "Δρομολόγηση";
+                        b.ControlStyle.CssClass = "routingButton routingRoute";
+                        b.UseSubmitBehavior = false;
+                        b.ClientSideEvents.Click = "FindRoutedDepartments";
+                    }).Render();
+
+                    //Html.DevExpress().Button(b =>
+                    //{
+                    //    b.Name = "RoutingReject";
+                    //    b.Text = "Ακύρωση Βλάβης";
+                    //    b.ControlStyle.CssClass = "routingButton routingReject redButton";
+                    //    b.UseSubmitBehavior = false;
+                    //    b.ClientSideEvents.Click = @"
+                    //        function(s, e) {
+                    //            if (confirm('Θέλετε να ακυρωθεί η βλάβη ?')){
+                    //                RejectTicket(window['RTT']);
+                    //            }
+                    //        }";
+                    //}).Render();
+
+                    Html.DevExpress().Button(b =>
+                    {
+                        b.Name = "RoutingCancel";
+                        b.Text = "Ακύρωση Δρομολόγησης";
+                        b.ControlStyle.CssClass = "routingButton routingCancel redButton";
+                        b.UseSubmitBehavior = false;
+                        b.ClientSideEvents.Click = @"
+                            function(s, e) {
+                                if (confirm('Θέλετε να ακυρωθεί η Δρομολόγηση στο τμήμα σας ?')){
+                                    UnrouteTicket(window['RTT']);
+                                }
+                            }";
+                    }).Render();
+
+                    ViewContext.Writer.Write("</div>");
+                });
+            });
+        }).Render();
+    });
+}).GetHtml()

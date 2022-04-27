@@ -1,0 +1,53 @@
+@using EydapTickets.Models
+@using Newtonsoft.Json
+
+@using (Html.BeginForm())
+{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    @Html.AntiForgeryToken();
+
+    Html.RenderPartial("PopUpsPartialView");
+
+    if ((IncidentGridViewMode)ViewBag.ViewMode == IncidentGridViewMode.Open)
+    {
+        <script type="text/javascript">
+            AppContext = AppContext || {};
+            AppContext.IsExpanded = false;
+            AppContext.IncidentId = null;
+            setInterval(function() {
+                // Verify we are not currently editing.
+                if (AppContext.IncidentId === null) {
+                    if (typeof(IncidentGridView) !== "undefined") {
+                        if (!IncidentGridView.InCallback()) {
+                            IncidentGridView.Refresh();
+                        }
+                    }
+                }
+            },
+            1000 * 60 * 5);
+        </script>
+    }
+
+    Html.RenderAction("GridViewPartial", "Incidents", new { Area = "", ViewBag.ViewMode });
+}
+
+@section HeadScripts {
+    @{
+        var appContext = new
+        {
+            ViewBag.IsAdmin,
+            ViewBag.DepartmentId,
+            ViewBag.PrintIncidentUrl,
+            ViewBag.LocateIncidentUrl
+        };
+    }
+    <script type="text/javascript">
+        AppContext = JSON.parse('@Html.Raw(JsonConvert.SerializeObject(appContext))');
+    </script>
+    @Scripts.Render(
+            "~/Bundles/IncidentGridView.Bundle",
+            "~/Bundles/TaskGridView.Bundle",
+            "~/Bundles/AssignmentGridView.Bundle")
+}

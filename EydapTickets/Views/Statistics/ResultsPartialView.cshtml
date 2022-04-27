@@ -1,0 +1,96 @@
+﻿@* DXCOMMENT: Configure GridView *@
+
+@using EydapTickets.Models;
+@using System.Diagnostics;
+
+@model BasicStatisticsModel
+@{
+
+    //Html.EnableClientValidation();
+    //Html.EnableUnobtrusiveJavaScript();
+
+    GridViewExtension grid = Html.DevExpress().GridView(
+    settings =>
+    {
+        settings.Name = "StatisticsGridView";
+        settings.CallbackRouteValues = new { Controller = "Statistics", Action = "GridCallback", aMunicipality = ViewBag.Municipality, aStreetName = ViewBag.StreetName, aFrom = ViewBag.FromDate, aTo = ViewBag.ToDate, aStreetNumber = ViewBag.StreetNumber, aReport = ViewBag.ReportType, aSector = ViewBag.Sector };
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+        settings.SettingsPager.PageSize = 15;
+        settings.ControlStyle.Paddings.PaddingLeft = System.Web.UI.WebControls.Unit.Pixel(100);
+        settings.ControlStyle.Paddings.PaddingRight = System.Web.UI.WebControls.Unit.Pixel(100);
+        settings.Width = System.Web.UI.WebControls.Unit.Pixel(1000);
+        settings.ControlStyle.Border.BorderWidth = System.Web.UI.WebControls.Unit.Pixel(0);
+        settings.ControlStyle.BorderBottom.BorderWidth = System.Web.UI.WebControls.Unit.Pixel(1);
+        settings.SettingsBehavior.AllowGroup = true;
+        settings.SettingsBehavior.AllowSort = true;
+        settings.Settings.ShowGroupPanel = false;
+        settings.SettingsCommandButton.UpdateButton.Text = "Καταχώρηση";
+        settings.SettingsCommandButton.CancelButton.Text = "Ακύρωση";
+        settings.SettingsCookies.StoreColumnsWidth = true;
+        settings.SettingsBehavior.AllowFocusedRow = false;
+        settings.SettingsBehavior.AllowSelectByRowClick = false;
+        settings.SettingsBehavior.AllowSelectSingleRowOnly = false;
+        settings.Settings.ShowGroupPanel = false;
+        settings.SettingsCookies.Enabled = false;
+        settings.SettingsBehavior.ColumnResizeMode = ColumnResizeMode.NextColumn;
+        if (Model.Descriptions != null)
+        {
+            for (int n = 0; n < Model.Descriptions.Count; n++)
+            {
+                switch (n)
+                {
+                    case 0:
+                        settings.Columns.Add(column =>
+                        {
+                            column.FieldName = "ONE";
+                            column.Caption = Model.Descriptions[n];
+                            column.ReadOnly = true;
+                            column.Visible = true;
+                        });
+                        break;
+                    case 1:
+                        settings.Columns.Add(column =>
+                        {
+                            column.FieldName = "TWO";
+                            column.Caption = Model.Descriptions[n];
+                            column.ReadOnly = true;
+                            column.Visible = true;
+                        });
+                        break;
+                    case 2:
+                        settings.Columns.Add(column =>
+                        {
+                            column.FieldName = "THREE";
+                            column.Caption = Model.Descriptions[n];
+                            column.ReadOnly = true;
+                            column.Visible = true;
+                        });
+                        break;
+                    case 3:
+                        settings.Columns.Add(column =>
+                        {
+                            column.FieldName = "FOUR";
+                            column.Caption = Model.Descriptions[n];
+                            column.ReadOnly = true;
+                            column.Visible = true;
+                        });
+                        break;
+                    case 4:
+                        settings.Columns.Add(column =>
+                        {
+                            column.FieldName = "FIVE";
+                            column.Caption = Model.Descriptions[n];
+                            column.ReadOnly = true;
+                            column.Visible = true;
+                        });
+                        break;
+                }
+            }
+        }
+    });
+}
+@grid.Bind(Model.Values).GetHtml()
+
+
+
+

@@ -1,0 +1,54 @@
+﻿
+
+
+<script type="text/javascript">
+    function filter(e)
+    {
+        var now = new Date();
+        now.setDate(now.getDate() - e);
+        debugger;
+
+        var date = now.toDateString("el-GR");
+        var filterCondition = "[DateCreated] >= '" + date + "'";
+        //var filterCondition = "";
+        IncidentGridView.ApplyFilter(filterCondition);
+    }
+</script>
+
+
+@Html.DevExpress().Button(
+        settings =>
+        {
+            settings.ClientSideEvents.Click = "function(s, e) { filter(1);}";
+            settings.Name = "Hours24";
+            settings.Text = "72 ΩΡΕΣ";
+            settings.UseSubmitBehavior = false;
+            settings.Styles.Style.Font.Size = System.Web.UI.WebControls.FontUnit.Medium;
+            //settings.Styles.Style.CssClass = "padding";
+        }
+).GetHtml()
+
+@Html.DevExpress().Button(
+        settings =>
+        {
+            settings.ClientSideEvents.Click = "function(s, e) { filter(2);}";
+            settings.Name = "Hours48";
+            settings.Text = "48 ΩΡΕΣ";
+            settings.UseSubmitBehavior = false;
+            settings.Styles.Style.Font.Size = System.Web.UI.WebControls.FontUnit.Medium;
+            //settings.Styles.Style.CssClass = "padding";
+        }
+).GetHtml()
+
+@Html.DevExpress().Button(
+        settings =>
+        {
+            settings.ClientSideEvents.Click = "function(s, e) { filter(3);}";
+            settings.Name = "Hours72";
+            settings.Text = "72 ΩΡΕΣ";
+            settings.UseSubmitBehavior = false;
+            settings.Styles.Style.Font.Size = System.Web.UI.WebControls.FontUnit.Medium;
+            //settings.Styles.Style.CssClass = "padding";
+        }
+).GetHtml()
+

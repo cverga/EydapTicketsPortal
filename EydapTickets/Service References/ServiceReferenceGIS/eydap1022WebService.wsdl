@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:eydap1022" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="eydap1022WebService" targetNamespace="urn:eydap1022" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import schemaLocation="http://gis-ws1022-as:8080/eydap1022WS/eydap1022Port?xsd=1" namespace="urn:eydap1022" />
+    </xsd:schema>
+  </types>
+  <message name="getMunicipalities">
+    <part name="parameters" element="tns:getMunicipalitiesRequest" />
+  </message>
+  <message name="getMunicipalitiesResponse">
+    <part name="parameters" element="tns:getMunicipalitiesResponse" />
+  </message>
+  <message name="FaultsMessageFaultMessage">
+    <part name="fault" element="tns:FaultsMessageFault" />
+  </message>
+  <message name="getStreets">
+    <part name="parameters" element="tns:getStreetsRequest" />
+  </message>
+  <message name="getStreetsResponse">
+    <part name="parameters" element="tns:getStreetsResponse" />
+  </message>
+  <message name="getAddressCoordinate">
+    <part name="parameters" element="tns:getAddressCoordinateRequest" />
+  </message>
+  <message name="getAddressCoordinateResponse">
+    <part name="parameters" element="tns:getAddressCoordinateResponse" />
+  </message>
+  <message name="getCrossCoordinate">
+    <part name="parameters" element="tns:getCrossCoordinateRequest" />
+  </message>
+  <message name="getCrossCoordinateResponse">
+    <part name="parameters" element="tns:getCrossCoordinateResponse" />
+  </message>
+  <message name="getWaterDetails">
+    <part name="parameters" element="tns:getWaterDetailsRequest" />
+  </message>
+  <message name="getWaterDetailsResponse">
+    <part name="parameters" element="tns:getWaterDetailsResponse" />
+  </message>
+  <message name="getDepartments">
+    <part name="parameters" element="tns:getDepartmentsRequest" />
+  </message>
+  <message name="getDepartmentsResponse">
+    <part name="parameters" element="tns:getDepartmentsResponse" />
+  </message>
+  <portType name="eydap1022PortType">
+    <operation name="getMunicipalities">
+      <input message="tns:getMunicipalities" />
+      <output message="tns:getMunicipalitiesResponse" />
+      <fault name="FaultsMessageFaultMessage" message="tns:FaultsMessageFaultMessage" />
+    </operation>
+    <operation name="getStreets">
+      <input message="tns:getStreets" />
+      <output message="tns:getStreetsResponse" />
+      <fault name="FaultsMessageFaultMessage" message="tns:FaultsMessageFaultMessage" />
+    </operation>
+    <operation name="getAddressCoordinate">
+      <input message="tns:getAddressCoordinate" />
+      <output message="tns:getAddressCoordinateResponse" />
+      <fault name="FaultsMessageFaultMessage" message="tns:FaultsMessageFaultMessage" />
+    </operation>
+    <operation name="getCrossCoordinate">
+      <input message="tns:getCrossCoordinate" />
+      <output message="tns:getCrossCoordinateResponse" />
+      <fault name="FaultsMessageFaultMessage" message="tns:FaultsMessageFaultMessage" />
+    </operation>
+    <operation name="getWaterDetails">
+      <input message="tns:getWaterDetails" />
+      <output message="tns:getWaterDetailsResponse" />
+      <fault name="FaultsMessageFaultMessage" message="tns:FaultsMessageFaultMessage" />
+    </operation>
+    <operation name="getDepartments">
+      <input message="tns:getDepartments" />
+      <output message="tns:getDepartmentsResponse" />
+      <fault name="FaultsMessageFaultMessage" message="tns:FaultsMessageFaultMessage" />
+    </operation>
+  </portType>
+  <binding name="eydap1022PortBinding" type="tns:eydap1022PortType" maxBufferSize="2147483647" maxReceivedMessageSize="2147483647">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <operation name="getMunicipalities">
+      <soap:operation soapAction="getMunicipalities" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="FaultsMessageFaultMessage">
+        <soap:fault use="literal" name="FaultsMessageFaultMessage" namespace="" />
+      </fault>
+    </operation>
+    <operation name="getStreets">
+      <soap:operation soapAction="getStreets" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="FaultsMessageFaultMessage">
+        <soap:fault use="literal" name="FaultsMessageFaultMessage" namespace="" />
+      </fault>
+    </operation>
+    <operation name="getAddressCoordinate">
+      <soap:operation soapAction="getAddressCoordinate" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="FaultsMessageFaultMessage">
+        <soap:fault use="literal" name="FaultsMessageFaultMessage" namespace="" />
+      </fault>
+    </operation>
+    <operation name="getCrossCoordinate">
+      <soap:operation soapAction="getCrossCoordinate" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="FaultsMessageFaultMessage">
+        <soap:fault use="literal" name="FaultsMessageFaultMessage" namespace="" />
+      </fault>
+    </operation>
+    <operation name="getWaterDetails">
+      <soap:operation soapAction="getWaterDetails" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="FaultsMessageFaultMessage">
+        <soap:fault use="literal" name="FaultsMessageFaultMessage" namespace="" />
+      </fault>
+    </operation>
+    <operation name="getDepartments">
+      <soap:operation soapAction="getDepartments" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="FaultsMessageFaultMessage">
+        <soap:fault use="literal" name="FaultsMessageFaultMessage" namespace="" />
+      </fault>
+    </operation>
+  </binding>
+  <service name="eydap1022WebService">
+    <port name="eydap1022Port" binding="tns:eydap1022PortBinding">
+      <soap:address location="http://gis-ws1022-as:8080/eydap1022WS/eydap1022Port" />
+    </port>
+  </service>
+</definitions>

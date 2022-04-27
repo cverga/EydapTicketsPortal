@@ -1,0 +1,227 @@
+﻿@using System.Drawing.Printing
+@using EydapTickets.Helpers
+@using EydapTickets.Models;
+
+@model IEnumerable<UsersModel>
+
+@(Html.DevExpress().GridView<UsersModel>(settings =>
+{
+    GridViewFeaturesHelper.SetupGlobalGridViewBehavior(settings);
+
+    settings.Name = "UserGridView";
+    settings.CallbackRouteValues = new { Controller = "Users", Action = "GridViewPartial" };
+
+    // Text configuration
+    settings.SettingsText.Title = "Χρήστες";
+
+    // Editing configuration
+    settings.SettingsEditing.EditFormColumnCount = 2;
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Users", Action = "AddNewRow" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Users", Action = "UpdateRow" };
+    // settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Users", Action = "DeleteRow" };
+
+    // Client side events configuration
+    settings.ClientSideEvents.Init = "GlobalGridView_Init";
+    settings.ClientSideEvents.EndCallback = "GlobalGridView_EndCallback";
+
+    // Column configuration
+    {
+        settings.KeyFieldName = "UserId";
+
+        settings.Columns.Add(m => m.UserId).Visible = false;
+
+        settings.Columns.Add(m => m.UserName, column =>
+        {
+            column.EditorProperties().TextBox(p =>
+            {
+                p.MaxLength = 50;
+            });
+        });
+
+        settings.Columns.Add(m => m.SectorId, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = UsersDAL.GetSectors() as List<SectorsModel>;
+                p.TextField  = "SectorDescription";
+                p.ValueField = "SectorId";
+                p.ValueType  = typeof(int);
+
+                p.EnableSynchronization = DefaultBoolean.False;
+                p.IncrementalFilteringMode = IncrementalFilteringMode.None;
+                p.ClientSideEvents.SelectedIndexChanged = @"
+                    function(s, e) {
+                        var editorDepartmentId = UserGridView.GetEditor('DepartmentId');
+                        if (editorDepartmentId) {
+                            editorDepartmentId.PerformCallback();
+                        }
+                    }
+                ";
+            });
+        });
+
+        settings.Columns.Add(m => m.DepartmentId, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = DepartmentsDAL.GetAllDepartments();
+                p.TextField = "DepartmentName";
+                p.ValueField = "DepartmentId";
+                p.ValueType = typeof(int);
+                p.ValidationSettings.RequiredField.IsRequired = true;
+
+                p.CallbackRouteValues = new { Controller = "Sectors", Action = "GetDepartments" };
+                p.ClientSideEvents.BeginCallback = @"
+                    function(s, e) {
+                        var editorSectorId = UserGridView.GetEditor('SectorId');
+                        if (editorSectorId) {
+                            e.customArgs['sectorId'] = editorSectorId.GetValue();
+                        }
+                    }
+                ";
+            });
+        });
+
+        settings.Columns.Add(m => m.RoleId, column =>
+        {
+            column.EditorProperties().ComboBox(p =>
+            {
+                p.DataSource = RolesDAL.GetRoles();
+                p.TextField  = "RoleDescription";
+                p.ValueField = "RoleId";
+                p.ValueType = typeof(int);
+            });
+        });
+
+        settings.Columns.Add(m => m.UserEmail, column =>
+        {
+            column.EditorProperties().TextBox(p =>
+            {
+                p.MaxLength = 50;
+            });
+        });
+
+        settings.Columns.Add(m => m.IsActive, column =>
+        {
+            column.EditorProperties().CheckBox(p =>
+            {
+                p.ValueType = typeof(int);
+                p.AllowGrayed = false;
+                p.ValueChecked = 1;
+                p.ValueUnchecked = 0;
+                p.DisplayTextChecked = "Ναί";
+                p.DisplayTextUnchecked = "Όχι";
+            });
+        });
+
+        settings.Columns.Add(m => m.AM);
+
+        settings.Columns.Add(m => m.Name);
+
+        settings.Columns.Add(m => m.SurName);
+
+        settings.Columns.Add(m => m.UserNameBCC);
+
+        settings.Columns.Add(m => m.AccessToInvestigations, column =>
+        {
+            column.EditorProperties().CheckBox(p =>
+            {
+                p.ValueType = typeof(bool);
+                p.AllowGrayed = false;
+                p.ValueChecked = 1;
+                p.ValueUnchecked = 0;
+                p.DisplayTextChecked = "Ναί";
+                p.DisplayTextUnchecked = "Όχι";
+            });
+        });
+    }
+
+    // Initialize cell editor
+    settings.CellEditorInitialize = (sender, e) =>
+    {
+        var editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+        editor.ValidationSettings.Display = Display.Dynamic;
+
+        var gridView = (MVCxGridView)sender;
+
+        // Requirement: Filter departments on sector.
+        if (e.Column.FieldName == "DepartmentId")
+        {
+            var sectorId = gridView.GetRowValues(gridView.EditingRowVisibleIndex, "SectorId") as int?;
+            var cmb = (MVCxComboBox)e.Editor;
+            cmb.DataSource = UsersDAL.GetDepartmentsForSector(sectorId ?? -1);
+            cmb.DataBind();
+        }
+    };
+
+    // Edit form layout configuration
+    settings.EditFormLayoutProperties.Items.AddGroupItem(g =>
+    {
+        g.ColCount = 2;
+        g.UseDefaultPaddings = false;
+        g.GroupBoxDecoration = GroupBoxDecoration.None;
+
+        g.Items.Add(m => m.UserName);
+        g.Items.Add(m => m.UserEmail);
+        g.Items.Add(m => m.SectorId);
+        g.Items.Add(m => m.DepartmentId);
+        g.Items.Add(m => m.RoleId);
+        g.Items.Add(m => m.IsActive);
+        g.Items.Add(m => m.Name);
+        g.Items.Add(m => m.SurName);
+        g.Items.Add(m => m.AM);
+        g.Items.Add(m => m.UserNameBCC);
+        g.Items.Add(m => m.AccessToInvestigations);
+
+    });
+    settings.EditFormLayoutProperties.Items.AddCommandItem(s => {
+        s.HorizontalAlign = FormLayoutHorizontalAlign.Right;
+    });
+    settings.EditFormLayoutProperties.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.SingleColumnWindowLimit;
+    settings.EditFormLayoutProperties.SettingsAdaptivity.SwitchToSingleColumnAtWindowInnerWidth = 720;
+
+    // Export configuration
+    {
+        settings.SettingsExport.EnableClientSideExportAPI = true;
+        settings.SettingsExport.ExcelExportMode = DevExpress.Export.ExportType.DataAware;
+        settings.SettingsExport.PaperKind = PaperKind.A4;
+        settings.SettingsExport.Landscape = true;
+
+        settings.SettingsExport.FileName = "Χρήστες_" + DateTime.Now.ToShortDateString();
+        settings.SettingsExport.ReportHeader = "Χρήστες";
+        settings.SettingsExport.PageFooter.Center = " Ημερομηνία: " + DateTime.Now.ToString();
+
+        settings.SettingsExport.BeforeExport = (sender, e) =>
+        {
+            var gridView = (MVCxGridView)sender;
+            gridView.Columns["UserId"].Visible = false;
+            gridView.Columns["UserName"].ExportWidth = 140;
+            gridView.Columns["SectorId"].ExportWidth = 360;
+            gridView.Columns["DepartmentId"].ExportWidth = 360;
+            gridView.Columns["RoleId"].ExportWidth = 180;
+            gridView.Columns["UserEmail"].ExportWidth = 200;
+            gridView.Columns["IsActive"].ExportWidth = 100;
+            gridView.Columns["AM"].ExportWidth = 80;
+            gridView.Columns["Name"].ExportWidth = 150;
+            gridView.Columns["SurName"].ExportWidth = 150;
+            gridView.Columns["UserNameBCC"].ExportWidth = 180;
+            gridView.Columns["AccessToInvestigations"].ExportWidth = 100;
+        };
+    }
+
+    // Toolbar configuration
+    settings.Toolbars.Add(tb =>
+    {
+        tb.EnableAdaptivity = true;
+        tb.Items
+            .AddTitle(settings.SettingsText.Title)
+            .AddNewRowCommand()
+            .AddEditRowCommand()
+            //.AddDeleteRowCommand()
+            .AddSpring()
+            .AddRefreshAllCommand()
+            .AddExportCommandGroup();
+    });
+
+}).SetEditErrorText(ViewData["EditError"] as string).Bind(Model).GetHtml())

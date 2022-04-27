@@ -1,0 +1,29 @@
+﻿@model SelectList
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    settings.Name = "Odos2";
+    settings.CallbackRouteValues = new { Area = "", Controller = "Filters", Action = "Odos2Partial" };
+    settings.Properties.CallbackPageSize = 10;
+    settings.Properties.ClearButton.DisplayMode = ClearButtonDisplayMode.Always;
+    settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+    settings.Properties.ValidationSettings.Display = Display.Dynamic;
+    settings.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+    settings.ShowModelErrors = true;
+    settings.Width = Unit.Percentage(100);
+
+    settings.Properties.ClientSideEvents.SelectedIndexChanged = @"
+        function(s, e) {
+            if (typeof window.Odos2_SelectedIndexChanged === 'function') {
+                window.Odos2_SelectedIndexChanged.apply(this, [s, e]);
+            }
+        }";
+
+    settings.Properties.ClientSideEvents.BeginCallback = @"
+        function(s, e) {
+            if (typeof window.Odos2_BeginCallback === 'function') {
+                window.Odos2_BeginCallback.apply(this, [s, e]);
+            }
+        }";
+
+}).BindList(Model.Items).Bind(Model.SelectedValue).GetHtml()

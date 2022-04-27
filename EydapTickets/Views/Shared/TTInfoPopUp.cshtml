@@ -1,0 +1,25 @@
+﻿@Html.DevExpress().PopupControl(settings =>
+{
+    settings.Name = "ttinfopopup";
+    settings.HeaderText = "Πληροφοριες Σηματος";
+
+    settings.MinWidth = 560;
+    settings.MinHeight = 150;
+
+    settings.AllowDragging = true;
+    settings.AllowResize = true;
+    settings.CloseAction = CloseAction.CloseButton;
+    settings.Modal = false;
+    settings.PopupAnimationType = AnimationType.None;
+    settings.PopupHorizontalAlign = PopupHorizontalAlign.WindowCenter;
+    settings.PopupVerticalAlign = PopupVerticalAlign.WindowCenter;
+    settings.ShowCloseButton = true;
+    settings.ShowFooter = false;
+    settings.ShowHeader = true;
+
+    settings.SetContent(() =>
+    {
+        ViewContext.Writer.Write("<div id=\"ttinfopopupdiv\"><!-- AJAX Content --></div>");
+    });
+
+}).GetHtml()
